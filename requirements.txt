@@ -26,8 +26,12 @@ typing_extensions==4.3.0
 urllib3==1.26.12
 zipp==3.8.1
 
-// pip install ftfy
+// "GeneratedImages" AND "StoryBooks" folders might not generate on their own,
+// so it has to be manually created by creating new folders on the
+// directory and naming them the exact file names above (without quotations obv).
+
 // Needs to be connected to the internet
+// pip install ftfy
 // the user needs to create an account and login to https://huggingface.co/
 // next is the user needs to create their token: https://huggingface.co/settings/tokens
 // edit your token on authtoken.py

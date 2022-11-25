@@ -8,7 +8,7 @@ import tkinter as tk
 import customtkinter as ctk
 
 # Import Pillow or PIL for image configurations in Tkinter
-from PIL import ImageTk
+from PIL import ImageTk, Image
 
 # Import auth_token for Token authentication that will be mostly used from tokens in Huggingface website account
 from authtoken import auth_token
@@ -42,13 +42,13 @@ pipe.to(device)
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
 
 
-def generate():  # Function to generate the images from the text prompt
+def generate_image():  # Function to generate the images from the text prompt
 
     global img  # For storing the image to avoid garbage collection
 
     global text_input  # For storing the text input to transfer to the Picture Book PDF
 
-    i = 0  # Instantiate i for loops
+    global image  # For storing image to be saved if save image button is clicked
 
     # Uses the GPU to process the dataset through the model and get the image result
     with autocast(device):
@@ -58,9 +58,6 @@ def generate():  # Function to generate the images from the text prompt
 
         text_input = prompt.get()  # Store text input in a variable
 
-        # Add the previously stored text in a list
-        text_list.append(text_input)
-
     # Store image in a variable
     img = ImageTk.PhotoImage(image)
 
@@ -68,36 +65,79 @@ def generate():  # Function to generate the images from the text prompt
     ltext.configure(text=text_input)
     ltext.update()
 
-    # Displays the text list
-    for text_item in text_list:
-        i = i+1
-        # Placeholder frame for the text input LISTS
-        ltext_list = ctk.CTkLabel(height=50, width=200, text=text_item, text_font=(
-            "Arial", 12), text_color="white", fg_color="blue")
-        ltext_list.place(x=700, y=100 + (50*i))
-
     # Displays the image in the Tkinter UI after generation
     lmain.configure(image=img)
     lmain.update()
 
-    # Saves the image
-    image.save('generatedimage.png')
+
+def generate_save():  # Saves the image in the current directory and displays the current images selected for the picture book
+    # image.save('generatedimage.png')
+
+    # Save image file name as PNG based on text input
+    image.save('./GeneratedImages/{}.png'.format(text_input))
+
+    i = 0  # Instantiate i for loops
+    j = 0  # Instantiate j for loops
+
+    # Add the previously stored text in a list
+    text_list.append(text_input)
+
+    # Store image in a variable
+    img = ImageTk.PhotoImage(image)
+
+    # Store previous image in a list
+    image_list.append(img)
+
+    # Displays the text list
+    for text_item in text_list:
+        j = j+1
+        # Placeholder frame for the text input LISTS
+        ltext_list = ctk.CTkLabel(height=512, width=512, text=text_item, text_font=(
+            "Arial", 12), text_color="white", fg_color="blue")
+        ltext_list.place(x=600, y=-100 + (200*j))
+
+    # Displays the image list
+    for pic in image_list:
+        i = i+1
+        # Placeholder frame for the text input LISTS
+        # pic = pic.resize((200, 200))
+        limg_list = ctk.CTkLabel(height=200, width=200, image=pic)
+        limg_list.place(x=1200, y=-100 + (200*i))
 
 
-# ___________________________________________________________________________ TKINTER UI ___________________________________________________________________________
-# Create the app
+def generate_pdf():  # Generate PicTale Story book TO DO: MAKE THE TITLE OF THE PDF A VARIABLE
+
+    # Specifies the directory where the pdf will generate
+    pdf_path = "./StoryBooks/PicTales.pdf"  # NOT TESTED YET
+
+    x = 0  # Instantiate pointer/counter
+    # Convert each PhotoImage object file into normal files
+    for file in image_list:
+        image_list[x] = Image.open(
+            './GeneratedImages/{}.png'.format(text_list[x]))
+        x = x + 1  # Move the counter/pointer
+
+    # Generate the PDF
+    image_list[0].save(
+        pdf_path, "PDF", resolution=100.0, save_all=True, append_images=image_list[1:]
+    )
+
+    # NEEDS TO CLOSE IF CLICKED SINCE IT ERRORS WHEN THE PROGRAM LOOPS AGAIN AND THE USER SAVES!!! IM TALKING TO YOU FUTURE ME!
+
+    # ___________________________________________________________________________ TKINTER UI ___________________________________________________________________________
+    # Create the app
 app = tk.Tk()
 app.title("Pictales")
-app.geometry("932x932")
+app.geometry("1832x932")
 ctk.set_appearance_mode("dark")
 
 # Button for submitting the text input prompts and its configurations via position
 trigger = ctk.CTkButton(height=40, width=120, text_font=(
-    "Arial", 20), text_color="white", fg_color="blue", command=generate)
+    "Arial", 20), text_color="white", fg_color="blue", command=generate_image)
 trigger.configure(text="Generate")
 trigger.place(x=206, y=60)
 
-# Tkinter UI for the prompt textbox
+# Tkinter UI for the textbox prompt
 prompt = ctk.CTkEntry(height=40, width=512, text_font=(
     "Arial", 20), text_color="black", fg_color="white")
 prompt.place(x=10, y=10)
@@ -110,6 +150,18 @@ lmain.place(x=10, y=110)
 ltext = ctk.CTkLabel(height=100, width=512, text="TEST", text_font=(
     "Arial", 20), text_color="white", fg_color="blue")
 ltext.place(x=10, y=600)
+
+# Button for creating pdf
+create = ctk.CTkButton(height=40, width=120, text_font=(
+    "Arial", 20), text_color="white", fg_color="blue", command=generate_pdf)
+create.configure(text="Create PicTales")
+create.place(x=206, y=800)
+
+# Button for saving image
+save_image = ctk.CTkButton(height=40, width=120, text_font=(
+    "Arial", 20), text_color="white", fg_color="blue", command=generate_save)
+save_image.configure(text="Save Image")
+save_image.place(x=206, y=725)
 
 # ___________________________________________________________________________ DRIVER CODE ___________________________________________________________________________
 # Get text input prompts again by automatically restarting the app after the image was generated (If another image gets generated,
