@@ -26,8 +26,8 @@ typing_extensions==4.3.0
 urllib3==1.26.12
 zipp==3.8.1
 
-// pip install ftfy
 // Needs to be connected to the internet
+// pip install ftfy
 // the user needs to create an account and login to https://huggingface.co/
 // next is the user needs to create their token: https://huggingface.co/settings/tokens
 // edit your token on authtoken.py
