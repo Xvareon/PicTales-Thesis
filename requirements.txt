@@ -30,5 +30,6 @@ zipp==3.8.1
 // Needs to be connected to the internet
 // the user needs to create an account and login to https://huggingface.co/
 // next is the user needs to create their token: https://huggingface.co/settings/tokens
+// edit your token on authtoken.py
 // then the user needs to accept and request for access for the stable diffusion repository at https://huggingface.co/CompVis/stable-diffusion-v1-4?text=A+high+tech+solarpunk+utopia+in+the+Amazon+rainforest
 // run the code
