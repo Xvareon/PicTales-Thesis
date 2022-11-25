@@ -21,12 +21,9 @@ from torch import autocast
 from diffusers import StableDiffusionPipeline
 
 # ___________________________________________________________________________ GLOBAL VARIABLES ___________________________________________________________________________
-# Globalized some of the variables to avoid parameter mishap
-global device
-global pipe
-global prompt
-global lmain
-global ltext
+
+image_list = []  # ARRAY OF IMAGES
+text_list = []  # ARRAY OF TEXT INPUTS
 
 # ___________________________________________________________________________ CONFIGURATIONS ___________________________________________________________________________
 # Specifies the model used, can be changed and configured
@@ -51,17 +48,33 @@ def generate():  # Function to generate the images from the text prompt
 
     global text_input  # For storing the text input to transfer to the Picture Book PDF
 
+    i = 0  # Instantiate i for loops
+
     # Uses the GPU to process the dataset through the model and get the image result
     with autocast(device):
 
         image = pipe(prompt.get(), guidance_scale=10)[
             "images"][0]  # Variable that contains the image result. ("images" was previously labeled as "sample")
-        text_input = prompt.get()
+
+        text_input = prompt.get()  # Store text input in a variable
+
+        # Add the previously stored text in a list
+        text_list.append(text_input)
+
+    # Store image in a variable
+    img = ImageTk.PhotoImage(image)
 
     # Displays the text input in the Tkinter UI after generation
-    img = ImageTk.PhotoImage(image)
     ltext.configure(text=text_input)
     ltext.update()
+
+    # Displays the text list
+    for text_item in text_list:
+        i = i+1
+        # Placeholder frame for the text input LISTS
+        ltext_list = ctk.CTkLabel(height=50, width=200, text=text_item, text_font=(
+            "Arial", 12), text_color="white", fg_color="blue")
+        ltext_list.place(x=700, y=100 + (50*i))
 
     # Displays the image in the Tkinter UI after generation
     lmain.configure(image=img)
@@ -75,7 +88,7 @@ def generate():  # Function to generate the images from the text prompt
 # Create the app
 app = tk.Tk()
 app.title("Pictales")
-app.geometry("532x732")
+app.geometry("932x932")
 ctk.set_appearance_mode("dark")
 
 # Button for submitting the text input prompts and its configurations via position
@@ -95,7 +108,7 @@ lmain.place(x=10, y=110)
 
 # Placeholder frame for the text input
 ltext = ctk.CTkLabel(height=100, width=512, text="TEST", text_font=(
-    "Arial", 20), text_color="black", fg_color="red")
+    "Arial", 20), text_color="white", fg_color="blue")
 ltext.place(x=10, y=600)
 
 # ___________________________________________________________________________ DRIVER CODE ___________________________________________________________________________
