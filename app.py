@@ -8,7 +8,7 @@ import tkinter as tk
 import customtkinter as ctk
 
 # Import Pillow or PIL for image configurations in Tkinter
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image, ImageDraw, ImageFont
 
 # Import auth_token for Token authentication that will be mostly used from tokens in Huggingface website account
 from authtoken import auth_token
@@ -24,6 +24,7 @@ from diffusers import StableDiffusionPipeline
 
 image_list = []  # ARRAY OF IMAGES
 text_list = []  # ARRAY OF TEXT INPUTS
+pdf_list = []  # ARRAY OF PDF PAGES
 
 # ___________________________________________________________________________ CONFIGURATIONS ___________________________________________________________________________
 # Specifies the model used, can be changed and configured
@@ -110,22 +111,56 @@ def generate_pdf():  # Generate PicTale Story book TO DO: MAKE THE TITLE OF THE 
     # Specifies the directory where the pdf will generate
     pdf_path = "./StoryBooks/PicTales.pdf"  # NOT TESTED YET
 
+    # Create template page
+    blank = Image.new('RGB', (512, 512))
+
+    # Save template in generated images folder
+    blank.save('./GeneratedImages/TextTemplate.png')
+
+    k = 0  # Instantiate pointer/counter
+    for file in text_list:
+
+        # Store blank image in a variable
+        photo = Image.open('./GeneratedImages/TextTemplate.png')
+
+        # Invoke draw function to the blank image
+        phototext = ImageDraw.Draw(photo)
+
+        # Choose font
+        font = ImageFont.truetype('arial.ttf', 16)
+
+        # Write the text input based on the designated text image
+        phototext.text((10, 10), text_list[k], font=font, fill=(255, 0, 0))
+
+        # Save the drawn page that contains the text input in the local directory
+        photo.save('./GeneratedImages/INPUT{}.png'.format(text_list[k]))
+
+        k = k + 1  # Move the counter/pointer
+
     x = 0  # Instantiate pointer/counter
-    # Convert each PhotoImage object file into normal files
-    for file in image_list:
-        image_list[x] = Image.open(
-            './GeneratedImages/{}.png'.format(text_list[x]))
+
+    # Convert each PhotoImage object files into normal files
+    for file in text_list:
+
+        # Append main image file
+        pdf_list.append(Image.open(
+            './GeneratedImages/{}.png'.format(text_list[x])))
+
+        # Append the image file that has the text input drawn on a blank page
+        pdf_list.append(Image.open(
+            './GeneratedImages/INPUT{}.png'.format(text_list[x])))
+
         x = x + 1  # Move the counter/pointer
 
     # Generate the PDF
-    image_list[0].save(
-        pdf_path, "PDF", resolution=100.0, save_all=True, append_images=image_list[1:]
+    pdf_list[0].save(
+        pdf_path, "PDF", resolution=100.0, save_all=True, append_images=pdf_list[1:]
     )
 
-    # NEEDS TO CLOSE IF CLICKED SINCE IT ERRORS WHEN THE PROGRAM LOOPS AGAIN AND THE USER SAVES!!! IM TALKING TO YOU FUTURE ME!
+    # NEEDS TO HIDE SAVE BUTTON FOR IMAGE AND PDF
 
     # ___________________________________________________________________________ TKINTER UI ___________________________________________________________________________
-    # Create the app
+# Create the app
 app = tk.Tk()
 app.title("Pictales")
 app.geometry("1832x932")
@@ -164,6 +199,5 @@ save_image.configure(text="Save Image")
 save_image.place(x=206, y=725)
 
 # ___________________________________________________________________________ DRIVER CODE ___________________________________________________________________________
-# Get text input prompts again by automatically restarting the app after the image was generated (If another image gets generated,
-# it replaces the previous image in the directory!!!)
+# Get text input prompts again by automatically restarting the app
 app.mainloop()
