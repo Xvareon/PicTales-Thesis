@@ -72,7 +72,6 @@ def generate_image():  # Function to generate the images from the text prompt
 
 
 def generate_save():  # Saves the image in the current directory and displays the current images selected for the picture book
-    # image.save('generatedimage.png')
 
     # Save image file name as PNG based on text input
     image.save('./GeneratedImages/{}.png'.format(text_input))
@@ -106,10 +105,10 @@ def generate_save():  # Saves the image in the current directory and displays th
         limg_list.place(x=1200, y=-100 + (200*i))
 
 
-def generate_pdf():  # Generate PicTale Story book TO DO: MAKE THE TITLE OF THE PDF A VARIABLE
+def generate_pdf():  # Generate PicTale Story book
 
     # Specifies the directory where the pdf will generate
-    pdf_path = "./StoryBooks/PicTales.pdf"  # NOT TESTED YET
+    pdf_path = "./StoryBooks/PicTales.pdf"
 
     # Create template page
     blank = Image.new('RGB', (512, 512))
@@ -117,7 +116,6 @@ def generate_pdf():  # Generate PicTale Story book TO DO: MAKE THE TITLE OF THE 
     # Save template in generated images folder
     blank.save('./GeneratedImages/TextTemplate.png')
 
-    k = 0  # Instantiate pointer/counter
     for file in text_list:
 
         # Store blank image in a variable
@@ -130,27 +128,21 @@ def generate_pdf():  # Generate PicTale Story book TO DO: MAKE THE TITLE OF THE 
         font = ImageFont.truetype('arial.ttf', 16)
 
         # Write the text input based on the designated text image
-        phototext.text((10, 10), text_list[k], font=font, fill=(255, 0, 0))
+        phototext.text((10, 10), file, font=font, fill=(255, 0, 0))
 
         # Save the drawn page that contains the text input in the local directory
-        photo.save('./GeneratedImages/INPUT{}.png'.format(text_list[k]))
-
-        k = k + 1  # Move the counter/pointer
-
-    x = 0  # Instantiate pointer/counter
+        photo.save('./GeneratedImages/INPUT{}.png'.format(file))
 
     # Convert each PhotoImage object files into normal files
     for file in text_list:
 
         # Append main image file
         pdf_list.append(Image.open(
-            './GeneratedImages/{}.png'.format(text_list[x])))
+            './GeneratedImages/{}.png'.format(file)))
 
         # Append the image file that has the text input drawn on a blank page
         pdf_list.append(Image.open(
-            './GeneratedImages/INPUT{}.png'.format(text_list[x])))
-
-        x = x + 1  # Move the counter/pointer
+            './GeneratedImages/INPUT{}.png'.format(file)))
 
     # Generate the PDF
     pdf_list[0].save(
@@ -158,8 +150,11 @@ def generate_pdf():  # Generate PicTale Story book TO DO: MAKE THE TITLE OF THE 
     )
 
     # NEEDS TO HIDE SAVE BUTTON FOR IMAGE AND PDF
+    # NEEDS TO SHOW THE PROGRESS IN THE TKINTER
+    # TO DO: MAKE THE TITLE OF THE PDF A VARIABLE
 
-    # ___________________________________________________________________________ TKINTER UI ___________________________________________________________________________
+
+# ___________________________________________________________________________ TKINTER UI ___________________________________________________________________________
 # Create the app
 app = tk.Tk()
 app.title("Pictales")
