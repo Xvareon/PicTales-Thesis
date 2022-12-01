@@ -20,25 +20,22 @@ from torch import autocast
 # Import StableDiffusionPipeline for the stable diffusion methods that are used in the local GPU.
 from diffusers import StableDiffusionPipeline
 
+# Provides functions for interacting with the operating system
+import os
+import sys
+
 # ___________________________________________________________________________ GLOBAL VARIABLES ___________________________________________________________________________
 
 image_list = []  # ARRAY OF IMAGES
 text_list = []  # ARRAY OF TEXT INPUTS
 pdf_list = []  # ARRAY OF PDF PAGES
 
-# ___________________________________________________________________________ CONFIGURATIONS ___________________________________________________________________________
-# Specifies the model used, can be changed and configured
-modelid = "CompVis/stable-diffusion-v1-4"
+# ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
-# Specifies the graphics driver to be used
-device = "cuda"
-
-# Uses the dataset from the huggingface website. User can add their own provided they have data and money.
-pipe = StableDiffusionPipeline.from_pretrained(
-    modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
-
-# Uses the graphics driver to be used (Must atleast be 4GB ram)
-pipe.to(device)
+# Loads the model
+model = torch.load('./results/model-1.pt')
+print(model)
+# model.eval()
 
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
 
@@ -153,6 +150,25 @@ def generate_pdf():  # Generate PicTale Story book
     # NEEDS TO SHOW THE PROGRESS IN THE TKINTER
     # TO DO: MAKE THE TITLE OF THE PDF A VARIABLE
 
+
+# ___________________________________________________________________________ CONFIGURATIONS ___________________________________________________________________________
+isExist = os.path.exists('./results/model-1.pt')
+
+if (isExist == False):
+    sys.exit(0)
+
+# loads the model used to a pre-defined library online
+modelid = "CompVis/stable-diffusion-v1-4"
+
+# Specifies the graphics driver to be used
+device = "cuda"
+
+# Uses the dataset from the huggingface website. User can add their own provided they have data and money.
+pipe = StableDiffusionPipeline.from_pretrained(
+    modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
+
+# Uses the graphics driver to be used (Must atleast be 4GB ram)
+pipe.to(device)
 
 # ___________________________________________________________________________ TKINTER UI ___________________________________________________________________________
 # Create the app
