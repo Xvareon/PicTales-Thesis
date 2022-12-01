@@ -30,6 +30,11 @@ zipp==3.8.1
 // so it has to be manually created by creating new folders on the
 // directory and naming them the exact file names above (without quotations obv).
 
+TRAINING MODEL:
+// open denoiseddiffusion.py and pip install denoising_diffusion_pytorch then run it(NEEDS GOOD GPU AND RAM)
+// wait until there is an output in the terminal: "training complete!".
+// after a while, a results folder will be created in the directory and contain a file 'model-1.pt'.
+
 // Needs to be connected to the internet
 // pip install ftfy
 // pip install tensorboard
@@ -37,4 +42,4 @@ zipp==3.8.1
 // next is the user needs to create their token: https://huggingface.co/settings/tokens
 // edit your token on authtoken.py
 // then the user needs to accept and request for access for the stable diffusion repository at https://huggingface.co/CompVis/stable-diffusion-v1-4?text=A+high+tech+solarpunk+utopia+in+the+Amazon+rainforest
-// run the code
+// run the code 'app.py'
