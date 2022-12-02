@@ -148,6 +148,7 @@ def generate_pdf():  # Generate PicTale Story book
 
     # NEEDS TO HIDE SAVE BUTTON FOR IMAGE AND PDF
     # NEEDS TO SHOW THE PROGRESS IN THE TKINTER
+    # NEEDS UI that shows storybook has been created and exit the program
     # TO DO: MAKE THE TITLE OF THE PDF A VARIABLE
 
 
