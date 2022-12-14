@@ -104,8 +104,11 @@ def generate_save():  # Saves the image in the current directory and displays th
 
 def generate_pdf():  # Generate PicTale Story book
 
+    # Store the pdf file name into a variable
+    pdf_name = 'PicTales'
+
     # Specifies the directory where the pdf will generate
-    pdf_path = "./StoryBooks/PicTales.pdf"
+    pdf_path = "./StoryBooks/{}.pdf".format(pdf_name)
 
     # Create template page
     blank = Image.new('RGB', (512, 512))
@@ -149,6 +152,8 @@ def generate_pdf():  # Generate PicTale Story book
     # NEEDS TO HIDE SAVE BUTTON FOR IMAGE AND PDF
     # NEEDS TO SHOW THE PROGRESS IN THE TKINTER
     # NEEDS UI that shows storybook has been created and exit the program
+    # NEEDS A CARTOON TEXT INSERT TO THE INPUT TO PROVIDE A CHILDREN-LIKE THEME
+    # UI OVERHAUL
     # TO DO: MAKE THE TITLE OF THE PDF A VARIABLE
 
 
@@ -164,11 +169,14 @@ modelid = "CompVis/stable-diffusion-v1-4"
 # Specifies the graphics driver to be used
 device = "cuda"
 
-# Uses the dataset from the huggingface website. User can add their own provided they have data and money.
+# Loads the model into torch
+torch.load('./results/model-1.pt')
+
+# Uses the pipe from the online library for model translation to produce the image.
 pipe = StableDiffusionPipeline.from_pretrained(
     modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
 
-# Uses the graphics driver to be used (Must atleast be 4GB ram)
+# Uses the graphics driver (Must atleast be 4GB ram)
 pipe.to(device)
 
 # ___________________________________________________________________________ TKINTER UI ___________________________________________________________________________
