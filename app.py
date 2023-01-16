@@ -34,7 +34,7 @@ pdf_list = []  # ARRAY OF PDF PAGES
 
 # Loads the model
 model = torch.load('./results/model-1.pt')
-print(model)
+# print(model)
 # model.eval()
 
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
@@ -51,10 +51,11 @@ def generate_image():  # Function to generate the images from the text prompt
     # Uses the GPU to process the dataset through the model and get the image result
     with autocast(device):
 
-        image = pipe(prompt.get(), guidance_scale=10)[
-            "images"][0]  # Variable that contains the image result. ("images" was previously labeled as "sample")
-
+        # Note: ADD A CATCH ERROR IF THE INPUT IS BLANK
         text_input = prompt.get()  # Store text input in a variable
+
+        image = pipe(text_input, guidance_scale=10)[
+            "images"][0]  # Variable that contains the image result. ("images" was previously labeled as "sample")
 
     # Store image in a variable
     img = ImageTk.PhotoImage(image)
@@ -70,42 +71,78 @@ def generate_image():  # Function to generate the images from the text prompt
 
 def generate_save():  # Saves the image in the current directory and displays the current images selected for the picture book
 
-    # Save image file name as PNG based on text input
-    image.save('./GeneratedImages/{}.png'.format(text_input))
+    # Check if user has already generated an image first before saving.
+    try:
+        image
+    except NameError:
+        is_generated = False
+    else:
+        is_generated = True
 
-    i = 0  # Instantiate i for loops
-    j = 0  # Instantiate j for loops
+    # If an image has been generated
+    if is_generated:
+        # Save image file name as PNG based on text input
+        image.save('./GeneratedImages/{}.png'.format(text_input))
 
-    # Add the previously stored text in a list
-    text_list.append(text_input)
+        i = 0  # Instantiate i for loops
+        j = 0  # Instantiate j for loops
 
-    # Store image in a variable
-    img = ImageTk.PhotoImage(image)
+        # Add the previously stored text in a list
+        text_list.append(text_input)
 
-    # Store previous image in a list
-    image_list.append(img)
+        # Store image in a variable
+        img = ImageTk.PhotoImage(image)
 
-    # Displays the text list
-    for text_item in text_list:
-        j = j+1
-        # Placeholder frame for the text input LISTS
-        ltext_list = ctk.CTkLabel(height=512, width=512, text=text_item, text_font=(
-            "Arial", 12), text_color="white", fg_color="blue")
-        ltext_list.place(x=600, y=-100 + (200*j))
+        # Store previous image in a list
+        image_list.append(img)
 
-    # Displays the image list
-    for pic in image_list:
-        i = i+1
-        # Placeholder frame for the text input LISTS
-        # pic = pic.resize((200, 200))
-        limg_list = ctk.CTkLabel(height=200, width=200, image=pic)
-        limg_list.place(x=1200, y=-100 + (200*i))
+        # Displays the text list
+        for text_item in text_list:
+            j = j+1
+            # Placeholder frame for the text input LISTS
+            ltext_list = ctk.CTkLabel(height=512, width=512, text=text_item, text_font=(
+                "Arial", 12), text_color="white", fg_color="blue")
+            ltext_list.place(x=600, y=-100 + (200*j))
+
+        # Displays the image list
+        for pic in image_list:
+            i = i+1
+            # Placeholder frame for the text input LISTS
+            # pic = pic.resize((200, 200))
+            limg_list = ctk.CTkLabel(height=200, width=200, image=pic)
+            limg_list.place(x=1200, y=-100 + (200*i))
+
+
+def pdf_window():  # Show a text prompt
+
+    global app_pdf
+    global prompt_pdf
+
+    # app_pdf = tk.Tk()
+    app_pdf = ctk.CTkToplevel(app)
+    app_pdf.title("Set Storybook Name")
+    app_pdf.geometry("512x512")
+    ctk.set_appearance_mode("dark")
+
+    # Tkinter UI for the textbox prompt
+    prompt_pdf = ctk.CTkEntry(app_pdf, height=40, width=512, text_font=(
+        "Arial", 20), text_color="black", fg_color="white")
+    prompt_pdf.place(x=6, y=10)
+
+    # Tkinter Widget for the button
+    create_pdf = ctk.CTkButton(app_pdf, height=40, width=120, text_font=(
+        "Arial", 20), text_color="white", fg_color="blue", command=generate_pdf)
+    create_pdf.configure(text="Generate {}".format('Storybook'))
+    create_pdf.place(x=170, y=60)
 
 
 def generate_pdf():  # Generate PicTale Story book
 
-    # Store the pdf file name into a variable
-    pdf_name = 'PicTales'
+    pdf_name = prompt_pdf.get()  # Store text input in a variable, from the pdf window
+
+    # Store the pdf file name into a variable, sets this as default for errors and etc like if the title name is not set.
+    if (pdf_name == ''):
+        pdf_name = 'PicTales'
 
     # Specifies the directory where the pdf will generate
     pdf_path = "./StoryBooks/{}.pdf".format(pdf_name)
@@ -144,17 +181,19 @@ def generate_pdf():  # Generate PicTale Story book
         pdf_list.append(Image.open(
             './GeneratedImages/INPUT{}.png'.format(file)))
 
-    # Generate the PDF
-    pdf_list[0].save(
-        pdf_path, "PDF", resolution=100.0, save_all=True, append_images=pdf_list[1:]
-    )
+    if pdf_list:  # Check if storybook has content
+        # Generate the PDF
+        pdf_list[0].save(
+            pdf_path, "PDF", resolution=100.0, save_all=True, append_images=pdf_list[1:]
+        )
 
-    # NEEDS TO HIDE SAVE BUTTON FOR IMAGE AND PDF
     # NEEDS TO SHOW THE PROGRESS IN THE TKINTER
     # NEEDS UI that shows storybook has been created and exit the program
     # NEEDS A CARTOON TEXT INSERT TO THE INPUT TO PROVIDE A CHILDREN-LIKE THEME
+    # PDF MUST BE AUTOMATICALLY 2 PAGE
+    # EDIT TEXT DESCRIPTION
+    # CHARACTER FOLDER (can choose)
     # UI OVERHAUL
-    # TO DO: MAKE THE TITLE OF THE PDF A VARIABLE
 
 
 # ___________________________________________________________________________ CONFIGURATIONS ___________________________________________________________________________
@@ -179,9 +218,9 @@ pipe = StableDiffusionPipeline.from_pretrained(
 # Uses the graphics driver (Must atleast be 4GB ram)
 pipe.to(device)
 
-# ___________________________________________________________________________ TKINTER UI ___________________________________________________________________________
+# ___________________________________________________________________________ MAIN TKINTER UI ___________________________________________________________________________
 # Create the app
-app = tk.Tk()
+app = ctk.CTk()
 app.title("Pictales")
 app.geometry("1832x932")
 ctk.set_appearance_mode("dark")
@@ -207,8 +246,10 @@ ltext = ctk.CTkLabel(height=100, width=512, text="TEST", text_font=(
 ltext.place(x=10, y=600)
 
 # Button for creating pdf
+# create = ctk.CTkButton(height=40, width=120, text_font=(
+#     "Arial", 20), text_color="white", fg_color="blue", command=generate_pdf)
 create = ctk.CTkButton(height=40, width=120, text_font=(
-    "Arial", 20), text_color="white", fg_color="blue", command=generate_pdf)
+    "Arial", 20), text_color="white", fg_color="blue", command=pdf_window)
 create.configure(text="Create PicTales")
 create.place(x=206, y=800)
 
