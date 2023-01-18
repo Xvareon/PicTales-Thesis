@@ -28,6 +28,7 @@ import sys
 
 image_list = []  # ARRAY OF IMAGES
 text_list = []  # ARRAY OF TEXT INPUTS
+content_list = []  # ARRAY OF PAGE CONTENT (mostly the text)
 pdf_list = []  # ARRAY OF PDF PAGES
 
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
@@ -69,23 +70,62 @@ def generate_image():  # Function to generate the images from the text prompt
     lmain.update()
 
 
+def save_window():
+
+    # Globalize the window object that pops up for save creation
+    global app_save
+
+    # The variable that stores the textbox object for editing the text of a page
+    global prompt_save
+
+    # Window object for the text prompt for naming the book
+    app_save = ctk.CTkToplevel(app)
+    app_save.title("Edit Content Page")
+    app_save.geometry("1832x932")
+    ctk.set_appearance_mode("dark")
+
+    # Tkinter UI for the textbox prompt
+    prompt_save = ctk.CTkTextbox(app_save, height=700, width=1700, font=(
+        "Arial", 12), text_color="black", fg_color="white")
+    prompt_save.place(x=6, y=6)
+
+    # Tkinter Widget for the button
+    create_save = ctk.CTkButton(app_save, height=40, width=120, font=(
+        "Arial", 20), text_color="white", fg_color="blue", command=generate_save)
+    create_save.configure(text="Save Image and Page")
+    create_save.place(x=206, y=725)
+
+
 def generate_save():  # Saves the image in the current directory and displays the current images selected for the picture book
 
     # Check if user has already generated an image first before saving.
     try:
         image
-    except NameError:
+    except NameError:  # If variable image is empty, return false
         is_generated = False
-    else:
+    else:  # If image variable is defined
         is_generated = True
 
     # If an image has been generated
     if is_generated:
+
+        # Globalize content variable that stores the edited content
+        global content
+
         # Save image file name as PNG based on text input
         image.save('./GeneratedImages/{}.png'.format(text_input))
 
         i = 0  # Instantiate i for loops
         j = 0  # Instantiate j for loops
+
+        content = prompt_save.get("0.0", "end")
+
+        # Makes the text input as a default content input if the user did not enter anything at the content textbox.
+        if (content == ''):
+            content = text_input
+
+        # Add the content to the list
+        content_list.append(content)
 
         # Add the previously stored text in a list
         text_list.append(text_input)
@@ -100,7 +140,7 @@ def generate_save():  # Saves the image in the current directory and displays th
         for text_item in text_list:
             j = j+1
             # Placeholder frame for the text input LISTS
-            ltext_list = ctk.CTkLabel(height=512, width=512, text=text_item, text_font=(
+            ltext_list = ctk.CTkLabel(app, height=512, width=512, text=text_item, font=(
                 "Arial", 12), text_color="white", fg_color="blue")
             ltext_list.place(x=600, y=-100 + (200*j))
 
@@ -109,31 +149,33 @@ def generate_save():  # Saves the image in the current directory and displays th
             i = i+1
             # Placeholder frame for the text input LISTS
             # pic = pic.resize((200, 200))
-            limg_list = ctk.CTkLabel(height=200, width=200, image=pic)
+            limg_list = ctk.CTkLabel(app, height=200, width=200, image=pic)
             limg_list.place(x=1200, y=-100 + (200*i))
+
+        app_save.destroy()  # Destroy the edit content window
 
 
 def pdf_window():  # Show a text prompt
 
-    global app_pdf
-    global prompt_pdf
+    global app_pdf  # Globalize the window object that pops up for pdf creation
+    global prompt_pdf  # The variable that stores the textbox object for naming the storybook
 
-    # app_pdf = tk.Tk()
+    # Window object for the text prompt for naming the book
     app_pdf = ctk.CTkToplevel(app)
     app_pdf.title("Set Storybook Name")
     app_pdf.geometry("512x512")
     ctk.set_appearance_mode("dark")
 
     # Tkinter UI for the textbox prompt
-    prompt_pdf = ctk.CTkEntry(app_pdf, height=40, width=512, text_font=(
+    prompt_pdf = ctk.CTkEntry(app_pdf, height=40, width=400, font=(
         "Arial", 20), text_color="black", fg_color="white")
     prompt_pdf.place(x=6, y=10)
 
     # Tkinter Widget for the button
-    create_pdf = ctk.CTkButton(app_pdf, height=40, width=120, text_font=(
+    create_pdf = ctk.CTkButton(app_pdf, height=40, width=120, font=(
         "Arial", 20), text_color="white", fg_color="blue", command=generate_pdf)
     create_pdf.configure(text="Generate {}".format('Storybook'))
-    create_pdf.place(x=170, y=60)
+    create_pdf.place(x=140, y=60)
 
 
 def generate_pdf():  # Generate PicTale Story book
@@ -153,6 +195,9 @@ def generate_pdf():  # Generate PicTale Story book
     # Save template in generated images folder
     blank.save('./GeneratedImages/TextTemplate.png')
 
+    i = 0  # Pointer/Flag for content for content list access later
+
+    # For each image file that has been written with the text list names, the text list names their files itself based on order.
     for file in text_list:
 
         # Store blank image in a variable
@@ -165,10 +210,13 @@ def generate_pdf():  # Generate PicTale Story book
         font = ImageFont.truetype('arial.ttf', 16)
 
         # Write the text input based on the designated text image
-        phototext.text((10, 10), file, font=font, fill=(255, 0, 0))
+        phototext.text((10, 10), content_list[i], font=font, fill=(255, 0, 0))
 
         # Save the drawn page that contains the text input in the local directory
         photo.save('./GeneratedImages/INPUT{}.png'.format(file))
+
+        # Move the pointer
+        i = i + 1
 
     # Convert each PhotoImage object files into normal files
     for file in text_list:
@@ -187,6 +235,9 @@ def generate_pdf():  # Generate PicTale Story book
             pdf_path, "PDF", resolution=100.0, save_all=True, append_images=pdf_list[1:]
         )
 
+    app_pdf.destroy()  # Destroy the rename window
+
+    # TITLE PAGE WITH TITLE AND AUTHOR
     # NEEDS TO SHOW THE PROGRESS IN THE TKINTER
     # NEEDS UI that shows storybook has been created and exit the program
     # NEEDS A CARTOON TEXT INSERT TO THE INPUT TO PROVIDE A CHILDREN-LIKE THEME
@@ -226,36 +277,36 @@ app.geometry("1832x932")
 ctk.set_appearance_mode("dark")
 
 # Button for submitting the text input prompts and its configurations via position
-trigger = ctk.CTkButton(height=40, width=120, text_font=(
+trigger = ctk.CTkButton(app, height=40, width=120, font=(
     "Arial", 20), text_color="white", fg_color="blue", command=generate_image)
 trigger.configure(text="Generate")
 trigger.place(x=206, y=60)
 
 # Tkinter UI for the textbox prompt
-prompt = ctk.CTkEntry(height=40, width=512, text_font=(
+prompt = ctk.CTkEntry(app, height=40, width=512, font=(
     "Arial", 20), text_color="black", fg_color="white")
 prompt.place(x=10, y=10)
 
 # Placeholder frame for image result generated
-lmain = ctk.CTkLabel(height=512, width=512)
+lmain = ctk.CTkLabel(app, height=512, width=512)
 lmain.place(x=10, y=110)
 
 # Placeholder frame for the text input
-ltext = ctk.CTkLabel(height=100, width=512, text="TEST", text_font=(
+ltext = ctk.CTkLabel(app, height=100, width=512, text="TEST", font=(
     "Arial", 20), text_color="white", fg_color="blue")
 ltext.place(x=10, y=600)
 
 # Button for creating pdf
-# create = ctk.CTkButton(height=40, width=120, text_font=(
-#     "Arial", 20), text_color="white", fg_color="blue", command=generate_pdf)
-create = ctk.CTkButton(height=40, width=120, text_font=(
+create = ctk.CTkButton(app, height=40, width=120, font=(
     "Arial", 20), text_color="white", fg_color="blue", command=pdf_window)
 create.configure(text="Create PicTales")
 create.place(x=206, y=800)
 
 # Button for saving image
-save_image = ctk.CTkButton(height=40, width=120, text_font=(
-    "Arial", 20), text_color="white", fg_color="blue", command=generate_save)
+# save_image = ctk.CTkButton(height=40, width=120, text_font=(
+#     "Arial", 20), text_color="white", fg_color="blue", command=generate_save)
+save_image = ctk.CTkButton(app, height=40, width=120, font=(
+    "Arial", 20), text_color="white", fg_color="blue", command=save_window)
 save_image.configure(text="Save Image")
 save_image.place(x=206, y=725)
 
