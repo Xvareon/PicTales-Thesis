@@ -78,6 +78,16 @@ def save_window():
     # The variable that stores the textbox object for editing the text of a page
     global prompt_save
 
+    # Declares the variables that will store the characters
+    global char_one
+    global char_two
+    global char_three
+
+    # Declare the variables that store the labels/position of the character image selection
+    global lchar_one
+    global lchar_two
+    global lchar_three
+
     # Window object for the text prompt for naming the book
     app_save = ctk.CTkToplevel(app)
     app_save.title("Edit Content Page")
@@ -85,7 +95,7 @@ def save_window():
     ctk.set_appearance_mode("dark")
 
     # Tkinter UI for the textbox prompt
-    prompt_save = ctk.CTkTextbox(app_save, height=700, width=1700, font=(
+    prompt_save = ctk.CTkTextbox(app_save, height=700, width=700, font=(
         "Arial", 12), text_color="black", fg_color="white")
     prompt_save.place(x=6, y=6)
 
@@ -93,7 +103,32 @@ def save_window():
     create_save = ctk.CTkButton(app_save, height=40, width=120, font=(
         "Arial", 20), text_color="white", fg_color="blue", command=generate_save)
     create_save.configure(text="Save Image and Page")
-    create_save.place(x=206, y=725)
+    create_save.place(x=230, y=725)
+
+    # Translate image details and transform them to a variables which stores each character
+    char_one = ImageTk.PhotoImage(Image.open('./Characters/char_one.png'))
+    char_two = ImageTk.PhotoImage(Image.open('./Characters/char_two.png'))
+    char_three = ImageTk.PhotoImage(Image.open('./Characters/char_three.png'))
+
+    # Placeholder frame for image result generated:
+
+    # For character one
+    lchar_one = ctk.CTkLabel(app_save, height=150, width=150)
+    lchar_one.place(x=900, y=80)
+    lchar_one.configure(image=char_one)
+    lchar_one.update()
+
+    # For character two
+    lchar_two = ctk.CTkLabel(app_save, height=150, width=150)
+    lchar_two.place(x=1200, y=80)
+    lchar_two.configure(image=char_two)
+    lchar_two.update()
+
+    # For character three
+    lchar_three = ctk.CTkLabel(app_save, height=150, width=150)
+    lchar_three.place(x=1500, y=80)
+    lchar_three.configure(image=char_three)
+    lchar_three.update()
 
 
 def generate_save():  # Saves the image in the current directory and displays the current images selected for the picture book
@@ -237,13 +272,11 @@ def generate_pdf():  # Generate PicTale Story book
 
     app_pdf.destroy()  # Destroy the rename window
 
+    # PDF MUST BE AUTOMATICALLY 2 PAGE
+    # CHARACTER FOLDER (can choose)
     # TITLE PAGE WITH TITLE AND AUTHOR
-    # NEEDS TO SHOW THE PROGRESS IN THE TKINTER
     # NEEDS UI that shows storybook has been created and exit the program
     # NEEDS A CARTOON TEXT INSERT TO THE INPUT TO PROVIDE A CHILDREN-LIKE THEME
-    # PDF MUST BE AUTOMATICALLY 2 PAGE
-    # EDIT TEXT DESCRIPTION
-    # CHARACTER FOLDER (can choose)
     # UI OVERHAUL
 
 
