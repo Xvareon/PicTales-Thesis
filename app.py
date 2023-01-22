@@ -88,6 +88,13 @@ def save_window():
     global lchar_two
     global lchar_three
 
+    # Declare the variables that store the labels/position of the text label of character selection
+    global lchar_one_text
+    global lchar_two_text
+    global lchar_three_text
+
+    global char_select    # Declare value for radio selection
+
     # Window object for the text prompt for naming the book
     app_save = ctk.CTkToplevel(app)
     app_save.title("Edit Content Page")
@@ -110,25 +117,55 @@ def save_window():
     char_two = ImageTk.PhotoImage(Image.open('./Characters/char_two.png'))
     char_three = ImageTk.PhotoImage(Image.open('./Characters/char_three.png'))
 
-    # Placeholder frame for image result generated:
+    # Placeholder frame and text label for image result generated:
 
     # For character one
     lchar_one = ctk.CTkLabel(app_save, height=150, width=150)
     lchar_one.place(x=900, y=80)
     lchar_one.configure(image=char_one)
     lchar_one.update()
+    lchar_one_text = ctk.CTkLabel(app_save, height=75, width=150, text="Character 1", font=(
+        "Arial", 16), text_color="white", fg_color="blue")
+    lchar_one_text.place(x=900, y=60)
 
     # For character two
     lchar_two = ctk.CTkLabel(app_save, height=150, width=150)
     lchar_two.place(x=1200, y=80)
     lchar_two.configure(image=char_two)
     lchar_two.update()
+    lchar_two_text = ctk.CTkLabel(app_save, height=75, width=150, text="Character 2", font=(
+        "Arial", 16), text_color="white", fg_color="blue")
+    lchar_two_text.place(x=1200, y=60)
 
     # For character three
     lchar_three = ctk.CTkLabel(app_save, height=150, width=150)
     lchar_three.place(x=1500, y=80)
     lchar_three.configure(image=char_three)
     lchar_three.update()
+    lchar_three_text = ctk.CTkLabel(app_save, height=75, width=150, text="Character 3", font=(
+        "Arial", 16), text_color="white", fg_color="blue")
+    lchar_three_text.place(x=1500, y=60)
+
+    # Instantiate 0 as base value and default
+    char_select = tk.IntVar(app_save, 0)
+
+    # Selection/Radio buttons for character
+    rchar_one = ctk.CTkRadioButton(app_save, text="Choose Character One",
+                                   command=radiobutton_char_select, variable=char_select, value=1)
+    rchar_one.place(x=900, y=360)
+
+    rchar_two = ctk.CTkRadioButton(app_save, text="Choose Character Two",
+                                   command=radiobutton_char_select, variable=char_select, value=2)
+    rchar_two.place(x=1200, y=360)
+
+    rchar_three = ctk.CTkRadioButton(app_save, text="Choose Character Three",
+                                     command=radiobutton_char_select, variable=char_select, value=3)
+    rchar_three.place(x=1500, y=360)
+
+
+def radiobutton_char_select():  # Function for getting the character selected
+    print("radiobutton toggled, current value:",
+          char_select.get())  # PLACEHOLDER LINE
 
 
 def generate_save():  # Saves the image in the current directory and displays the current images selected for the picture book
@@ -147,8 +184,39 @@ def generate_save():  # Saves the image in the current directory and displays th
         # Globalize content variable that stores the edited content
         global content
 
+        global character  # Store the character in a variable
+
+        global base  # Store the base image on which the character would be pasted on
+
         # Save image file name as PNG based on text input
         image.save('./GeneratedImages/{}.png'.format(text_input))
+
+        if char_select.get() == 1:  # If character one was selected
+
+            base = Image.open('./GeneratedImages/{}.png'.format(text_input))
+            # Select the character image from the folder pathfile
+            character = Image.open('./Characters/char_one.png')
+            # Location where the character image will be pasted into which then pastes it.
+            base.paste(character, (0, 255))
+            base.save('./GeneratedImages/{}.png'.format(text_input))
+
+        if char_select.get() == 2:  # If character two was selected
+
+            base = Image.open('./GeneratedImages/{}.png'.format(text_input))
+            # Select the character image from the folder pathfile
+            character = Image.open('./Characters/char_two.png')
+            # Location where the character image will be pasted into which then pastes it.
+            base.paste(character, (0, 255))
+            base.save('./GeneratedImages/{}.png'.format(text_input))
+
+        if char_select.get() == 3:  # If character three was selected
+
+            base = Image.open('./GeneratedImages/{}.png'.format(text_input))
+            # Select the character image from the folder pathfile
+            character = Image.open('./Characters/char_three.png')
+            # Location where the character image will be pasted into which then pastes it.
+            base.paste(character, (0, 255))
+            base.save('./GeneratedImages/{}.png'.format(text_input))
 
         i = 0  # Instantiate i for loops
         j = 0  # Instantiate j for loops
@@ -172,7 +240,7 @@ def generate_save():  # Saves the image in the current directory and displays th
         image_list.append(img)
 
         # Displays the text list
-        for text_item in text_list:
+        for text_item in content_list:
             j = j+1
             # Placeholder frame for the text input LISTS
             ltext_list = ctk.CTkLabel(app, height=512, width=512, text=text_item, font=(
@@ -245,7 +313,8 @@ def generate_pdf():  # Generate PicTale Story book
         font = ImageFont.truetype('arial.ttf', 16)
 
         # Write the text input based on the designated text image
-        phototext.text((10, 10), content_list[i], font=font, fill=(255, 0, 0))
+        phototext.text(
+            (10, 10), content_list[i], font=font, fill=(255, 0, 0))
 
         # Save the drawn page that contains the text input in the local directory
         photo.save('./GeneratedImages/INPUT{}.png'.format(file))
@@ -273,7 +342,8 @@ def generate_pdf():  # Generate PicTale Story book
     app_pdf.destroy()  # Destroy the rename window
 
     # PDF MUST BE AUTOMATICALLY 2 PAGE
-    # CHARACTER FOLDER (can choose)
+    # Inject authentication entry in main code, also combine the authtoken.py with the main app
+    # Update storyboard with the characters (images = base)
     # TITLE PAGE WITH TITLE AND AUTHOR
     # NEEDS UI that shows storybook has been created and exit the program
     # NEEDS A CARTOON TEXT INSERT TO THE INPUT TO PROVIDE A CHILDREN-LIKE THEME
