@@ -1,5 +1,20 @@
 # Python packages and dependencies are needed for the application to run. Installed through PIP in VSCode terminal (Todo: automatically install these with the app with PyInstaller)
 
+#########################################################
+# TO-DO LIST FOR THE BREAK:
+
+# Paragraph input chop chop
+# Put watercolor, children's storybook, Drawing
+# PicTales options basic and advanced
+# Inject authentication entry in main code, also combine the authtoken.py with the main app
+# Update storyboard with the characters (images = base)
+# TITLE PAGE WITH TITLE AND AUTHOR
+# Upload self created character
+# PDF MUST BE AUTOMATICALLY 2 PAGE
+# NEEDS UI that shows storybook has been created and exit the program
+# UI OVERHAUL
+#########################################################
+
 # ___________________________________________________________________________ DEPENDENCIES ___________________________________________________________________________
 # Import Tkinter for Python UI
 import tkinter as tk
@@ -8,7 +23,7 @@ import tkinter as tk
 import customtkinter as ctk
 
 # Import Pillow or PIL for image configurations in Tkinter
-from PIL import ImageTk, Image, ImageDraw, ImageFont
+from PIL import ImageTk, Image, ImageDraw, ImageFont, ImageFilter
 
 # Import auth_token for Token authentication that will be mostly used from tokens in Huggingface website account
 from authtoken import auth_token
@@ -102,7 +117,7 @@ def save_window():
     ctk.set_appearance_mode("dark")
 
     # Tkinter UI for the textbox prompt
-    prompt_save = ctk.CTkTextbox(app_save, height=700, width=700, font=(
+    prompt_save = ctk.CTkTextbox(app_save, height=400, width=400, font=(
         "Arial", 12), text_color="black", fg_color="white")
     prompt_save.place(x=6, y=6)
 
@@ -126,7 +141,7 @@ def save_window():
     lchar_one.update()
     lchar_one_text = ctk.CTkLabel(app_save, height=75, width=150, text="Character 1", font=(
         "Arial", 16), text_color="white", fg_color="blue")
-    lchar_one_text.place(x=900, y=60)
+    lchar_one_text.place(x=900, y=260)
 
     # For character two
     lchar_two = ctk.CTkLabel(app_save, height=150, width=150)
@@ -135,7 +150,7 @@ def save_window():
     lchar_two.update()
     lchar_two_text = ctk.CTkLabel(app_save, height=75, width=150, text="Character 2", font=(
         "Arial", 16), text_color="white", fg_color="blue")
-    lchar_two_text.place(x=1200, y=60)
+    lchar_two_text.place(x=1200, y=260)
 
     # For character three
     lchar_three = ctk.CTkLabel(app_save, height=150, width=150)
@@ -144,7 +159,7 @@ def save_window():
     lchar_three.update()
     lchar_three_text = ctk.CTkLabel(app_save, height=75, width=150, text="Character 3", font=(
         "Arial", 16), text_color="white", fg_color="blue")
-    lchar_three_text.place(x=1500, y=60)
+    lchar_three_text.place(x=1500, y=260)
 
     # Instantiate 0 as base value and default
     char_select = tk.IntVar(app_save, 0)
@@ -197,7 +212,7 @@ def generate_save():  # Saves the image in the current directory and displays th
             # Select the character image from the folder pathfile
             character = Image.open('./Characters/char_one.png')
             # Location where the character image will be pasted into which then pastes it.
-            base.paste(character, (0, 255))
+            base.paste(character, (0, 360), character.convert('RGBA'))
             base.save('./GeneratedImages/{}.png'.format(text_input))
 
         if char_select.get() == 2:  # If character two was selected
@@ -206,7 +221,7 @@ def generate_save():  # Saves the image in the current directory and displays th
             # Select the character image from the folder pathfile
             character = Image.open('./Characters/char_two.png')
             # Location where the character image will be pasted into which then pastes it.
-            base.paste(character, (0, 255))
+            base.paste(character, (0, 360), character.convert('RGBA'))
             base.save('./GeneratedImages/{}.png'.format(text_input))
 
         if char_select.get() == 3:  # If character three was selected
@@ -215,7 +230,7 @@ def generate_save():  # Saves the image in the current directory and displays th
             # Select the character image from the folder pathfile
             character = Image.open('./Characters/char_three.png')
             # Location where the character image will be pasted into which then pastes it.
-            base.paste(character, (0, 255))
+            base.paste(character, (0, 360), character.convert('RGBA'))
             base.save('./GeneratedImages/{}.png'.format(text_input))
 
         i = 0  # Instantiate i for loops
@@ -234,7 +249,8 @@ def generate_save():  # Saves the image in the current directory and displays th
         text_list.append(text_input)
 
         # Store image in a variable
-        img = ImageTk.PhotoImage(image)
+        # img = ImageTk.PhotoImage(image)
+        img = ImageTk.PhotoImage(base)
 
         # Store previous image in a list
         image_list.append(img)
@@ -292,19 +308,25 @@ def generate_pdf():  # Generate PicTale Story book
     # Specifies the directory where the pdf will generate
     pdf_path = "./StoryBooks/{}.pdf".format(pdf_name)
 
-    # Create template page
-    blank = Image.new('RGB', (512, 512))
+    # # Create template page
+    # blank = Image.new('RGB', (512, 512))
 
-    # Save template in generated images folder
-    blank.save('./GeneratedImages/TextTemplate.png')
+    # # Save template in generated images folder
+    # blank.save('./GeneratedImages/TextTemplate.png')
 
     i = 0  # Pointer/Flag for content for content list access later
 
     # For each image file that has been written with the text list names, the text list names their files itself based on order.
     for file in text_list:
 
-        # Store blank image in a variable
-        photo = Image.open('./GeneratedImages/TextTemplate.png')
+        # # Store blank image in a variable
+        # photo = Image.open('./GeneratedImages/TextTemplate.png')
+
+        # Store Generated image in a variable to be used as the text background
+        photo = Image.open('./GeneratedImages/{}.png'.format(file))
+
+        photo = photo.filter(ImageFilter.GaussianBlur(20)
+                             )  # Blur the stored image
 
         # Invoke draw function to the blank image
         phototext = ImageDraw.Draw(photo)
@@ -312,9 +334,13 @@ def generate_pdf():  # Generate PicTale Story book
         # Choose font
         font = ImageFont.truetype('arial.ttf', 16)
 
+        bbox = phototext.textbbox(  # Make a rectangle background for the text
+            (10, 10), content_list[i], font=font)
+        phototext.rectangle(bbox, fill=(0, 0, 0))
+
         # Write the text input based on the designated text image
         phototext.text(
-            (10, 10), content_list[i], font=font, fill=(255, 0, 0))
+            (10, 10), content_list[i], font=font, fill=(255, 255, 255))
 
         # Save the drawn page that contains the text input in the local directory
         photo.save('./GeneratedImages/INPUT{}.png'.format(file))
@@ -340,14 +366,6 @@ def generate_pdf():  # Generate PicTale Story book
         )
 
     app_pdf.destroy()  # Destroy the rename window
-
-    # PDF MUST BE AUTOMATICALLY 2 PAGE
-    # Inject authentication entry in main code, also combine the authtoken.py with the main app
-    # Update storyboard with the characters (images = base)
-    # TITLE PAGE WITH TITLE AND AUTHOR
-    # NEEDS UI that shows storybook has been created and exit the program
-    # NEEDS A CARTOON TEXT INSERT TO THE INPUT TO PROVIDE A CHILDREN-LIKE THEME
-    # UI OVERHAUL
 
 
 # ___________________________________________________________________________ CONFIGURATIONS ___________________________________________________________________________
