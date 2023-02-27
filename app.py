@@ -3,12 +3,10 @@
 #########################################################
 # TO-DO LIST FOR THE BREAK:
 
-# Paragraph input chop chop
-# Put watercolor, children's storybook, Drawing
+# Catch Error if input is blank in image generation
 # PicTales options basic and advanced
-# Inject authentication entry in main code, also combine the authtoken.py with the main app
-# Update storyboard with the characters (images = base)
-# TITLE PAGE WITH TITLE AND AUTHOR
+# Character Expressions detector
+# Paragraph input chop chop
 # Upload self created character
 # PDF MUST BE AUTOMATICALLY 2 PAGE
 # NEEDS UI that shows storybook has been created and exit the program
@@ -25,9 +23,6 @@ import customtkinter as ctk
 # Import Pillow or PIL for image configurations in Tkinter
 from PIL import ImageTk, Image, ImageDraw, ImageFont, ImageFilter
 
-# Import auth_token for Token authentication that will be mostly used from tokens in Huggingface website account
-from authtoken import auth_token
-
 # Import Pytorch for the neural networks used in machine learning and AI
 import torch
 from torch import autocast
@@ -41,37 +36,40 @@ import sys
 
 # ___________________________________________________________________________ GLOBAL VARIABLES ___________________________________________________________________________
 
-image_list = []  # ARRAY OF IMAGES
-text_list = []  # ARRAY OF TEXT INPUTS
-content_list = []  # ARRAY OF PAGE CONTENT (mostly the text)
-pdf_list = []  # ARRAY OF PDF PAGES
+image_list = []     # ARRAY OF IMAGES
+text_list = []      # ARRAY OF TEXT INPUTS
+content_list = []   # ARRAY OF PAGE CONTENT (mostly the text)
+pdf_list = []       # ARRAY OF PDF PAGES
 
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
 # Loads the model
 model = torch.load('./results/model-1.pt')
+auth_token = "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"
 # print(model)
 # model.eval()
 
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
 
 
-def generate_image():  # Function to generate the images from the text prompt
+def generate_image():   # Function to generate the images from the text prompt
 
-    global img  # For storing the image to avoid garbage collection
+    global img          # For storing the image to avoid garbage collection
 
-    global text_input  # For storing the text input to transfer to the Picture Book PDF
+    global text_input   # For storing the text input to transfer to the Picture Book PDF
 
-    global image  # For storing image to be saved if save image button is clicked
+    global image        # For storing image to be saved if save image button is clicked
 
     # Uses the GPU to process the dataset through the model and get the image result
     with autocast(device):
 
-        # Note: ADD A CATCH ERROR IF THE INPUT IS BLANK
-        text_input = prompt.get()  # Store text input in a variable
+        # Store text input in a variable
+        text_input = prompt.get()
+        cartoon_input = "cartoonish " + text_input
 
-        image = pipe(text_input, guidance_scale=10)[
-            "images"][0]  # Variable that contains the image result. ("images" was previously labeled as "sample")
+        # Variable that contains the image result. ("images" was previously labeled as "sample")
+        image = pipe(cartoon_input, guidance_scale=10)[
+            "images"][0]
 
     # Store image in a variable
     img = ImageTk.PhotoImage(image)
@@ -85,7 +83,7 @@ def generate_image():  # Function to generate the images from the text prompt
     lmain.update()
 
 
-def save_window():
+def save_window():  # Function that saves the image to the directory with the modifications
 
     # Globalize the window object that pops up for save creation
     global app_save
@@ -108,7 +106,8 @@ def save_window():
     global lchar_two_text
     global lchar_three_text
 
-    global char_select    # Declare value for radio selection
+    # Declare value for radio selection
+    global char_select
 
     # Window object for the text prompt for naming the book
     app_save = ctk.CTkToplevel(app)
@@ -183,14 +182,14 @@ def radiobutton_char_select():  # Function for getting the character selected
           char_select.get())  # PLACEHOLDER LINE
 
 
-def generate_save():  # Saves the image in the current directory and displays the current images selected for the picture book
+def generate_save():    # Saves the image in the current directory and displays the current images selected for the picture book
 
     # Check if user has already generated an image first before saving.
     try:
         image
-    except NameError:  # If variable image is empty, return false
+    except NameError:   # If variable image is empty, return false
         is_generated = False
-    else:  # If image variable is defined
+    else:               # If image variable is defined
         is_generated = True
 
     # If an image has been generated
@@ -199,9 +198,11 @@ def generate_save():  # Saves the image in the current directory and displays th
         # Globalize content variable that stores the edited content
         global content
 
-        global character  # Store the character in a variable
+        # Store the character in a variable
+        global character
 
-        global base  # Store the base image on which the character would be pasted on
+        # Store the base image on which the character would be pasted on
+        global base
 
         # Save image file name as PNG based on text input
         image.save('./GeneratedImages/{}.png'.format(text_input))
@@ -233,8 +234,8 @@ def generate_save():  # Saves the image in the current directory and displays th
             base.paste(character, (0, 360), character.convert('RGBA'))
             base.save('./GeneratedImages/{}.png'.format(text_input))
 
-        i = 0  # Instantiate i for loops
-        j = 0  # Instantiate j for loops
+        i = 0  # Instantiate i for loops (text item positioning)
+        j = 0  # Instantiate j for loops (pic positioning)
 
         content = prompt_save.get("0.0", "end")
 
@@ -248,9 +249,11 @@ def generate_save():  # Saves the image in the current directory and displays th
         # Add the previously stored text in a list
         text_list.append(text_input)
 
-        # Store image in a variable
-        # img = ImageTk.PhotoImage(image)
-        img = ImageTk.PhotoImage(base)
+        # Store image in image variable if no character is selected and store it in base variable if a character is selected (For previews)
+        if char_select.get() == 0:
+            img = ImageTk.PhotoImage(image)
+        else:
+            img = ImageTk.PhotoImage(base)
 
         # Store previous image in a list
         image_list.append(img)
@@ -266,18 +269,26 @@ def generate_save():  # Saves the image in the current directory and displays th
         # Displays the image list
         for pic in image_list:
             i = i+1
-            # Placeholder frame for the text input LISTS
-            # pic = pic.resize((200, 200))
             limg_list = ctk.CTkLabel(app, height=200, width=200, image=pic)
             limg_list.place(x=1200, y=-100 + (200*i))
 
-        app_save.destroy()  # Destroy the edit content window
+        # Destroy the edit content window
+        app_save.destroy()
 
 
-def pdf_window():  # Show a text prompt
+def pdf_window():           # Show a text prompt
 
-    global app_pdf  # Globalize the window object that pops up for pdf creation
-    global prompt_pdf  # The variable that stores the textbox object for naming the storybook
+    # Globalize the window object that pops up for pdf creation
+    global app_pdf
+
+    # The variable that stores the textbox object for naming the storybook
+    global prompt_pdf
+
+    # Variable that stores the author's name
+    global author_name
+
+    # Variable that stores the date when the storybook was generated
+    global date_created
 
     # Window object for the text prompt for naming the book
     app_pdf = ctk.CTkToplevel(app)
@@ -285,21 +296,29 @@ def pdf_window():  # Show a text prompt
     app_pdf.geometry("512x512")
     ctk.set_appearance_mode("dark")
 
-    # Tkinter UI for the textbox prompt
+    # Tkinter UI for the textbox prompts for the storybook file
     prompt_pdf = ctk.CTkEntry(app_pdf, height=40, width=400, font=(
         "Arial", 20), text_color="black", fg_color="white")
     prompt_pdf.place(x=6, y=10)
+
+    author_name = ctk.CTkEntry(app_pdf, height=40, width=400, font=(
+        "Arial", 20), text_color="black", fg_color="white")
+    author_name.place(x=6, y=120)
+
+    date_created = ctk.CTkEntry(app_pdf, height=40, width=400, font=(
+        "Arial", 20), text_color="black", fg_color="white")
+    date_created.place(x=6, y=180)
 
     # Tkinter Widget for the button
     create_pdf = ctk.CTkButton(app_pdf, height=40, width=120, font=(
         "Arial", 20), text_color="white", fg_color="blue", command=generate_pdf)
     create_pdf.configure(text="Generate {}".format('Storybook'))
-    create_pdf.place(x=140, y=60)
+    create_pdf.place(x=140, y=260)
 
 
-def generate_pdf():  # Generate PicTale Story book
+def generate_pdf():                 # Generate PicTale Story book
 
-    pdf_name = prompt_pdf.get()  # Store text input in a variable, from the pdf window
+    pdf_name = prompt_pdf.get()     # Store text input in a variable, from the pdf window
 
     # Store the pdf file name into a variable, sets this as default for errors and etc like if the title name is not set.
     if (pdf_name == ''):
@@ -308,25 +327,42 @@ def generate_pdf():  # Generate PicTale Story book
     # Specifies the directory where the pdf will generate
     pdf_path = "./StoryBooks/{}.pdf".format(pdf_name)
 
-    # # Create template page
-    # blank = Image.new('RGB', (512, 512))
+    # Create template page for the title page image
+    blank = Image.new('RGB', (512, 512))
 
-    # # Save template in generated images folder
-    # blank.save('./GeneratedImages/TextTemplate.png')
+    # Save template in generated images folder
+    blank.save('./GeneratedImages/BlankTemplate.png')
 
-    i = 0  # Pointer/Flag for content for content list access later
+    # Reuse blank variable for drawing/writing the page title details
+    blanktext = ImageDraw.Draw(blank)
+
+    # Choose font
+    font = ImageFont.truetype('arial.ttf', 16)
+
+    # Write the text input based on the details provided by the user
+    blanktext.text((10, 10), author_name.get(),
+                   font=font, fill=(255, 255, 255))
+    blanktext.text((10, 210), pdf_name, font=font, fill=(255, 255, 255))
+    blanktext.text((10, 410), date_created.get(),
+                   font=font, fill=(255, 255, 255))
+
+    # Save the drawn page that contains the title page details in the local directory
+    blank.save('./GeneratedImages/TitlePage_{}.png'.format(pdf_name))
+
+    pdf_list.append(Image.open(
+        './GeneratedImages/TitlePage_{}.png'.format(pdf_name)))
+
+    # Pointer/Flag for content for content list access later and start at 1 so index 0 can store title page
+    i = 0
 
     # For each image file that has been written with the text list names, the text list names their files itself based on order.
     for file in text_list:
 
-        # # Store blank image in a variable
-        # photo = Image.open('./GeneratedImages/TextTemplate.png')
-
         # Store Generated image in a variable to be used as the text background
         photo = Image.open('./GeneratedImages/{}.png'.format(file))
 
-        photo = photo.filter(ImageFilter.GaussianBlur(20)
-                             )  # Blur the stored image
+        # Blur the stored image
+        photo = photo.filter(ImageFilter.GaussianBlur(20))
 
         # Invoke draw function to the blank image
         phototext = ImageDraw.Draw(photo)
@@ -334,8 +370,8 @@ def generate_pdf():  # Generate PicTale Story book
         # Choose font
         font = ImageFont.truetype('arial.ttf', 16)
 
-        bbox = phototext.textbbox(  # Make a rectangle background for the text
-            (10, 10), content_list[i], font=font)
+        # Make a rectangle background for the text
+        bbox = phototext.textbbox((10, 10), content_list[i], font=font)
         phototext.rectangle(bbox, fill=(0, 0, 0))
 
         # Write the text input based on the designated text image
@@ -359,13 +395,15 @@ def generate_pdf():  # Generate PicTale Story book
         pdf_list.append(Image.open(
             './GeneratedImages/INPUT{}.png'.format(file)))
 
-    if pdf_list:  # Check if storybook has content
+    # Check if storybook has content
+    if pdf_list:
         # Generate the PDF
         pdf_list[0].save(
             pdf_path, "PDF", resolution=100.0, save_all=True, append_images=pdf_list[1:]
         )
 
-    app_pdf.destroy()  # Destroy the rename window
+    # Destroy the rename window
+    app_pdf.destroy()
 
 
 # ___________________________________________________________________________ CONFIGURATIONS ___________________________________________________________________________
@@ -424,8 +462,6 @@ create.configure(text="Create PicTales")
 create.place(x=206, y=800)
 
 # Button for saving image
-# save_image = ctk.CTkButton(height=40, width=120, text_font=(
-#     "Arial", 20), text_color="white", fg_color="blue", command=generate_save)
 save_image = ctk.CTkButton(app, height=40, width=120, font=(
     "Arial", 20), text_color="white", fg_color="blue", command=save_window)
 save_image.configure(text="Save Image")
