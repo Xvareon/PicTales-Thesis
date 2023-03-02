@@ -3,10 +3,10 @@
 #########################################################
 # TO-DO LIST FOR THE BREAK:
 
-# Catch Error if input is blank in image generation
+# PicTales page before title page
 # PicTales options basic and advanced
 # Character Expressions detector
-# Paragraph input chop chop
+# Paragraph input chop chop (to avoid cutoff text)
 # Upload self created character
 # PDF MUST BE AUTOMATICALLY 2 PAGE
 # NEEDS UI that shows storybook has been created and exit the program
@@ -45,9 +45,6 @@ pdf_list = []       # ARRAY OF PDF PAGES
 
 # Loads the model
 model = torch.load('./results/model-1.pt')
-auth_token = "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"
-# print(model)
-# model.eval()
 
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
 
@@ -65,11 +62,15 @@ def generate_image():   # Function to generate the images from the text prompt
 
         # Store text input in a variable
         text_input = prompt.get()
-        cartoon_input = "cartoonish " + text_input
 
-        # Variable that contains the image result. ("images" was previously labeled as "sample")
-        image = pipe(cartoon_input, guidance_scale=10)[
-            "images"][0]
+        # Catch error if no text input is given
+        if len(text_input) == 0 or text_input.isspace() == True:
+            image = blank
+        else:
+            cartoon_input = "cartoonish " + text_input
+            # Variable that contains the image result
+            image = pipe(cartoon_input, guidance_scale=10)[
+                "images"][0]
 
     # Store image in a variable
     img = ImageTk.PhotoImage(image)
@@ -327,12 +328,6 @@ def generate_pdf():                 # Generate PicTale Story book
     # Specifies the directory where the pdf will generate
     pdf_path = "./StoryBooks/{}.pdf".format(pdf_name)
 
-    # Create template page for the title page image
-    blank = Image.new('RGB', (512, 512))
-
-    # Save template in generated images folder
-    blank.save('./GeneratedImages/BlankTemplate.png')
-
     # Reuse blank variable for drawing/writing the page title details
     blanktext = ImageDraw.Draw(blank)
 
@@ -421,12 +416,20 @@ device = "cuda"
 # Loads the model into torch
 torch.load('./results/model-1.pt')
 
+auth_token = "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"
+
 # Uses the pipe from the online library for model translation to produce the image.
 pipe = StableDiffusionPipeline.from_pretrained(
     modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
 
 # Uses the graphics driver (Must atleast be 4GB ram)
 pipe.to(device)
+
+# Create template page for the title page image
+blank = Image.new('RGB', (512, 512))
+
+# Save template in generated images folder
+blank.save('./GeneratedImages/BlankTemplate.png')
 
 # ___________________________________________________________________________ MAIN TKINTER UI ___________________________________________________________________________
 # Create the app
