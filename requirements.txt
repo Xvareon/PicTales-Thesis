@@ -1,7 +1,7 @@
 certifi==2022.9.14
 charset-normalizer==2.1.1
 colorama==0.4.5
-customtkinter==4.6.1
+customtkinter==5.0.3
 darkdetect==0.7.1
 diffusers==0.3.0
 filelock==3.8.0
@@ -26,14 +26,28 @@ typing_extensions==4.3.0
 urllib3==1.26.12
 zipp==3.8.1
 
+// MUST BE PYTHON 3.10
+// pip install -r requirements.txt
 // "GeneratedImages" AND "StoryBooks" folders might not generate on their own,
 // so it has to be manually created by creating new folders on the
 // directory and naming them the exact file names above (without quotations obv).
 
+// TRAINING MODEL:
+// open denoiseddiffusion.py and pip install denoising_diffusion_pytorch then run it(NEEDS GOOD GPU AND RAM)
+// wait until there is an output in the terminal: "training complete!".
+// after a while, a results folder will be created in the directory and contain a file 'model-1.pt'.
+
 // Needs to be connected to the internet
 // pip install ftfy
+// pip install tensorboard
 // the user needs to create an account and login to https://huggingface.co/
 // next is the user needs to create their token: https://huggingface.co/settings/tokens
 // edit your token on authtoken.py
 // then the user needs to accept and request for access for the stable diffusion repository at https://huggingface.co/CompVis/stable-diffusion-v1-4?text=A+high+tech+solarpunk+utopia+in+the+Amazon+rainforest
-// run the code
+// run the code 'app.py'
+
+// NOTE: IF ANY OF THE LIBRARIES DO NOT WORK, JUST UPGRADE THEM!
+// example:
+// pip install customtkinter --upgrade 
+// or 
+// pip3 install customtkinter --upgrade
