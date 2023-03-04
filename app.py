@@ -3,7 +3,6 @@
 #########################################################
 # TO-DO LIST FOR THE BREAK:
 
-# PicTales page before title page
 # PicTales options basic and advanced
 # Character Expressions detector
 # Paragraph input chop chop (to avoid cutoff text)
@@ -344,6 +343,16 @@ def generate_pdf():                 # Generate PicTale Story book
     # Save the drawn page that contains the title page details in the local directory
     blank.save('./GeneratedImages/TitlePage_{}.png'.format(pdf_name))
 
+    # Store the coverpage into an object variable
+    cover = Image.open('./Characters/CoverPage.png')
+    # Safely convert the rogue image into a pdf page
+    if cover.mode == 'RGBA':
+        cover = cover.convert('RGB')
+
+    # Add the cover page to page 1 of storybook
+    pdf_list.append(cover)
+
+    # Add the title page to page 2 of storybook
     pdf_list.append(Image.open(
         './GeneratedImages/TitlePage_{}.png'.format(pdf_name)))
 

@@ -26,11 +26,13 @@ typing_extensions==4.3.0
 urllib3==1.26.12
 zipp==3.8.1
 
+// MUST BE PYTHON 3.10
+// pip install -r requirements.txt
 // "GeneratedImages" AND "StoryBooks" folders might not generate on their own,
 // so it has to be manually created by creating new folders on the
 // directory and naming them the exact file names above (without quotations obv).
 
-TRAINING MODEL:
+// TRAINING MODEL:
 // open denoiseddiffusion.py and pip install denoising_diffusion_pytorch then run it(NEEDS GOOD GPU AND RAM)
 // wait until there is an output in the terminal: "training complete!".
 // after a while, a results folder will be created in the directory and contain a file 'model-1.pt'.
@@ -45,7 +47,7 @@ TRAINING MODEL:
 // run the code 'app.py'
 
 // NOTE: IF ANY OF THE LIBRARIES DO NOT WORK, JUST UPGRADE THEM!
-example:
-pip install customtkinter --upgrade 
-or 
-pip3 install customtkinter --upgrade
+// example:
+// pip install customtkinter --upgrade 
+// or 
+// pip3 install customtkinter --upgrade
