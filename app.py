@@ -43,7 +43,7 @@ pdf_list = []       # ARRAY OF PDF PAGES
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
 # Loads the model
-model = torch.load('./results/model-1.pt')
+# model = torch.load('./results/model-1.pt')
 
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
 
@@ -68,8 +68,8 @@ def generate_image():   # Function to generate the images from the text prompt
         else:
             cartoon_input = "cartoonish " + text_input
             # Variable that contains the image result
-            image = pipe(cartoon_input, guidance_scale=10)[
-                "images"][0]
+            # image = pipe(cartoon_input, guidance_scale=10)[
+            #     "images"][0]
 
     # Store image in a variable
     img = ImageTk.PhotoImage(image)
@@ -115,6 +115,11 @@ def save_window():  # Function that saves the image to the directory with the mo
     app_save.geometry("1832x932")
     ctk.set_appearance_mode("dark")
 
+    # Background for the save image window
+    SaveBGimg = ctk.CTkLabel(app_save, image=ImageTk.PhotoImage(
+        Image.open('./Assets/AppBG.png')))
+    SaveBGimg.pack()
+
     # Tkinter UI for the textbox prompt
     prompt_save = ctk.CTkTextbox(app_save, height=400, width=400, font=(
         "Arial", 12), text_color="black", fg_color="white")
@@ -127,9 +132,9 @@ def save_window():  # Function that saves the image to the directory with the mo
     create_save.place(x=230, y=725)
 
     # Translate image details and transform them to a variables which stores each character
-    char_one = ImageTk.PhotoImage(Image.open('./Characters/char_one.png'))
-    char_two = ImageTk.PhotoImage(Image.open('./Characters/char_two.png'))
-    char_three = ImageTk.PhotoImage(Image.open('./Characters/char_three.png'))
+    char_one = ImageTk.PhotoImage(Image.open('./Assets/char_one.png'))
+    char_two = ImageTk.PhotoImage(Image.open('./Assets/char_two.png'))
+    char_three = ImageTk.PhotoImage(Image.open('./Assets/char_three.png'))
 
     # Placeholder frame and text label for image result generated:
 
@@ -211,7 +216,7 @@ def generate_save():    # Saves the image in the current directory and displays 
 
             base = Image.open('./GeneratedImages/{}.png'.format(text_input))
             # Select the character image from the folder pathfile
-            character = Image.open('./Characters/char_one.png')
+            character = Image.open('./Assets/char_one.png')
             # Location where the character image will be pasted into which then pastes it.
             base.paste(character, (0, 360), character.convert('RGBA'))
             base.save('./GeneratedImages/{}.png'.format(text_input))
@@ -220,7 +225,7 @@ def generate_save():    # Saves the image in the current directory and displays 
 
             base = Image.open('./GeneratedImages/{}.png'.format(text_input))
             # Select the character image from the folder pathfile
-            character = Image.open('./Characters/char_two.png')
+            character = Image.open('./Assets/char_two.png')
             # Location where the character image will be pasted into which then pastes it.
             base.paste(character, (0, 360), character.convert('RGBA'))
             base.save('./GeneratedImages/{}.png'.format(text_input))
@@ -229,7 +234,7 @@ def generate_save():    # Saves the image in the current directory and displays 
 
             base = Image.open('./GeneratedImages/{}.png'.format(text_input))
             # Select the character image from the folder pathfile
-            character = Image.open('./Characters/char_three.png')
+            character = Image.open('./Assets/char_three.png')
             # Location where the character image will be pasted into which then pastes it.
             base.paste(character, (0, 360), character.convert('RGBA'))
             base.save('./GeneratedImages/{}.png'.format(text_input))
@@ -296,6 +301,11 @@ def pdf_window():           # Show a text prompt
     app_pdf.geometry("512x512")
     ctk.set_appearance_mode("dark")
 
+    # Background for the create pdf window
+    PDFBGimg = ctk.CTkLabel(app_pdf, image=ImageTk.PhotoImage(
+        Image.open('./Assets/AppBG.png')))
+    PDFBGimg.pack()
+
     # Tkinter UI for the textbox prompts for the storybook file
     prompt_pdf = ctk.CTkEntry(app_pdf, height=40, width=400, font=(
         "Arial", 20), text_color="black", fg_color="white")
@@ -344,7 +354,7 @@ def generate_pdf():                 # Generate PicTale Story book
     blank.save('./GeneratedImages/TitlePage_{}.png'.format(pdf_name))
 
     # Store the coverpage into an object variable
-    cover = Image.open('./Characters/CoverPage.png')
+    cover = Image.open('./Assets/CoverPage.png')
     # Safely convert the rogue image into a pdf page
     if cover.mode == 'RGBA':
         cover = cover.convert('RGB')
@@ -423,16 +433,16 @@ modelid = "CompVis/stable-diffusion-v1-4"
 device = "cuda"
 
 # Loads the model into torch
-torch.load('./results/model-1.pt')
+# torch.load('./results/model-1.pt')
 
 auth_token = "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"
 
 # Uses the pipe from the online library for model translation to produce the image.
-pipe = StableDiffusionPipeline.from_pretrained(
-    modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
+# pipe = StableDiffusionPipeline.from_pretrained(
+#     modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
 
-# Uses the graphics driver (Must atleast be 4GB ram)
-pipe.to(device)
+# # Uses the graphics driver (Must atleast be 4GB ram)
+# pipe.to(device)
 
 # Create template page for the title page image
 blank = Image.new('RGB', (512, 512))
@@ -446,6 +456,11 @@ app = ctk.CTk()
 app.title("Pictales")
 app.geometry("1832x932")
 ctk.set_appearance_mode("dark")
+
+# Background for the main app window
+AppBGimg = ctk.CTkLabel(app, image=ImageTk.PhotoImage(
+    Image.open('./Assets/AppBG.png')))
+AppBGimg.pack()
 
 # Button for submitting the text input prompts and its configurations via position
 trigger = ctk.CTkButton(app, height=40, width=120, font=(
