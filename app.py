@@ -68,8 +68,8 @@ def generate_image():   # Function to generate the images from the text prompt
         else:
             cartoon_input = "cartoonish " + text_input
             # Variable that contains the image result
-            # image = pipe(cartoon_input, guidance_scale=10)[
-            #     "images"][0]
+            image = pipe(cartoon_input, guidance_scale=10)[
+                "images"][0]
 
     # Store image in a variable
     img = ImageTk.PhotoImage(image)
@@ -298,7 +298,7 @@ def pdf_window():           # Show a text prompt
     # Window object for the text prompt for naming the book
     app_pdf = ctk.CTkToplevel(app)
     app_pdf.title("Set Storybook Name")
-    app_pdf.geometry("512x512")
+    app_pdf.geometry("1832x932")
     ctk.set_appearance_mode("dark")
 
     # Background for the create pdf window
@@ -307,23 +307,34 @@ def pdf_window():           # Show a text prompt
     PDFBGimg.pack()
 
     # Tkinter UI for the textbox prompts for the storybook file
+    # For Title Label
+    ltext_title = ctk.CTkLabel(app_pdf, height=20, width=20, text="Title", font=(
+        "Arial", 12), text_color="white", fg_color="blue")
+    ltext_title.place(x=60, y=70)
+    # For Title Textbox
     prompt_pdf = ctk.CTkEntry(app_pdf, height=40, width=400, font=(
         "Arial", 20), text_color="black", fg_color="white")
-    prompt_pdf.place(x=6, y=10)
+    prompt_pdf.place(x=60, y=120)
 
+    ltext_authname = ctk.CTkLabel(app_pdf, height=20, width=20, text="Author Name", font=(
+        "Arial", 12), text_color="white", fg_color="blue")
+    ltext_authname.place(x=60, y=170)
     author_name = ctk.CTkEntry(app_pdf, height=40, width=400, font=(
         "Arial", 20), text_color="black", fg_color="white")
-    author_name.place(x=6, y=120)
+    author_name.place(x=60, y=220)
 
+    ltext_date = ctk.CTkLabel(app_pdf, height=20, width=20, text="Date Created", font=(
+        "Arial", 12), text_color="white", fg_color="blue")
+    ltext_date.place(x=60, y=270)
     date_created = ctk.CTkEntry(app_pdf, height=40, width=400, font=(
         "Arial", 20), text_color="black", fg_color="white")
-    date_created.place(x=6, y=180)
+    date_created.place(x=60, y=320)
 
     # Tkinter Widget for the button
     create_pdf = ctk.CTkButton(app_pdf, height=40, width=120, font=(
         "Arial", 20), text_color="white", fg_color="blue", command=generate_pdf)
     create_pdf.configure(text="Generate {}".format('Storybook'))
-    create_pdf.place(x=140, y=260)
+    create_pdf.place(x=140, y=370)
 
 
 def generate_pdf():                 # Generate PicTale Story book
@@ -438,11 +449,11 @@ device = "cuda"
 auth_token = "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"
 
 # Uses the pipe from the online library for model translation to produce the image.
-# pipe = StableDiffusionPipeline.from_pretrained(
-#     modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
+pipe = StableDiffusionPipeline.from_pretrained(
+    modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
 
 # # Uses the graphics driver (Must atleast be 4GB ram)
-# pipe.to(device)
+pipe.to(device)
 
 # Create template page for the title page image
 blank = Image.new('RGB', (512, 512))
