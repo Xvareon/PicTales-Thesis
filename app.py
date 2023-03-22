@@ -3,7 +3,9 @@
 #########################################################
 # TO-DO LIST FOR THE BREAK:
 
+# Auto Install # PRIORITY
 # PicTales options basic and advanced
+# Edit Pages?
 # Character Expressions detector
 # Paragraph input chop chop (to avoid cutoff text)
 # Upload self created character
@@ -32,6 +34,7 @@ from diffusers import StableDiffusionPipeline
 # Provides functions for interacting with the operating system
 import os
 import sys
+import datetime
 
 # ___________________________________________________________________________ GLOBAL VARIABLES ___________________________________________________________________________
 
@@ -43,7 +46,7 @@ pdf_list = []       # ARRAY OF PDF PAGES
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
 # Loads the model
-# model = torch.load('./results/model-1.pt')
+model = torch.load('./results/model-1.pt')
 
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
 
@@ -68,8 +71,8 @@ def generate_image():   # Function to generate the images from the text prompt
         else:
             cartoon_input = "cartoonish " + text_input
             # Variable that contains the image result
-            # image = pipe(cartoon_input, guidance_scale=10)[
-            # "images"][0]
+            image = pipe(cartoon_input, guidance_scale=10)[
+                "images"][0]
 
     # Store image in a variable
     img = ImageTk.PhotoImage(image)
@@ -292,9 +295,6 @@ def pdf_window():           # Show a text prompt
     # Variable that stores the author's name
     global author_name
 
-    # Variable that stores the date when the storybook was generated
-    global date_created
-
     # Window object for the text prompt for naming the book
     app_pdf = ctk.CTkToplevel(app)
     app_pdf.title("Set Storybook Name")
@@ -323,12 +323,29 @@ def pdf_window():           # Show a text prompt
         "Arial", 20), text_color="black", fg_color="white")
     author_name.place(x=60, y=220)
 
-    ltext_date = ctk.CTkLabel(app_pdf, height=20, width=20, text="Date Created", font=(
-        "Arial", 12), text_color="white", fg_color="blue")
-    ltext_date.place(x=60, y=270)
-    date_created = ctk.CTkEntry(app_pdf, height=40, width=400, font=(
+    # Generate image for coverpage
+    cover_trigger = ctk.CTkButton(app_pdf, height=40, width=120, font=(
+        "Arial", 20), text_color="white", fg_color="blue", command=generate_cover_image)
+    cover_trigger.configure(text="Generate")
+    cover_trigger.place(x=1000, y=800)
+
+    global lmain_cover  # Globalize cover label frame holder
+    global ltext_cover  # Globalize text label frame holder
+    global cover_prompt  # Globalize the prompt for cover text input
+
+    # Tkinter UI for the textbox prompt
+    cover_prompt = ctk.CTkEntry(app_pdf, height=40, width=512, font=(
         "Arial", 20), text_color="black", fg_color="white")
-    date_created.place(x=60, y=320)
+    cover_prompt.place(x=610, y=60)
+
+    # Placeholder frame for image result generated
+    lmain_cover = ctk.CTkLabel(app_pdf, height=512, width=512)
+    lmain_cover.place(x=610, y=110)
+
+    # Placeholder frame for the text input
+    ltext_cover = ctk.CTkLabel(app_pdf, height=100, width=512, text="COVERPAGE", font=(
+        "Arial", 20), text_color="white", fg_color="blue")
+    ltext_cover.place(x=610, y=600)
 
     # Tkinter Widget for the button
     create_pdf = ctk.CTkButton(app_pdf, height=40, width=120, font=(
@@ -337,9 +354,47 @@ def pdf_window():           # Show a text prompt
     create_pdf.place(x=140, y=370)
 
 
+def generate_cover_image():   # Function to generate the images from the text prompt
+
+    global img_cover          # For storing the image to avoid garbage collection
+
+    global cover_input   # For storing the text input to transfer to the Picture Book PDF
+
+    global image_cover  # Globalizes cover image variable
+
+    # Uses the GPU to process the dataset through the model and get the image result
+    with autocast(device):
+
+        # Store text input in a variable
+        cover_input = cover_prompt.get()
+
+        # Catch error if no text input is given
+        if len(cover_input) == 0 or cover_input.isspace() == True:
+            image_cover = blank
+        else:
+            cartoon_input = "cartoonish " + cover_input
+            # Variable that contains the image result
+            image_cover = pipe(cartoon_input, guidance_scale=10)[
+                "images"][0]
+
+    # Store image in a variable
+    img_cover = ImageTk.PhotoImage(image_cover)
+
+    # Displays the text input in the Tkinter UI after generation
+    ltext_cover.configure(text=cover_input)
+    ltext_cover.update()
+
+    # Displays the image in the Tkinter UI after generation
+    lmain_cover.configure(image=img_cover)
+    lmain_cover.update()
+
+
 def generate_pdf():                 # Generate PicTale Story book
 
     pdf_name = prompt_pdf.get()     # Store text input in a variable, from the pdf window
+
+    # Store current time in a variable
+    now = datetime.datetime.now()
 
     # Store the pdf file name into a variable, sets this as default for errors and etc like if the title name is not set.
     if (pdf_name == ''):
@@ -348,21 +403,30 @@ def generate_pdf():                 # Generate PicTale Story book
     # Specifies the directory where the pdf will generate
     pdf_path = "./StoryBooks/{}.pdf".format(pdf_name)
 
-    # Reuse blank variable for drawing/writing the page title details
-    blanktext = ImageDraw.Draw(blank)
+    # Save image file name as PNG based on text input
+    image_cover.save('./GeneratedImages/TitlePage_{}.png'.format(pdf_name))
+
+    # Pass image cover variable for drawing/writing the page title details
+    covertext = ImageDraw.Draw(image_cover)
 
     # Choose font
     font = ImageFont.truetype('arial.ttf', 16)
 
     # Write the text input based on the details provided by the user
-    blanktext.text((10, 10), author_name.get(),
-                   font=font, fill=(255, 255, 255))
-    blanktext.text((10, 210), pdf_name, font=font, fill=(255, 255, 255))
-    blanktext.text((10, 410), date_created.get(),
+
+    # For Author
+    covertext.text((10, 10), author_name.get(),
                    font=font, fill=(255, 255, 255))
 
-    # Save the drawn page that contains the title page details in the local directory
-    blank.save('./GeneratedImages/TitlePage_{}.png'.format(pdf_name))
+    # For Title
+    covertext.text((10, 210), pdf_name, font=font, fill=(255, 255, 255))
+
+    # For Date Created
+    covertext.text((10, 410), now.strftime("%m-%d-%Y"),
+                   font=font, fill=(255, 255, 255))
+
+    # Save cover image to local directory
+    image_cover.save('./GeneratedImages/TitlePage_{}.png'.format(pdf_name))
 
     # Store the coverpage into an object variable
     cover = Image.open('./Assets/CoverPage.png')
@@ -370,12 +434,12 @@ def generate_pdf():                 # Generate PicTale Story book
     if cover.mode == 'RGBA':
         cover = cover.convert('RGB')
 
-    # Add the cover page to page 1 of storybook
-    pdf_list.append(cover)
-
     # Add the title page to page 2 of storybook
     pdf_list.append(Image.open(
         './GeneratedImages/TitlePage_{}.png'.format(pdf_name)))
+
+    # Add the PicTales cover page (Page 2) to page 1 of storybook
+    pdf_list.append(cover)
 
     # Pointer/Flag for content for content list access later and start at 1 so index 0 can store title page
     i = 0
@@ -432,10 +496,10 @@ def generate_pdf():                 # Generate PicTale Story book
 
 
 # ___________________________________________________________________________ CONFIGURATIONS ___________________________________________________________________________
-# isExist = os.path.exists('./results/model-1.pt')
+isExist = os.path.exists('./results/model-1.pt')
 
-# if (isExist == False):
-#     sys.exit(0)
+if (isExist == False):
+    sys.exit(0)
 
 # loads the model used to a pre-defined library online
 modelid = "CompVis/stable-diffusion-v1-4"
@@ -444,16 +508,16 @@ modelid = "CompVis/stable-diffusion-v1-4"
 device = "cuda"
 
 # Loads the model into torch
-# torch.load('./results/model-1.pt')
+torch.load('./results/model-1.pt')
 
 auth_token = "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"
 
 # Uses the pipe from the online library for model translation to produce the image.
-# pipe = StableDiffusionPipeline.from_pretrained(
-# modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
+pipe = StableDiffusionPipeline.from_pretrained(
+    modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
 
 # # Uses the graphics driver (Must atleast be 4GB ram)
-# pipe.to(device)
+pipe.to(device)
 
 # Create template page for the title page image
 blank = Image.new('RGB', (512, 512))
