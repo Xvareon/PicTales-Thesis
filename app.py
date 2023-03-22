@@ -68,8 +68,8 @@ def generate_image():   # Function to generate the images from the text prompt
         else:
             cartoon_input = "cartoonish " + text_input
             # Variable that contains the image result
-            image = pipe(cartoon_input, guidance_scale=10)[
-                "images"][0]
+            # image = pipe(cartoon_input, guidance_scale=10)[
+            # "images"][0]
 
     # Store image in a variable
     img = ImageTk.PhotoImage(image)
@@ -432,10 +432,10 @@ def generate_pdf():                 # Generate PicTale Story book
 
 
 # ___________________________________________________________________________ CONFIGURATIONS ___________________________________________________________________________
-isExist = os.path.exists('./results/model-1.pt')
+# isExist = os.path.exists('./results/model-1.pt')
 
-if (isExist == False):
-    sys.exit(0)
+# if (isExist == False):
+#     sys.exit(0)
 
 # loads the model used to a pre-defined library online
 modelid = "CompVis/stable-diffusion-v1-4"
@@ -449,11 +449,11 @@ device = "cuda"
 auth_token = "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"
 
 # Uses the pipe from the online library for model translation to produce the image.
-pipe = StableDiffusionPipeline.from_pretrained(
-    modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
+# pipe = StableDiffusionPipeline.from_pretrained(
+# modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
 
 # # Uses the graphics driver (Must atleast be 4GB ram)
-pipe.to(device)
+# pipe.to(device)
 
 # Create template page for the title page image
 blank = Image.new('RGB', (512, 512))
