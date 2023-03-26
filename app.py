@@ -3,7 +3,9 @@
 #########################################################
 # TO-DO LIST FOR THE BREAK:
 
+# Auto Install # PRIORITY
 # PicTales options basic and advanced
+# Edit Pages?
 # Character Expressions detector
 # Paragraph input chop chop (to avoid cutoff text)
 # Upload self created character
@@ -32,6 +34,7 @@ from diffusers import StableDiffusionPipeline
 # Provides functions for interacting with the operating system
 import os
 import sys
+import datetime
 
 # ___________________________________________________________________________ GLOBAL VARIABLES ___________________________________________________________________________
 
@@ -115,6 +118,11 @@ def save_window():  # Function that saves the image to the directory with the mo
     app_save.geometry("1832x932")
     ctk.set_appearance_mode("dark")
 
+    # Background for the save image window
+    SaveBGimg = ctk.CTkLabel(app_save, image=ImageTk.PhotoImage(
+        Image.open('./Assets/AppBG.png')))
+    SaveBGimg.pack()
+
     # Tkinter UI for the textbox prompt
     prompt_save = ctk.CTkTextbox(app_save, height=400, width=400, font=(
         "Arial", 12), text_color="black", fg_color="white")
@@ -127,9 +135,9 @@ def save_window():  # Function that saves the image to the directory with the mo
     create_save.place(x=230, y=725)
 
     # Translate image details and transform them to a variables which stores each character
-    char_one = ImageTk.PhotoImage(Image.open('./Characters/char_one.png'))
-    char_two = ImageTk.PhotoImage(Image.open('./Characters/char_two.png'))
-    char_three = ImageTk.PhotoImage(Image.open('./Characters/char_three.png'))
+    char_one = ImageTk.PhotoImage(Image.open('./Assets/char_one.png'))
+    char_two = ImageTk.PhotoImage(Image.open('./Assets/char_two.png'))
+    char_three = ImageTk.PhotoImage(Image.open('./Assets/char_three.png'))
 
     # Placeholder frame and text label for image result generated:
 
@@ -211,7 +219,7 @@ def generate_save():    # Saves the image in the current directory and displays 
 
             base = Image.open('./GeneratedImages/{}.png'.format(text_input))
             # Select the character image from the folder pathfile
-            character = Image.open('./Characters/char_one.png')
+            character = Image.open('./Assets/char_one.png')
             # Location where the character image will be pasted into which then pastes it.
             base.paste(character, (0, 360), character.convert('RGBA'))
             base.save('./GeneratedImages/{}.png'.format(text_input))
@@ -220,7 +228,7 @@ def generate_save():    # Saves the image in the current directory and displays 
 
             base = Image.open('./GeneratedImages/{}.png'.format(text_input))
             # Select the character image from the folder pathfile
-            character = Image.open('./Characters/char_two.png')
+            character = Image.open('./Assets/char_two.png')
             # Location where the character image will be pasted into which then pastes it.
             base.paste(character, (0, 360), character.convert('RGBA'))
             base.save('./GeneratedImages/{}.png'.format(text_input))
@@ -229,7 +237,7 @@ def generate_save():    # Saves the image in the current directory and displays 
 
             base = Image.open('./GeneratedImages/{}.png'.format(text_input))
             # Select the character image from the folder pathfile
-            character = Image.open('./Characters/char_three.png')
+            character = Image.open('./Assets/char_three.png')
             # Location where the character image will be pasted into which then pastes it.
             base.paste(character, (0, 360), character.convert('RGBA'))
             base.save('./GeneratedImages/{}.png'.format(text_input))
@@ -287,38 +295,106 @@ def pdf_window():           # Show a text prompt
     # Variable that stores the author's name
     global author_name
 
-    # Variable that stores the date when the storybook was generated
-    global date_created
-
     # Window object for the text prompt for naming the book
     app_pdf = ctk.CTkToplevel(app)
     app_pdf.title("Set Storybook Name")
-    app_pdf.geometry("512x512")
+    app_pdf.geometry("1832x932")
     ctk.set_appearance_mode("dark")
 
+    # Background for the create pdf window
+    PDFBGimg = ctk.CTkLabel(app_pdf, image=ImageTk.PhotoImage(
+        Image.open('./Assets/AppBG.png')))
+    PDFBGimg.pack()
+
     # Tkinter UI for the textbox prompts for the storybook file
+    # For Title Label
+    ltext_title = ctk.CTkLabel(app_pdf, height=20, width=20, text="Title", font=(
+        "Arial", 12), text_color="white", fg_color="blue")
+    ltext_title.place(x=60, y=70)
+    # For Title Textbox
     prompt_pdf = ctk.CTkEntry(app_pdf, height=40, width=400, font=(
         "Arial", 20), text_color="black", fg_color="white")
-    prompt_pdf.place(x=6, y=10)
+    prompt_pdf.place(x=60, y=120)
 
+    ltext_authname = ctk.CTkLabel(app_pdf, height=20, width=20, text="Author Name", font=(
+        "Arial", 12), text_color="white", fg_color="blue")
+    ltext_authname.place(x=60, y=170)
     author_name = ctk.CTkEntry(app_pdf, height=40, width=400, font=(
         "Arial", 20), text_color="black", fg_color="white")
-    author_name.place(x=6, y=120)
+    author_name.place(x=60, y=220)
 
-    date_created = ctk.CTkEntry(app_pdf, height=40, width=400, font=(
+    # Generate image for coverpage
+    cover_trigger = ctk.CTkButton(app_pdf, height=40, width=120, font=(
+        "Arial", 20), text_color="white", fg_color="blue", command=generate_cover_image)
+    cover_trigger.configure(text="Generate")
+    cover_trigger.place(x=1000, y=800)
+
+    global lmain_cover  # Globalize cover label frame holder
+    global ltext_cover  # Globalize text label frame holder
+    global cover_prompt  # Globalize the prompt for cover text input
+
+    # Tkinter UI for the textbox prompt
+    cover_prompt = ctk.CTkEntry(app_pdf, height=40, width=512, font=(
         "Arial", 20), text_color="black", fg_color="white")
-    date_created.place(x=6, y=180)
+    cover_prompt.place(x=610, y=60)
+
+    # Placeholder frame for image result generated
+    lmain_cover = ctk.CTkLabel(app_pdf, height=512, width=512)
+    lmain_cover.place(x=610, y=110)
+
+    # Placeholder frame for the text input
+    ltext_cover = ctk.CTkLabel(app_pdf, height=100, width=512, text="COVERPAGE", font=(
+        "Arial", 20), text_color="white", fg_color="blue")
+    ltext_cover.place(x=610, y=600)
 
     # Tkinter Widget for the button
     create_pdf = ctk.CTkButton(app_pdf, height=40, width=120, font=(
         "Arial", 20), text_color="white", fg_color="blue", command=generate_pdf)
     create_pdf.configure(text="Generate {}".format('Storybook'))
-    create_pdf.place(x=140, y=260)
+    create_pdf.place(x=140, y=370)
+
+
+def generate_cover_image():   # Function to generate the images from the text prompt
+
+    global img_cover          # For storing the image to avoid garbage collection
+
+    global cover_input   # For storing the text input to transfer to the Picture Book PDF
+
+    global image_cover  # Globalizes cover image variable
+
+    # Uses the GPU to process the dataset through the model and get the image result
+    with autocast(device):
+
+        # Store text input in a variable
+        cover_input = cover_prompt.get()
+
+        # Catch error if no text input is given
+        if len(cover_input) == 0 or cover_input.isspace() == True:
+            image_cover = blank
+        else:
+            cartoon_input = "cartoonish " + cover_input
+            # Variable that contains the image result
+            image_cover = pipe(cartoon_input, guidance_scale=10)[
+                "images"][0]
+
+    # Store image in a variable
+    img_cover = ImageTk.PhotoImage(image_cover)
+
+    # Displays the text input in the Tkinter UI after generation
+    ltext_cover.configure(text=cover_input)
+    ltext_cover.update()
+
+    # Displays the image in the Tkinter UI after generation
+    lmain_cover.configure(image=img_cover)
+    lmain_cover.update()
 
 
 def generate_pdf():                 # Generate PicTale Story book
 
     pdf_name = prompt_pdf.get()     # Store text input in a variable, from the pdf window
+
+    # Store current time in a variable
+    now = datetime.datetime.now()
 
     # Store the pdf file name into a variable, sets this as default for errors and etc like if the title name is not set.
     if (pdf_name == ''):
@@ -327,34 +403,43 @@ def generate_pdf():                 # Generate PicTale Story book
     # Specifies the directory where the pdf will generate
     pdf_path = "./StoryBooks/{}.pdf".format(pdf_name)
 
-    # Reuse blank variable for drawing/writing the page title details
-    blanktext = ImageDraw.Draw(blank)
+    # Save image file name as PNG based on text input
+    image_cover.save('./GeneratedImages/TitlePage_{}.png'.format(pdf_name))
+
+    # Pass image cover variable for drawing/writing the page title details
+    covertext = ImageDraw.Draw(image_cover)
 
     # Choose font
     font = ImageFont.truetype('arial.ttf', 16)
 
     # Write the text input based on the details provided by the user
-    blanktext.text((10, 10), author_name.get(),
-                   font=font, fill=(255, 255, 255))
-    blanktext.text((10, 210), pdf_name, font=font, fill=(255, 255, 255))
-    blanktext.text((10, 410), date_created.get(),
+
+    # For Author
+    covertext.text((10, 10), author_name.get(),
                    font=font, fill=(255, 255, 255))
 
-    # Save the drawn page that contains the title page details in the local directory
-    blank.save('./GeneratedImages/TitlePage_{}.png'.format(pdf_name))
+    # For Title
+    covertext.text((10, 210), pdf_name, font=font, fill=(255, 255, 255))
+
+    # For Date Created
+    covertext.text((10, 410), now.strftime("%m-%d-%Y"),
+                   font=font, fill=(255, 255, 255))
+
+    # Save cover image to local directory
+    image_cover.save('./GeneratedImages/TitlePage_{}.png'.format(pdf_name))
 
     # Store the coverpage into an object variable
-    cover = Image.open('./Characters/CoverPage.png')
+    cover = Image.open('./Assets/CoverPage.png')
     # Safely convert the rogue image into a pdf page
     if cover.mode == 'RGBA':
         cover = cover.convert('RGB')
 
-    # Add the cover page to page 1 of storybook
-    pdf_list.append(cover)
-
     # Add the title page to page 2 of storybook
     pdf_list.append(Image.open(
         './GeneratedImages/TitlePage_{}.png'.format(pdf_name)))
+
+    # Add the PicTales cover page (Page 2) to page 1 of storybook
+    pdf_list.append(cover)
 
     # Pointer/Flag for content for content list access later and start at 1 so index 0 can store title page
     i = 0
@@ -431,7 +516,7 @@ auth_token = "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"
 pipe = StableDiffusionPipeline.from_pretrained(
     modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
 
-# Uses the graphics driver (Must atleast be 4GB ram)
+# # Uses the graphics driver (Must atleast be 4GB ram)
 pipe.to(device)
 
 # Create template page for the title page image
@@ -446,6 +531,11 @@ app = ctk.CTk()
 app.title("Pictales")
 app.geometry("1832x932")
 ctk.set_appearance_mode("dark")
+
+# Background for the main app window
+AppBGimg = ctk.CTkLabel(app, image=ImageTk.PhotoImage(
+    Image.open('./Assets/AppBG.png')))
+AppBGimg.pack()
 
 # Button for submitting the text input prompts and its configurations via position
 trigger = ctk.CTkButton(app, height=40, width=120, font=(
