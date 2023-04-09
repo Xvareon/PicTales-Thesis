@@ -18,6 +18,7 @@
 # Import Tkinter for Python UI
 import tkinter as tk
 
+from tkinter import Label, Button, Toplevel
 # Import CustomTkinter for additional Tkinter configurations
 import customtkinter as ctk
 
@@ -46,7 +47,7 @@ pdf_list = []       # ARRAY OF PDF PAGES
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
 # Loads the model
-model = torch.load('./results/model-1.pt')
+# model = torch.load('./results/model-1.pt')
 
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
 
@@ -374,8 +375,8 @@ def generate_cover_image():   # Function to generate the images from the text pr
         else:
             cartoon_input = "cartoonish " + cover_input
             # Variable that contains the image result
-            image_cover = pipe(cartoon_input, guidance_scale=10)[
-                "images"][0]
+            # image_cover = pipe(cartoon_input, guidance_scale=10)[
+            #     "images"][0]
 
     # Store image in a variable
     img_cover = ImageTk.PhotoImage(image_cover)
@@ -496,28 +497,28 @@ def generate_pdf():                 # Generate PicTale Story book
 
 
 # ___________________________________________________________________________ CONFIGURATIONS ___________________________________________________________________________
-isExist = os.path.exists('./results/model-1.pt')
+# isExist = os.path.exists('./results/model-1.pt')
 
-if (isExist == False):
-    sys.exit(0)
+# if (isExist == False):
+#     sys.exit(0)
 
-# loads the model used to a pre-defined library online
-modelid = "CompVis/stable-diffusion-v1-4"
+# # loads the model used to a pre-defined library online
+# modelid = "CompVis/stable-diffusion-v1-4"
 
-# Specifies the graphics driver to be used
+# # Specifies the graphics driver to be used
 device = "cuda"
 
-# Loads the model into torch
-torch.load('./results/model-1.pt')
+# # Loads the model into torch
+# torch.load('./results/model-1.pt')
 
-auth_token = "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"
+# auth_token = "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"
 
-# Uses the pipe from the online library for model translation to produce the image.
-pipe = StableDiffusionPipeline.from_pretrained(
-    modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
+# # Uses the pipe from the online library for model translation to produce the image.
+# pipe = StableDiffusionPipeline.from_pretrained(
+#     modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
 
-# # Uses the graphics driver (Must atleast be 4GB ram)
-pipe.to(device)
+# # # Uses the graphics driver (Must atleast be 4GB ram)
+# pipe.to(device)
 
 # Create template page for the title page image
 blank = Image.new('RGB', (512, 512))
@@ -525,50 +526,121 @@ blank = Image.new('RGB', (512, 512))
 # Save template in generated images folder
 blank.save('./GeneratedImages/BlankTemplate.png')
 
+# -----------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------
+def about_window():           # Show about window
+
+    # Globalize the window object that pops up for pdf creation
+    global app_about
+
+    # Window object for the text prompt for naming the book
+    app_about = ctk.CTkToplevel(app)
+    app_about.title("About Pictales")
+    app_about.geometry("800x500")
+    ctk.set_appearance_mode("light")
+
+    # Background for the create pdf window
+    PDFBGimg = ctk.CTkLabel(app_about, image=ImageTk.PhotoImage(
+        Image.open('./Assets/AppBG.png')))
+    PDFBGimg.pack()
+    
+    app_about.lift()
+
+
+
 # ___________________________________________________________________________ MAIN TKINTER UI ___________________________________________________________________________
 # Create the app
 app = ctk.CTk()
 app.title("Pictales")
 app.geometry("1832x932")
-ctk.set_appearance_mode("dark")
+ctk.set_appearance_mode("light")
 
+
+def create_modal_window():
+    modal_window = tk.Toplevel(app)
+    modal_window.title('Modal Dialog')
+    modal_window.grab_set()
+    modal_window.geometry('500x200')
+    
+    modal_label = tk.Label(modal_window, text='This is a modal dialog.')
+    modal_label.pack(pady=10)
+    
+    modal_button = tk.Button(modal_window, text='Close', command=modal_window.destroy)
+    modal_button.pack(pady=10)
+    
 # Background for the main app window
-AppBGimg = ctk.CTkLabel(app, image=ImageTk.PhotoImage(
-    Image.open('./Assets/AppBG.png')))
-AppBGimg.pack()
+# AppBGimg = ctk.CTkLabel(app, image=ImageTk.PhotoImage(
+#     Image.open('./Assets/AppBG.png')))
+# AppBGimg.pack()
 
-# Button for submitting the text input prompts and its configurations via position
-trigger = ctk.CTkButton(app, height=40, width=120, font=(
-    "Arial", 20), text_color="white", fg_color="blue", command=generate_image)
-trigger.configure(text="Generate")
-trigger.place(x=206, y=60)
+# Create a canvas widget
+canvas = ctk.CTkCanvas(app, width=1832, height=932)
+canvas.pack()
 
-# Tkinter UI for the textbox prompt
-prompt = ctk.CTkEntry(app, height=40, width=512, font=(
-    "Arial", 20), text_color="black", fg_color="white")
-prompt.place(x=10, y=10)
+# Load and display the image on the canvas
+image = Image.open('./Assets/AppBG.png')
+image_tk = ImageTk.PhotoImage(image)
+canvas.create_image(0, 0, anchor='nw', image=image_tk)
 
-# Placeholder frame for image result generated
-lmain = ctk.CTkLabel(app, height=512, width=512)
-lmain.place(x=10, y=110)
+# ___________________________________________________________________________
 
-# Placeholder frame for the text input
-ltext = ctk.CTkLabel(app, height=100, width=512, text="TEST", font=(
-    "Arial", 20), text_color="white", fg_color="blue")
-ltext.place(x=10, y=600)
+# Load and display the logo image on the canvas
+logo_image = Image.open('./Assets/frame0/image_1.png')
+logo_photo = ImageTk.PhotoImage(logo_image)
+logo_label = Label(app, image=logo_photo)
+logo_label.place(x=800, y=90)
 
-# Button for creating pdf
-create = ctk.CTkButton(app, height=40, width=120, font=(
-    "Arial", 20), text_color="white", fg_color="blue", command=pdf_window)
-create.configure(text="Create PicTales")
-create.place(x=206, y=800)
+# load and display start button
+start_button = Image.open('./Assets/frame0/button_3.png')
+start_photo = ImageTk.PhotoImage(start_button)
+start_button = Button(app, image=start_photo, command=generate_image)
+start_button.place(x=770, y=530)
 
-# Button for saving image
-save_image = ctk.CTkButton(app, height=40, width=120, font=(
-    "Arial", 20), text_color="white", fg_color="blue", command=save_window)
-save_image.configure(text="Save Image")
-save_image.place(x=206, y=725)
+# load and display howto button
+howTo_button = Image.open('./Assets/frame0/button_2.png')
+howTo_photo = ImageTk.PhotoImage(howTo_button)
+howTo_button = Button(app, image=howTo_photo, command=generate_image)
+howTo_button.place(x=770, y=690)
 
-# ___________________________________________________________________________ DRIVER CODE ___________________________________________________________________________
+
+about_button = Image.open('./Assets/frame0/button_1.png')
+about_photo = ImageTk.PhotoImage(about_button)
+about_button = Button(app, image=about_photo, command=create_modal_window)
+about_button.place(x=50, y=50)
+
+# -----------------------------------------------------------------------------------
+# # Button for submitting the text input prompts and its configurations via position
+# trigger = ctk.CTkButton(app, height=40, width=120, font=(
+#     "Arial", 20), text_color="white", fg_color="blue", command=generate_image)
+# trigger.configure(text="Generate")
+# trigger.place(x=206, y=60)
+
+# # Tkinter UI for the textbox prompt
+# prompt = ctk.CTkEntry(app, height=40, width=512, font=(
+#     "Arial", 20), text_color="black", fg_color="white")
+# prompt.place(x=10, y=10)
+
+# # Placeholder frame for image result generated
+# lmain = ctk.CTkLabel(app, height=512, width=512)
+# lmain.place(x=10, y=110)
+
+# # Placeholder frame for the text input
+# ltext = ctk.CTkLabel(app, height=100, width=512, text="TEST", font=(
+#     "Arial", 20), text_color="white", fg_color="blue")
+# ltext.place(x=10, y=600)
+
+# # Button for creating pdf
+# create = ctk.CTkButton(app, height=40, width=120, font=(
+#     "Arial", 20), text_color="white", fg_color="blue", command=pdf_window)
+# create.configure(text="Create PicTales")
+# create.place(x=206, y=800)
+
+# # Button for saving image
+# save_image = ctk.CTkButton(app, height=40, width=120, font=(
+#     "Arial", 20), text_color="white", fg_color="blue", command=save_window)
+# save_image.configure(text="Save Image")
+# save_image.place(x=206, y=725)
+
+# # ___________________________________________________________________________ DRIVER CODE ___________________________________________________________________________
 # Get text input prompts again by automatically restarting the app
 app.mainloop()
