@@ -18,7 +18,11 @@
 # Import Tkinter for Python UI
 import tkinter as tk
 
-from tkinter import Label, Button, Toplevel
+from tkinter import Label, Button, Toplevel, font
+import pygame
+from tkinter import *
+import tkvideo
+
 # Import CustomTkinter for additional Tkinter configurations
 import customtkinter as ctk
 
@@ -538,14 +542,7 @@ def about_window():           # Show about window
     app_about.title("About Pictales")
     app_about.geometry("800x500")
     ctk.set_appearance_mode("light")
-
-    # Background for the create pdf window
-    PDFBGimg = ctk.CTkLabel(app_about, image=ImageTk.PhotoImage(
-        Image.open('./Assets/AppBG.png')))
-    PDFBGimg.pack()
-    
     app_about.lift()
-
 
 
 # ___________________________________________________________________________ MAIN TKINTER UI ___________________________________________________________________________
@@ -553,34 +550,70 @@ def about_window():           # Show about window
 app = ctk.CTk()
 app.title("Pictales")
 app.geometry("1832x932")
-ctk.set_appearance_mode("light")
+ctk.set_appearance_mode("F9F4F1")
 
+# Define the font file path and size
+font_path = "./fonts/SupersonicRockets.ttf"
+font_size = 24
+# Create a custom font
+custom_font = (font_path, font_size, "bold")
 
-def create_modal_window():
+# ABOUT WINDOW POP UP
+# create a global list to store photo objects
+photo_list = []
+def about_modal_window():
     modal_window = tk.Toplevel(app)
-    modal_window.title('Modal Dialog')
+    modal_window.title('About Pictales')
     modal_window.grab_set()
-    modal_window.geometry('500x200')
+    modal_window.geometry("756x653+{}+{}".format(
+        app.winfo_width()//2 - 378 + app.winfo_rootx(),
+        app.winfo_height()//2 - 372 + app.winfo_rooty()
+    ))
+    modal_window.configure(bg='#F8BC3B')  # set background color
+
+    modal_label = tk.Label(modal_window, text='ABOUT', font=custom_font, fg='white', bg='#F8BC3B')
+    modal_label.pack(pady=50)
+
+    about_img = Image.open('./Assets/PICTALES LOGO Big w background.png')
+    resized_img = about_img.resize((200, 200), resample=Image.LANCZOS)
+    about_photo = ImageTk.PhotoImage(resized_img)
+    photo_list.append(about_photo)  # add photo object to the list
+    about_label = tk.Label(modal_window, image=about_photo)
+    about_label.place(x=380, y=165, anchor="n")
     
-    modal_label = tk.Label(modal_window, text='This is a modal dialog.')
-    modal_label.pack(pady=10)
+    # set the font of the label to Supersonic Rocketship with a size of 20
+    modal_label.config(font=("Supersonic Rocketship", 64))
+
+    ver_label = tk.Label(modal_window, text='Copyright © 2023, PICTALES', font=custom_font, fg='white', bg='#F8BC3B')
+    ver_label.place(relx=0.25, rely=0.75)
+    ver_label.config(font=("Supersonic Rocketship", 24))
     
-    modal_button = tk.Button(modal_window, text='Close', command=modal_window.destroy)
-    modal_button.pack(pady=10)
+    copy_label = tk.Label(modal_window, text='VER. 1.0', font=custom_font, fg='white', bg='#F8BC3B')
+    copy_label.pack(pady=190)
+    copy_label.config(font=("Supersonic Rocketship", 24))
     
-# Background for the main app window
-# AppBGimg = ctk.CTkLabel(app, image=ImageTk.PhotoImage(
-#     Image.open('./Assets/AppBG.png')))
-# AppBGimg.pack()
+def howTo_modal_window():
+    howTomodal_window = tk.Toplevel(app)
+    howTomodal_window.title('How to use Pictales')
+    howTomodal_window.grab_set()
+    howTomodal_window.geometry("1028x639+{}+{}".format(
+        app.winfo_width()//2 - 480 + app.winfo_rootx(),
+        app.winfo_height()//2 - 380 + app.winfo_rooty()
+    ))
+    howTomodal_window.configure(bg='#F8BC3B')  # set background color
+
+    my_label = Label(howTomodal_window)
+    my_label.pack()
+    player = tkvideo.tkvideo("./Assets/sample.mp4", my_label, loop = 1,  size=(820, 420))
+    player.play()
+    
+     # Center the label in the window
+    my_label.place(x=520, y=300, anchor="center")
+# ___________________________________________________________________________
 
 # Create a canvas widget
 canvas = ctk.CTkCanvas(app, width=1832, height=932)
 canvas.pack()
-
-# Load and display the image on the canvas
-image = Image.open('./Assets/AppBG.png')
-image_tk = ImageTk.PhotoImage(image)
-canvas.create_image(0, 0, anchor='nw', image=image_tk)
 
 # ___________________________________________________________________________
 
@@ -599,14 +632,15 @@ start_button.place(x=770, y=530)
 # load and display howto button
 howTo_button = Image.open('./Assets/frame0/button_2.png')
 howTo_photo = ImageTk.PhotoImage(howTo_button)
-howTo_button = Button(app, image=howTo_photo, command=generate_image)
+howTo_button = Button(app, image=howTo_photo, command=howTo_modal_window)
 howTo_button.place(x=770, y=690)
 
-
+# load about button 
 about_button = Image.open('./Assets/frame0/button_1.png')
 about_photo = ImageTk.PhotoImage(about_button)
-about_button = Button(app, image=about_photo, command=create_modal_window)
-about_button.place(x=50, y=50)
+photo_list.append(about_photo)  # add photo object to the list
+about_button = Button(app, image=about_photo, command=about_modal_window)
+about_button.place(x=50, y=50) 
 
 # -----------------------------------------------------------------------------------
 # # Button for submitting the text input prompts and its configurations via position
