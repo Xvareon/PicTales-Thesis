@@ -19,9 +19,9 @@
 import tkinter as tk
 
 from tkinter import Label, Button, Toplevel, font
-import pygame
 from tkinter import *
 import tkvideo
+from tkinter import ttk
 
 # Import CustomTkinter for additional Tkinter configurations
 import customtkinter as ctk
@@ -544,20 +544,13 @@ def about_window():           # Show about window
     ctk.set_appearance_mode("light")
     app_about.lift()
 
-
-# ___________________________________________________________________________ MAIN TKINTER UI ___________________________________________________________________________
-# Create the app
-app = ctk.CTk()
-app.title("Pictales")
-app.geometry("1832x932")
-ctk.set_appearance_mode("F9F4F1")
-
 # Define the font file path and size
 font_path = "./fonts/SupersonicRockets.ttf"
 font_size = 24
 # Create a custom font
 custom_font = (font_path, font_size, "bold")
 
+# -----------------------------------------------------------------------------------
 # ABOUT WINDOW POP UP
 # create a global list to store photo objects
 photo_list = []
@@ -569,6 +562,7 @@ def about_modal_window():
         app.winfo_width()//2 - 378 + app.winfo_rootx(),
         app.winfo_height()//2 - 372 + app.winfo_rooty()
     ))
+    
     modal_window.configure(bg='#F8BC3B')  # set background color
 
     modal_label = tk.Label(modal_window, text='ABOUT', font=custom_font, fg='white', bg='#F8BC3B')
@@ -591,7 +585,8 @@ def about_modal_window():
     copy_label = tk.Label(modal_window, text='VER. 1.0', font=custom_font, fg='white', bg='#F8BC3B')
     copy_label.pack(pady=190)
     copy_label.config(font=("Supersonic Rocketship", 24))
-    
+
+# -----------------------------------------------------------------------------------
 def howTo_modal_window():
     howTomodal_window = tk.Toplevel(app)
     howTomodal_window.title('How to use Pictales')
@@ -609,6 +604,208 @@ def howTo_modal_window():
     
      # Center the label in the window
     my_label.place(x=520, y=300, anchor="center")
+    
+    
+def generate_modal_window():
+    generate_modal_window = tk.Toplevel(app)
+    generate_modal_window.title("Prompt")    
+    generate_modal_window.grab_set()
+    generate_modal_window.geometry("1228x739+{}+{}".format(
+        app.winfo_width()//2 - 614 + app.winfo_rootx(),
+        app.winfo_height()//2 - 369 + app.winfo_rooty()
+    ))
+    generate_modal_window.configure(bg='#F8BC3B')  # set background color
+    
+    text_area = tk.Text(generate_modal_window, height=15, width=46, bg='#F8BC3B',  bd=2, relief="solid", font=("Arial", 20))
+    text_area.place(x=460, y=100)
+        
+    lmain = tk.Label(generate_modal_window, height=32, width=55, bg='#F8BC3B', bd=2, relief="solid")
+    lmain.place(x=50, y=100)
+    
+    trigger_image = Image.open('./Assets/frame0/Generate Button.png') 
+    trigger_photo = ImageTk.PhotoImage(trigger_image) 
+    photo_list.append(trigger_photo)  # add photo object to the list
+    trigger_label = Button(generate_modal_window, image=trigger_photo, borderwidth=0, highlightthickness=0, bg='#F8BC3B', activebackground='#F8BC3B', command=generate_image) 
+    trigger_label.place(x=110, y=605)
+    
+    # test label?????
+    # ltext = ctk.CTkLabel(generate_modal_window, height=100, width=512, text="TEST", font=(
+    #     "Arial", 20), text_color="white", fg_color="blue")
+    # ltext.place(x=10, y=600)
+    
+    char_image = Image.open('./Assets/frame0/addcharacter.png') 
+    char_photo = ImageTk.PhotoImage(char_image) 
+    photo_list.append(char_photo)  # add photo object to the list
+    char_label = Button(generate_modal_window, image=char_photo, borderwidth=0, highlightthickness=0, bg='#F8BC3B', activebackground='#F8BC3B') 
+    char_label.place(x=650, y=610)
+    
+    save_image = Image.open('./Assets/frame0/save.png') 
+    save_photo = ImageTk.PhotoImage(save_image) 
+    photo_list.append(save_photo)  # add photo object to the list
+    save_label = Button(generate_modal_window, image=save_photo, borderwidth=0, highlightthickness=0, bg='#F8BC3B', activebackground='#F8BC3B', command=save_image) 
+    save_label.place(x=950, y=610)
+    
+    
+def start_modal_window(): 
+
+    # Window 2 config start / ctk window
+    start_window = ctk.CTkToplevel(app)
+    start_window.title("Title and Author")
+    start_window.geometry("1832x932")
+    start_window.configure(bg = "#F9F4F1")
+
+    # Create a canvas widget
+    canvas = Canvas(start_window, bg = "#F9F4F1", height = 932, width = 1832, bd = 0, highlightthickness = 0, relief = "ridge")
+    canvas.place(x = 0, y = 0)
+
+    ###################################### BROKEN ######################################
+    # For Author BACKGROUND textbox
+    canvas.create_image(418.0, 99.0, image = ImageTk.PhotoImage(Image.open('./Assets/window2/textbox_window2.png')))
+    ###################################### BROKEN ######################################
+    
+    # Author TextBox
+    entry_1 = ctk.CTkEntry(start_window, width=1029.0, height=85.0, bg_color="#F9F4F1", font=("Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
+    entry_1.place(x=401.0, y=200.0)
+
+    # Author label on top of the text box
+    canvas.create_text(
+        418.0,
+        99.0,
+        anchor="nw",
+        text="Title",
+        fill="#AB7A11",
+        font=("Montserrat", 48 * -1)
+    )
+    
+    ###################################### BROKEN ######################################
+    # For Title BACKGROUND textbox
+    canvas.create_image(418.0, 373.0, image = ImageTk.PhotoImage(Image.open('./Assets/window2/textbox_window2.png')))
+    ###################################### BROKEN ######################################
+
+    # Title Textbox
+    entry_2 =ctk.CTkEntry(start_window, width=1029.0, height=85.0, bg_color="#F9F4F1", font=("Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
+    entry_2.place(x=401.0, y=441.0)
+                        
+    # Title label on top of the text box
+    canvas.create_text(
+        418.0,
+        373.0,
+        anchor="nw",
+        text="Author",
+        fill="#AB7A11",
+        font=("Montserrat", 48 * -1)
+    )
+
+    # X Red button
+    button1_photo = ImageTk.PhotoImage(Image.open('./Assets/window2/button_1.png'))
+    button_1 = Button(
+        start_window,
+        image = button1_photo,
+        borderwidth=0,
+        highlightthickness=0,
+        command=lambda: print("button_1 clicked"),
+        relief="flat"
+    )
+    button_1.place(
+        x=765.0,
+        y=465.0,
+        width=93.0,
+        height=103.0
+    )
+    
+    # Check Green Button
+    button2_photo = ImageTk.PhotoImage(Image.open('./Assets/window2/button_2.png'))
+    button_2= Button(
+        start_window,
+        image = button2_photo,
+        # image = ImageTk.PhotoImage(file = "./Assets/window2/button_2.png"),
+        borderwidth=0,
+        highlightthickness=0,
+        command=main_operating_screen,
+        relief="flat"
+    )
+    button_2.place(   
+        x=957.0,
+        y=465.0,
+        width=93.0,
+        height=103.0
+    )
+
+    border = LabelFrame(start_modal_window, bd = 6, bg = "black")
+    border.pack(pady = 10)
+    
+    btn = Button(border, text="Button", width = 8,
+                bg = "#6CD300", fg = "black")
+    btn.pack()
+  
+    start_window.resizable(False, False)
+    # ==============================
+
+# Main Operating Screen
+def main_operating_screen ():
+    main_operating_screen = tk.Toplevel(app)
+    main_operating_screen.title("Main Operating Screen")
+    main_operating_screen.grab_set()
+    main_operating_screen.geometry("1832x932")
+    main_operating_screen.configure(bg='#F9F4F1')
+
+    back_img = Image.open('./Assets/backbutton.png')
+    back_photo = ImageTk.PhotoImage(back_img)
+    photo_list.append(back_photo)  # add photo object to the list
+    back_label = Button(main_operating_screen, borderwidth=0, highlightthickness=0, image=back_photo, command=howTo_modal_window)
+    back_label.place(x=100, y=50, anchor="n")
+
+    pictales_title = tk.Label(main_operating_screen, text='Title of Picatales', font=custom_font, fg='#F8BC3B', bg='#F9F4F1')
+    pictales_title.place(x=200, y=50)
+    pictales_title.config(font=("Supersonic Rocketship", 60))
+
+    addpage_img = Image.open('./Assets/addpage.png')
+    addpage_photo = ImageTk.PhotoImage(addpage_img)
+    photo_list.append(addpage_photo)  # add photo object to the list
+    addpage_label = Button(main_operating_screen, borderwidth=0, highlightthickness=0, image=addpage_photo, command=generate_modal_window)
+    addpage_label.place(x=1160, y=750, anchor="n")
+
+    createpictales_img = Image.open('./Assets/createpictales.png')
+    createpictales_photo = ImageTk.PhotoImage(createpictales_img)
+    photo_list.append(createpictales_photo)  # add photo object to the list
+    createpictales_label = Button(main_operating_screen, borderwidth=0, highlightthickness=0, image=createpictales_photo, command=clarification_modal_window)
+    createpictales_label.place(x=1050, y=440, anchor="n")
+    
+def clarification_modal_window():
+    clarification_modal_window = tk.Toplevel(app)
+    clarification_modal_window.title('Are you sure?')
+    clarification_modal_window.grab_set()
+    clarification_modal_window.geometry("690x603+{}+{}".format(
+        app.winfo_width()//2 - 378 + app.winfo_rootx(),
+        app.winfo_height()//2 - 372 + app.winfo_rooty()
+    ))
+    clarification_modal_window.configure(bg='#F8BC3B')  # set background color
+
+    clear_modal_label = tk.Label(clarification_modal_window, text='ARE YOU SURE TO \n REDISCOVER YOUR STORY AND \n CREATE YOUR OWN PICTALES?', font=custom_font, fg='white', bg='#F8BC3B')
+    clear_modal_label.place(x=40, y=50)
+    #set the font of the label to Supersonic Rocketship with a size of 20
+    clear_modal_label.config(font=("Supersonic Rocketship", 34))
+
+    no_button = Image.open('./Assets/window2/button_1.png')
+    close_photo = ImageTk.PhotoImage(no_button)
+    photo_list.append(close_photo)  # add photo object to the list
+    no_button = Button(clarification_modal_window,image=close_photo, command=lambda: print(" x  button clicked"), background='#F8BC3B', borderwidth=0, highlightthickness=0, activebackground='#F8BC3B')
+    no_button.place(x=200, y=400) 
+
+    yes_button = Image.open('./Assets/window2/button_2.png')
+    open_photo = ImageTk.PhotoImage(yes_button)
+    photo_list.append(open_photo)  # add photo object to the list
+    yes_button = Button(clarification_modal_window,image=open_photo, command=lambda: print(" v/  button clicked"), background='#F8BC3B', borderwidth=0, highlightthickness=0, activebackground='#F8BC3B')
+    yes_button.place(x=400, y=400)
+
+    
+# ___________________________________________________________________________ MAIN TKINTER UI ___________________________________________________________________________
+# Create the app
+app = ctk.CTk()
+app.title("Pictales")
+app.geometry("1832x932")
+ctk.set_appearance_mode("F9F4F1")
+
 # ___________________________________________________________________________
 
 # Create a canvas widget
@@ -617,63 +814,37 @@ canvas.pack()
 
 # ___________________________________________________________________________
 
-# Load and display the logo image on the canvas
-logo_image = Image.open('./Assets/frame0/image_1.png')
-logo_photo = ImageTk.PhotoImage(logo_image)
-logo_label = Label(app, image=logo_photo)
-logo_label.place(x=800, y=90)
+# Load and display the logo image on the canvas 
+logo_image = Image.open('./Assets/frame0/image_1.png') 
+logo_photo = ImageTk.PhotoImage(logo_image) 
+logo_label = Label(app, image=logo_photo) 
+logo_label.place(x=800, y=90) 
+
+# # load and display start button
+# start_button = Image.open('./Assets/frame0/button_3.png')
+# start_photo = ImageTk.PhotoImage(start_button)
+# start_button = Button(app, image=start_photo, borderwidth=0, highlightthickness=0, command=generate_modal_window) # command=generate_image
+# start_button.place(x=770, y=530)
 
 # load and display start button
 start_button = Image.open('./Assets/frame0/button_3.png')
 start_photo = ImageTk.PhotoImage(start_button)
-start_button = Button(app, image=start_photo, command=generate_image)
+start_button = Button(app, image=start_photo, borderwidth=0, highlightthickness=0, command=start_modal_window)
 start_button.place(x=770, y=530)
 
 # load and display howto button
 howTo_button = Image.open('./Assets/frame0/button_2.png')
 howTo_photo = ImageTk.PhotoImage(howTo_button)
-howTo_button = Button(app, image=howTo_photo, command=howTo_modal_window)
+howTo_button = Button(app, image=howTo_photo, borderwidth=0, highlightthickness=0, command=howTo_modal_window)
 howTo_button.place(x=770, y=690)
 
 # load about button 
 about_button = Image.open('./Assets/frame0/button_1.png')
 about_photo = ImageTk.PhotoImage(about_button)
 photo_list.append(about_photo)  # add photo object to the list
-about_button = Button(app, image=about_photo, command=about_modal_window)
+about_button = Button(app, image=about_photo, borderwidth=0, highlightthickness=0, command=about_modal_window)
 about_button.place(x=50, y=50) 
 
-# -----------------------------------------------------------------------------------
-# # Button for submitting the text input prompts and its configurations via position
-# trigger = ctk.CTkButton(app, height=40, width=120, font=(
-#     "Arial", 20), text_color="white", fg_color="blue", command=generate_image)
-# trigger.configure(text="Generate")
-# trigger.place(x=206, y=60)
-
-# # Tkinter UI for the textbox prompt
-# prompt = ctk.CTkEntry(app, height=40, width=512, font=(
-#     "Arial", 20), text_color="black", fg_color="white")
-# prompt.place(x=10, y=10)
-
-# # Placeholder frame for image result generated
-# lmain = ctk.CTkLabel(app, height=512, width=512)
-# lmain.place(x=10, y=110)
-
-# # Placeholder frame for the text input
-# ltext = ctk.CTkLabel(app, height=100, width=512, text="TEST", font=(
-#     "Arial", 20), text_color="white", fg_color="blue")
-# ltext.place(x=10, y=600)
-
-# # Button for creating pdf
-# create = ctk.CTkButton(app, height=40, width=120, font=(
-#     "Arial", 20), text_color="white", fg_color="blue", command=pdf_window)
-# create.configure(text="Create PicTales")
-# create.place(x=206, y=800)
-
-# # Button for saving image
-# save_image = ctk.CTkButton(app, height=40, width=120, font=(
-#     "Arial", 20), text_color="white", fg_color="blue", command=save_window)
-# save_image.configure(text="Save Image")
-# save_image.place(x=206, y=725)
 
 # # ___________________________________________________________________________ DRIVER CODE ___________________________________________________________________________
 # Get text input prompts again by automatically restarting the app
