@@ -39,6 +39,7 @@ zipp==3.8.1
 
 // Needs to be connected to the internet
 // pip install ftfy
+// pip install tkvideo
 // pip install tensorboard
 // the user needs to create an account and login to https://huggingface.co/
 // next is the user needs to create their token: https://huggingface.co/settings/tokens
