@@ -259,29 +259,29 @@ def pdf_window():           # Show a text prompt
         "Arial", 20), text_color="black", fg_color="white")
     author_name.place(x=60, y=220)
 
-    # Generate image for coverpage
-    cover_trigger = ctk.CTkButton(app_pdf, height=40, width=120, font=(
-        "Arial", 20), text_color="white", fg_color="blue", command=generate_cover_image)
-    cover_trigger.configure(text="Generate")
-    cover_trigger.place(x=1000, y=800)
+    # # Generate image for coverpage
+    # cover_trigger = ctk.CTkButton(app_pdf, height=40, width=120, font=(
+    #     "Arial", 20), text_color="white", fg_color="blue", command=generate_cover_image)
+    # cover_trigger.configure(text="Generate")
+    # cover_trigger.place(x=1000, y=800)
 
-    global lmain_cover  # Globalize cover label frame holder
-    global ltext_cover  # Globalize text label frame holder
-    global cover_prompt  # Globalize the prompt for cover text input
+    # global lmain_cover  # Globalize cover label frame holder
+    # global ltext_cover  # Globalize text label frame holder
+    # global cover_prompt  # Globalize the prompt for cover text input
 
-    # Tkinter UI for the textbox prompt
-    cover_prompt = ctk.CTkEntry(app_pdf, height=40, width=512, font=(
-        "Arial", 20), text_color="black", fg_color="white")
-    cover_prompt.place(x=610, y=60)
+    # # Tkinter UI for the textbox prompt
+    # cover_prompt = ctk.CTkEntry(app_pdf, height=40, width=512, font=(
+    #     "Arial", 20), text_color="black", fg_color="white")
+    # cover_prompt.place(x=610, y=60)
 
-    # Placeholder frame for image result generated
-    lmain_cover = ctk.CTkLabel(app_pdf, height=512, width=512)
-    lmain_cover.place(x=610, y=110)
+    # # Placeholder frame for image result generated
+    # lmain_cover = ctk.CTkLabel(app_pdf, height=512, width=512)
+    # lmain_cover.place(x=30, y=50)
 
-    # Placeholder frame for the text input
-    ltext_cover = ctk.CTkLabel(app_pdf, height=100, width=512, text="COVERPAGE", font=(
-        "Arial", 20), text_color="white", fg_color="blue")
-    ltext_cover.place(x=610, y=600)
+    # # Placeholder frame for the text input
+    # ltext_cover = ctk.CTkLabel(app_pdf, height=100, width=512, text="COVERPAGE", font=(
+    #     "Arial", 20), text_color="white", fg_color="blue")
+    # ltext_cover.place(x=610, y=600)
 
     # Tkinter Widget for the button
     create_pdf = ctk.CTkButton(app_pdf, height=40, width=120, font=(
@@ -303,11 +303,12 @@ def generate_cover_image():   # Function to generate the images from the text pr
 
         # Store text input in a variable
         cover_input = cover_prompt.get()
-
+        
         # Catch error if no text input is given
         if len(cover_input) == 0 or cover_input.isspace() == True:
             image_cover = blank
         else:
+            image_cover = blank
             cartoon_input = "cartoonish " + cover_input
             # Variable that contains the image result
             # image_cover = pipe(cartoon_input, guidance_scale=10)[
@@ -610,7 +611,7 @@ def funct_generate_window():    # This window is for getting the text prompt and
     photo_list.append(trigger_photo)  # add photo object to the list
     trigger_label = Button(generate_window, image=trigger_photo, borderwidth=0,
                            highlightthickness=0, bg='#F8BC3B', activebackground='#F8BC3B', command=generate_image)
-    trigger_label.place(x=110, y=620)
+    trigger_label.place(x=110, y=620) 
 
     global ltext  # Globalize to pass on generate image function
     ltext = ctk.CTkLabel(generate_window, height=15, width=46, text="Image Title", font=(
@@ -630,84 +631,71 @@ def title_window():  # Window to get author and title data in entry window 2
 
     global start_window  # Globalize to be destroyed at the opening of the main operating window
     # Window 2 config start / ctk window
-    start_window = ctk.CTkToplevel(app)
+    start_window = tk.Toplevel(app)
     start_window.title("Title and Author")
     start_window.grab_set()
     start_window.geometry("1832x932")
     start_window.configure(bg="#F9F4F1")
+    
+    # The variable that stores the textbox object for naming the storybook
+    global prompt_pdf
 
-    # Create a canvas widget
-    canvas = Canvas(start_window, bg="#F9F4F1", height=932,
-                    width=1832, bd=0, highlightthickness=0, relief="ridge")
-    canvas.place(x=0, y=0)
+    # Variable that stores the author's name
+    global author_name
+    # Tkinter UI for the textbox prompts for the storybook file
+    
+    # For Title Label
+    ltext_title = ctk.CTkLabel(start_window, height=20, width=20, text="Title", font=(
+        "Arial", 12), text_color="black")
+    ltext_title.place(x=60, y=210)
+    
+    # For Title Textbox
+    prompt_pdf = ctk.CTkEntry(start_window, height=40, width=400, font=(
+        "Arial", 20), text_color="black", fg_color="white")
+    prompt_pdf.place(x=60, y=230)
 
-    # Title Textbox
-    entry_1 = ctk.CTkEntry(start_window, width=729.0, height=85.0, bg_color="#F9F4F1", font=(
-        "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
-    entry_1.place(x=201.0, y=165.0) # width=1029 
-
-    # Title label on top of the text box
-    canvas.create_text(
-        218.0, # previously 418
-        115.0, # preciously 99
-        anchor="nw",
-        text="Title",
-        fill="#AB7A11",
-        font=("Montserrat", 48 * -1)
-    )
-
-    # Author Textbox
-    entry_2 = ctk.CTkEntry(start_window, width=729.0, height=85.0, bg_color="#F9F4F1", font=(
-        "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
-    entry_2.place(x=201.0, y=314.0)
-
-    # Author label on top of the text box
-    canvas.create_text(
-        218.0,
-        264.0,
-        anchor="nw",
-        text="Author",
-        fill="#AB7A11",
-        font=("Montserrat", 48 * -1)
-    )
-
-    # Cover page prompt Textbox
-    entry_3 = ctk.CTkEntry(start_window, width=729.0, height=185.0, bg_color="#F9F4F1", font=(
-        "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
-    entry_3.place(x=201.0, y=469.0)
-
-    # Cover page label on top of the text box
-    canvas.create_text(
-        218.0,
-        413.0,
-        anchor="nw",
-        text="Enter prompt for Cover Image",
-        fill="#AB7A11",
-        font=("Montserrat", 48 * -1)
-    )
-
-    # Cover Image label on top of the generated img placeholder
-    canvas.create_text(
-        1218.0, # previously 218
-        115.0,
-        anchor="nw",
-        text="Cover Image",
-        fill="#AB7A11",
-        font=("Montserrat", 48 * -1)
-    )
-
+    # For Author Label
+    ltext_authname = ctk.CTkLabel(start_window, height=20, width=20, text="Author Name", font=(
+        "Arial", 12), text_color="black")
+    ltext_authname.place(x=60, y=275)
+    # For Author Textbox
+    author_name = ctk.CTkEntry(start_window, height=40, width=400, font=(
+        "Arial", 20), text_color="black", fg_color="white")
+    author_name.place(x=60, y=300)
     # This code is for the cover page border of the generated image
     covgenerate_border = Label(start_window, height=34, width=72,
-                            bd=1, relief="solid", bg='#F9F4F1', borderwidth= 10,)
-    covgenerate_border.place(x=1250, y=200)
-
+                            bd=1, relief="solid", bg='#F9F4F1')
+    covgenerate_border.place(x=950, y=200)
 
     # Generate button for Cover img generator
     covergen_photo = ImageTk.PhotoImage(Image.open('./Assets/frame0/Generate Button.png'))
     photo_list.append(covergen_photo)  # add photo object to the list
     covergen_label = Button(start_window, image=covergen_photo, borderwidth=0,
-                           highlightthickness=0, command=lambda: print(" cover img gen button clicked"))
-    covergen_label.place(x=201, y=519)
+                           highlightthickness=0, command=generate_cover_image)
+    covergen_label.place(x=60, y=750)
+
+    global lmain_cover  # Globalize cover label frame holder
+    global ltext_cover  # Globalize text label frame holder
+    global cover_prompt  # Globalize the prompt for cover text input
+
+    # For prompt Title Label
+    prompt_title = ctk.CTkLabel(start_window, height=20, width=20, text="Enter prompt for Cover Image", font=(
+        "Arial", 12), text_color="black")
+    prompt_title.place(x=60, y=340)
+
+    # Tkinter UI for the textbox prompt1
+    cover_prompt = ctk.CTkEntry(start_window, height=40, width=512, font=(
+        "Arial", 20), text_color="black", fg_color="white")
+    cover_prompt.place(x=60, y=360)
+
+    # Placeholder frame for image result generated
+    lmain_cover = ctk.CTkLabel(start_window)
+    lmain_cover.place(x=761, y=160.5)
+
+    # Placeholder frame for the text input
+    ltext_cover = ctk.CTkLabel(start_window, height=100, width=512, text="COVERPAGE", font=(
+        "Arial", 20), text_color="white")
+    ltext_cover.place(x=610, y=600)
 
     # Back button to window 1
     back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
@@ -721,9 +709,69 @@ def title_window():  # Window to get author and title data in entry window 2
     photo_list.append(okay_photo)  # add photo object to the list
     okay_label = Button(start_window, borderwidth=0, highlightthickness=0,
                         image=okay_photo, command=main_operating_screen)
-    okay_label.place(x=1700, y=50, anchor="n") 
+    okay_label.place(x=1700, y=800, anchor="n") 
 
-    
+    # # Create a canvas widget
+    # canvas = Canvas(start_window, bg="#F9F4F1", height=932,
+    #                 width=1832, bd=0, highlightthickness=0, relief="ridge")
+    # canvas.place(x=0, y=0)
+
+    # # Title Textbox
+    # entry_1 = ctk.CTkEntry(start_window, width=729.0, height=85.0, bg_color="#F9F4F1", font=(
+    #     "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
+    # entry_1.place(x=201.0, y=165.0) # width=1029 
+
+    # # Title label on top of the text box
+    # canvas.create_text(
+    #     218.0, # previously 418
+    #     115.0, # preciously 99
+    #     anchor="nw",
+    #     text="Title",
+    #     fill="#AB7A11",
+    #     font=("Montserrat", 48 * -1)
+    # )
+
+    # # Author Textbox
+    # entry_2 = ctk.CTkEntry(start_window, width=729.0, height=85.0, bg_color="#F9F4F1", font=(
+    #     "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
+    # entry_2.place(x=201.0, y=314.0)
+
+    # # Author label on top of the text box
+    # canvas.create_text(
+    #     218.0,
+    #     264.0,
+    #     anchor="nw",
+    #     text="Author",
+    #     fill="#AB7A11",
+    #     font=("Montserrat", 48 * -1)
+    # )
+
+    # # Cover page prompt Textbox
+    # entry_3 = ctk.CTkEntry(start_window, width=729.0, height=185.0, bg_color="#F9F4F1", font=(
+    #     "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
+    # entry_3.place(x=201.0, y=469.0)
+
+    # # Cover page label on top of the text box
+    # canvas.create_text(
+    #     218.0,
+    #     413.0,
+    #     anchor="nw",
+    #     text="Enter prompt for Cover Image",
+    #     fill="#AB7A11",
+    #     font=("Montserrat", 48 * -1)
+    # )
+
+    # # Cover Image label on top of the generated img placeholder
+    # canvas.create_text(
+    #     1218.0, # previously 218
+    #     115.0,
+    #     anchor="nw",
+    #     text="Cover Image",
+    #     fill="#AB7A11",
+    #     font=("Montserrat", 48 * -1)
+    # )
+
+
     # # Check Green Button
     # button2_photo = ImageTk.PhotoImage(
     #     Image.open('./Assets/window2/check button.png'))
