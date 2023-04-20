@@ -101,6 +101,12 @@ def generate_image():   # Function to generate the images from the text prompt
 # Function for getting the character selected WITH the expressions, essentially the image we pass for saving a page.
 def funct_main_char_select(main_char_value, main_char_image):
 
+    # Call global main_char_select variable to override the initial value
+    global main_char_select
+
+    # Call global character variable to override initial value
+    global character
+
     # Get the value passed from character expresion funcion
     main_char_select = main_char_value
 
@@ -147,6 +153,8 @@ def generate_save():    # Saves the image in the current directory and displays 
             './GeneratedImages/{}.png'.format(text_input)).convert('RGBA')
 
         # Convert the PhotoImage object to a PIL Image object and convert to RGBA mode
+        print("Hotdog ni Mark")
+        print(main_char_select)
         character_image = ImageTk.getimage(character).convert('RGBA')
 
         # Create a new transparent image of the same size as the base image
@@ -198,7 +206,8 @@ def generate_save():    # Saves the image in the current directory and displays 
         # Displays the image list
         for pic in image_list:
             i = i+1
-            limg_list = ctk.CTkLabel(main_screen, height=200, width=200, image=pic)
+            limg_list = ctk.CTkLabel(
+                main_screen, height=200, width=200, image=pic)
             limg_list.place(x=1200, y=-100 + (200*i))
 
         # Destroy the edit content window and generate window
@@ -214,7 +223,8 @@ def generate_save():    # Saves the image in the current directory and displays 
         if is_window_open:
             addcharacter_screen.destroy()
         generate_window.destroy()
-        
+
+
 def generate_cover_image():   # Function to generate the images from the text prompt
 
     global img_cover          # For storing the image to avoid garbage collection
@@ -228,7 +238,7 @@ def generate_cover_image():   # Function to generate the images from the text pr
 
         # Store text input in a variable
         cover_input = cover_prompt.get()
-        
+
         # Catch error if no text input is given
         if len(cover_input) == 0 or cover_input.isspace() == True:
             image_cover = blank
@@ -382,20 +392,16 @@ device = "cpu"
 # # # Uses the graphics driver (Must atleast be 4GB ram)
 # pipe.to(device)
 
+# -----------------------------------------------------------------------------------
 # Create template page for the title page image
 blank = Image.new('RGB', (512, 512))
-
 # Save template in generated images folder
 blank.save('./GeneratedImages/BlankTemplate.png')
-
-# -----------------------------------------------------------------------------------
-
 # Define the font file path and size
 font_path = "./fonts/SupersonicRockets.ttf"
 font_size = 24
 # Create a custom font
 custom_font = (font_path, font_size, "bold")
-
 # -----------------------------------------------------------------------------------
 
 # ABOUT WINDOW POP UP
@@ -536,28 +542,19 @@ def funct_generate_window():    # This window is for getting the text prompt and
     photo_list.append(trigger_photo)  # add photo object to the list
     trigger_label = Button(generate_window, image=trigger_photo, borderwidth=0,
                            highlightthickness=0, bg='#F8BC3B', activebackground='#F8BC3B', command=generate_image)
-    trigger_label.place(x=110, y=620) 
+    trigger_label.place(x=110, y=620)
 
     global ltext  # Globalize to pass on generate image function
     ltext = ctk.CTkLabel(generate_window, height=15, width=46, text="Image Title", font=(
         "Supersonic Rocketship", 20), text_color="black")
     ltext.place(x=60, y=600)
 
-
-    # Globalize the value of character selection WITH the expressions
-    global main_char_select
-    main_char_select = 0 # Initialize char value to 0
-
-    # Store the character in a variable
-    global character
-    character = ImageTk.PhotoImage(blank) # Set no character as default
-
     # Save content button (SAVES THE IMAGE WITH NO CHARACTER AND NO CONTENT)
     save_photo = ImageTk.PhotoImage(Image.open('./Assets/frame0/save.png'))
     photo_list.append(save_photo)  # add photo object to the list
     save_label = Button(generate_window, image=save_photo, borderwidth=0, highlightthickness=0,
                         bg='#F8BC3B', activebackground='#F8BC3B', command=generate_save)
-    save_label.place(x=600, y=623)        
+    save_label.place(x=600, y=623)
 
     # EDIT CONTENT PHOTO // ADD STORY BUTTON
     edit_content_photo = ImageTk.PhotoImage(
@@ -577,22 +574,22 @@ def title_window():  # Window to get author and title data in entry window 2
     start_window.grab_set()
     start_window.geometry("1832x932")
     start_window.configure(bg="#F9F4F1")
-    
+
     # The variable that stores the textbox object for naming the storybook
     global prompt_pdf
 
     # Variable that stores the author's name
     global author_name
     # Tkinter UI for the textbox prompts for the storybook file
-    
+
     # For Title Label
     ltext_title = ctk.CTkLabel(start_window, height=20, width=20, text="Title", font=(
         "Montserrat", 48 * -1), text_color="#AB7A11")
     ltext_title.place(x=218, y=115)
-    
+
     # For Title Textbox
     prompt_pdf = ctk.CTkEntry(start_window, height=85, width=729, font=(
-        "Arial", 20), text_color="black", fg_color="white",border_width=10, border_color="#DDC8A0")
+        "Arial", 20), text_color="black", fg_color="white", border_width=10, border_color="#DDC8A0")
     prompt_pdf.place(x=201.0, y=165.0)
 
     # For Author Label
@@ -606,14 +603,15 @@ def title_window():  # Window to get author and title data in entry window 2
 
     # This code is for the cover page border of the generated image
     covgenerate_border = Label(start_window, height=34, width=72,
-                            bd=1, relief="solid", bg='#F9F4F1', borderwidth=10)
+                               bd=1, relief="solid", bg='#F9F4F1', borderwidth=10)
     covgenerate_border.place(x=1250, y=200)
 
     # Generate button for Cover img generator
-    covergen_photo = ImageTk.PhotoImage(Image.open('./Assets/frame0/Generate Button.png'))
+    covergen_photo = ImageTk.PhotoImage(
+        Image.open('./Assets/frame0/Generate Button.png'))
     photo_list.append(covergen_photo)  # add photo object to the list
     covergen_label = Button(start_window, image=covergen_photo, borderwidth=0,
-                           highlightthickness=0, command=generate_cover_image)
+                            highlightthickness=0, command=generate_cover_image)
     covergen_label.place(x=201, y=650)
 
     global lmain_cover  # Globalize cover label frame holder
@@ -627,7 +625,7 @@ def title_window():  # Window to get author and title data in entry window 2
 
     # Tkinter UI for the textbox prompt1
     cover_prompt = ctk.CTkEntry(start_window, width=729.0, height=185.0, bg_color="#F9F4F1", font=(
-             "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
+        "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
     cover_prompt.place(x=201.0, y=469.0)
 
     # For Cover image generated Label
@@ -651,12 +649,12 @@ def title_window():  # Window to get author and title data in entry window 2
                         image=back_photo, command=start_window.destroy)
     back_label.place(x=100, y=50, anchor="n")
 
-    # Ok button to accepts the data and goes to window 3 
+    # Ok button to accepts the data and goes to window 3
     okay_photo = ImageTk.PhotoImage(Image.open('./Assets/OkButton.png'))
     photo_list.append(okay_photo)  # add photo object to the list
     okay_label = Button(start_window, borderwidth=0, highlightthickness=0,
                         image=okay_photo, command=main_operating_screen)
-    okay_label.place(x=1700, y=650, anchor="n") 
+    okay_label.place(x=1700, y=650, anchor="n")
 
     # Handle the window's screen updates
     start_window.resizable(False, False)
@@ -669,7 +667,7 @@ def main_operating_screen():  # Main Operating Screen window 3
 
     # start_window.destroy()  # Destroy the start window (with the author and title data entry)
 
-    global main_screen # Globalize the value of main_screen
+    global main_screen  # Globalize the value of main_screen
 
     main_screen = tk.Toplevel(app)
     main_screen.title("Main Operating Screen")
@@ -881,7 +879,8 @@ def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WI
     dog_label.bind("<Leave>", lambda e: on_leave_main(e, dog_photo, 3))
 
     # Save content button (SAVES THE IMAGE WITH THE CHARACTER AND THE CONTENT)
-    save_photo_with_char = ImageTk.PhotoImage(Image.open('./Assets/frame0/save.png'))
+    save_photo_with_char = ImageTk.PhotoImage(
+        Image.open('./Assets/frame0/save.png'))
     photo_list.append(save_photo_with_char)  # add photo object to the list
     save_label = Button(addcharacter_screen, image=save_photo_with_char, borderwidth=0, highlightthickness=0,
                         bg='#F8BC3B', activebackground='#F8BC3B', command=generate_save)
@@ -1003,11 +1002,14 @@ app = ctk.CTk()
 app.title("Pictales")
 app.geometry("1832x932")
 ctk.set_appearance_mode("F9F4F1")
-# Set the app geometry to fit the screen
-# app.update_idletasks()
-# w = app.winfo_screenwidth()
-# h = app.winfo_screenheight()
-# app.geometry("%dx%d+0+0" % (w, h))
+
+
+# Globalize the value of character selection WITH the expressions
+main_char_select = 0
+
+# Store the character in a photo image variable
+character = ImageTk.PhotoImage(blank)  # Set no character as default
+
 # ___________________________________________________________________________
 # Set background of window 1
 bg_img_photo = ImageTk.PhotoImage(Image.open('./Assets/AppBG.png'))
