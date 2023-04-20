@@ -641,71 +641,106 @@ def title_window():  # Window to get author and title data in entry window 2
                     width=1832, bd=0, highlightthickness=0, relief="ridge")
     canvas.place(x=0, y=0)
 
-    # Author Textbox
-    entry_1 = ctk.CTkEntry(start_window, width=1029.0, height=85.0, bg_color="#F9F4F1", font=(
+    # Title Textbox
+    entry_1 = ctk.CTkEntry(start_window, width=729.0, height=85.0, bg_color="#F9F4F1", font=(
         "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
-    entry_1.place(x=401.0, y=200.0)
+    entry_1.place(x=201.0, y=165.0) # width=1029 
 
-    # Author label on top of the text box
+    # Title label on top of the text box
     canvas.create_text(
-        418.0,
-        99.0,
+        218.0, # previously 418
+        115.0, # preciously 99
         anchor="nw",
         text="Title",
         fill="#AB7A11",
         font=("Montserrat", 48 * -1)
     )
 
-    # Title Textbox
-    entry_2 = ctk.CTkEntry(start_window, width=1029.0, height=85.0, bg_color="#F9F4F1", font=(
+    # Author Textbox
+    entry_2 = ctk.CTkEntry(start_window, width=729.0, height=85.0, bg_color="#F9F4F1", font=(
         "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
-    entry_2.place(x=401.0, y=441.0)
+    entry_2.place(x=201.0, y=314.0)
 
-    # Title label on top of the text box
+    # Author label on top of the text box
     canvas.create_text(
-        418.0,
-        373.0,
+        218.0,
+        264.0,
         anchor="nw",
         text="Author",
         fill="#AB7A11",
         font=("Montserrat", 48 * -1)
     )
 
-    # X Red button
-    button1_photo = ImageTk.PhotoImage(
-        Image.open('./Assets/window2/button_1.png'))
-    button_1 = Button(
-        start_window,
-        image=button1_photo,
-        borderwidth=0,
-        command=start_window.destroy,
-        highlightthickness=0,
-        relief="flat"
-    )
-    button_1.place(
-        x=765.0,
-        y=765.0,
-        width=93.0,
-        height=103.0
+    # Cover page prompt Textbox
+    entry_3 = ctk.CTkEntry(start_window, width=729.0, height=185.0, bg_color="#F9F4F1", font=(
+        "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
+    entry_3.place(x=201.0, y=469.0)
+
+    # Cover page label on top of the text box
+    canvas.create_text(
+        218.0,
+        413.0,
+        anchor="nw",
+        text="Enter prompt for Cover Image",
+        fill="#AB7A11",
+        font=("Montserrat", 48 * -1)
     )
 
-    # Check Green Button
-    button2_photo = ImageTk.PhotoImage(
-        Image.open('./Assets/window2/button_2.png'))
-    button_2 = Button(
-        start_window,
-        image=button2_photo,
-        borderwidth=0,
-        highlightthickness=0,
-        command=main_operating_screen,
-        relief="flat",
+    # Cover Image label on top of the generated img placeholder
+    canvas.create_text(
+        1218.0, # previously 218
+        115.0,
+        anchor="nw",
+        text="Cover Image",
+        fill="#AB7A11",
+        font=("Montserrat", 48 * -1)
     )
-    button_2.place(
-        x=957.0,
-        y=765.0,
-        width=93.0,
-        height=103.0
-    )
+
+    # This code is for the cover page border of the generated image
+    covgenerate_border = Label(start_window, height=34, width=72,
+                            bd=1, relief="solid", bg='#F9F4F1', borderwidth= 10,)
+    covgenerate_border.place(x=1250, y=200)
+
+
+    # Generate button for Cover img generator
+    covergen_photo = ImageTk.PhotoImage(Image.open('./Assets/frame0/Generate Button.png'))
+    photo_list.append(covergen_photo)  # add photo object to the list
+    covergen_label = Button(start_window, image=covergen_photo, borderwidth=0,
+                           highlightthickness=0, command=lambda: print(" cover img gen button clicked"))
+    covergen_label.place(x=201, y=519)
+
+    # Back button to window 1
+    back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
+    photo_list.append(back_photo)  # add photo object to the list
+    back_label = Button(start_window, borderwidth=0, highlightthickness=0,
+                        image=back_photo, command=start_window.destroy)
+    back_label.place(x=100, y=50, anchor="n")
+
+    # Ok button to accepts the data and goes to window 3 
+    okay_photo = ImageTk.PhotoImage(Image.open('./Assets/OkButton.png'))
+    photo_list.append(okay_photo)  # add photo object to the list
+    okay_label = Button(start_window, borderwidth=0, highlightthickness=0,
+                        image=okay_photo, command=main_operating_screen)
+    okay_label.place(x=1700, y=50, anchor="n") 
+
+    
+    # # Check Green Button
+    # button2_photo = ImageTk.PhotoImage(
+    #     Image.open('./Assets/window2/check button.png'))
+    # button_2 = Button(
+    #     start_window,
+    #     image=button2_photo,
+    #     borderwidth=0,
+    #     highlightthickness=0,
+    #     command=main_operating_screen,
+    #     relief="flat",
+    # )
+    # button_2.place(
+    #     x=957.0,
+    #     y=765.0,
+    #     width=93.0,
+    #     height=103.0
+    # )
 
     # Handle the window's screen updates
     start_window.resizable(False, False)
