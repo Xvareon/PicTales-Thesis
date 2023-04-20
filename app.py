@@ -646,33 +646,34 @@ def title_window():  # Window to get author and title data in entry window 2
     
     # For Title Label
     ltext_title = ctk.CTkLabel(start_window, height=20, width=20, text="Title", font=(
-        "Arial", 12), text_color="black")
-    ltext_title.place(x=60, y=210)
+        "Montserrat", 48 * -1), text_color="#AB7A11")
+    ltext_title.place(x=218, y=115)
     
     # For Title Textbox
-    prompt_pdf = ctk.CTkEntry(start_window, height=40, width=400, font=(
-        "Arial", 20), text_color="black", fg_color="white")
-    prompt_pdf.place(x=60, y=230)
+    prompt_pdf = ctk.CTkEntry(start_window, height=85, width=729, font=(
+        "Arial", 20), text_color="black", fg_color="white",border_width=10, border_color="#DDC8A0")
+    prompt_pdf.place(x=201.0, y=165.0)
 
     # For Author Label
     ltext_authname = ctk.CTkLabel(start_window, height=20, width=20, text="Author Name", font=(
-        "Arial", 12), text_color="black")
-    ltext_authname.place(x=60, y=275)
+        "Montserrat", 48 * -1), text_color="#AB7A11")
+    ltext_authname.place(x=218, y=264)
     # For Author Textbox
-    author_name = ctk.CTkEntry(start_window, height=40, width=400, font=(
-        "Arial", 20), text_color="black", fg_color="white")
-    author_name.place(x=60, y=300)
+    author_name = ctk.CTkEntry(start_window, width=729.0, height=85.0, bg_color="#F9F4F1", font=(
+        "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
+    author_name.place(x=201.0, y=314.0)
+
     # This code is for the cover page border of the generated image
     covgenerate_border = Label(start_window, height=34, width=72,
-                            bd=1, relief="solid", bg='#F9F4F1')
-    covgenerate_border.place(x=950, y=200)
+                            bd=1, relief="solid", bg='#F9F4F1', borderwidth=10)
+    covgenerate_border.place(x=1250, y=200)
 
     # Generate button for Cover img generator
     covergen_photo = ImageTk.PhotoImage(Image.open('./Assets/frame0/Generate Button.png'))
     photo_list.append(covergen_photo)  # add photo object to the list
     covergen_label = Button(start_window, image=covergen_photo, borderwidth=0,
                            highlightthickness=0, command=generate_cover_image)
-    covergen_label.place(x=60, y=750)
+    covergen_label.place(x=201, y=650)
 
     global lmain_cover  # Globalize cover label frame holder
     global ltext_cover  # Globalize text label frame holder
@@ -680,22 +681,27 @@ def title_window():  # Window to get author and title data in entry window 2
 
     # For prompt Title Label
     prompt_title = ctk.CTkLabel(start_window, height=20, width=20, text="Enter prompt for Cover Image", font=(
-        "Arial", 12), text_color="black")
-    prompt_title.place(x=60, y=340)
+        "Montserrat", 48 * -1), text_color="#AB7A11")
+    prompt_title.place(x=218, y=413)
 
     # Tkinter UI for the textbox prompt1
-    cover_prompt = ctk.CTkEntry(start_window, height=40, width=512, font=(
-        "Arial", 20), text_color="black", fg_color="white")
-    cover_prompt.place(x=60, y=360)
+    cover_prompt = ctk.CTkEntry(start_window, width=729.0, height=185.0, bg_color="#F9F4F1", font=(
+             "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
+    cover_prompt.place(x=201.0, y=469.0)
+
+    # For Cover image generated Label
+    coverimglab = ctk.CTkLabel(start_window, height=20, width=20, text="Cover Image", font=(
+        "Montserrat", 48 * -1), text_color="#AB7A11")
+    coverimglab.place(x=1218, y=115)
 
     # Placeholder frame for image result generated
     lmain_cover = ctk.CTkLabel(start_window)
-    lmain_cover.place(x=761, y=160.5)
+    lmain_cover.place(x=1255, y=200)
 
     # Placeholder frame for the text input
     ltext_cover = ctk.CTkLabel(start_window, height=100, width=512, text="COVERPAGE", font=(
         "Arial", 20), text_color="white")
-    ltext_cover.place(x=610, y=600)
+    ltext_cover.place(x=1218, y=715)
 
     # Back button to window 1
     back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
@@ -709,86 +715,7 @@ def title_window():  # Window to get author and title data in entry window 2
     photo_list.append(okay_photo)  # add photo object to the list
     okay_label = Button(start_window, borderwidth=0, highlightthickness=0,
                         image=okay_photo, command=main_operating_screen)
-    okay_label.place(x=1700, y=800, anchor="n") 
-
-    # # Create a canvas widget
-    # canvas = Canvas(start_window, bg="#F9F4F1", height=932,
-    #                 width=1832, bd=0, highlightthickness=0, relief="ridge")
-    # canvas.place(x=0, y=0)
-
-    # # Title Textbox
-    # entry_1 = ctk.CTkEntry(start_window, width=729.0, height=85.0, bg_color="#F9F4F1", font=(
-    #     "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
-    # entry_1.place(x=201.0, y=165.0) # width=1029 
-
-    # # Title label on top of the text box
-    # canvas.create_text(
-    #     218.0, # previously 418
-    #     115.0, # preciously 99
-    #     anchor="nw",
-    #     text="Title",
-    #     fill="#AB7A11",
-    #     font=("Montserrat", 48 * -1)
-    # )
-
-    # # Author Textbox
-    # entry_2 = ctk.CTkEntry(start_window, width=729.0, height=85.0, bg_color="#F9F4F1", font=(
-    #     "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
-    # entry_2.place(x=201.0, y=314.0)
-
-    # # Author label on top of the text box
-    # canvas.create_text(
-    #     218.0,
-    #     264.0,
-    #     anchor="nw",
-    #     text="Author",
-    #     fill="#AB7A11",
-    #     font=("Montserrat", 48 * -1)
-    # )
-
-    # # Cover page prompt Textbox
-    # entry_3 = ctk.CTkEntry(start_window, width=729.0, height=185.0, bg_color="#F9F4F1", font=(
-    #     "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
-    # entry_3.place(x=201.0, y=469.0)
-
-    # # Cover page label on top of the text box
-    # canvas.create_text(
-    #     218.0,
-    #     413.0,
-    #     anchor="nw",
-    #     text="Enter prompt for Cover Image",
-    #     fill="#AB7A11",
-    #     font=("Montserrat", 48 * -1)
-    # )
-
-    # # Cover Image label on top of the generated img placeholder
-    # canvas.create_text(
-    #     1218.0, # previously 218
-    #     115.0,
-    #     anchor="nw",
-    #     text="Cover Image",
-    #     fill="#AB7A11",
-    #     font=("Montserrat", 48 * -1)
-    # )
-
-
-    # # Check Green Button
-    # button2_photo = ImageTk.PhotoImage(
-    #     Image.open('./Assets/window2/check button.png'))
-    # button_2 = Button(
-    #     start_window,
-    #     image=button2_photo,
-    #     borderwidth=0,
-    #     highlightthickness=0,
-    #     command=main_operating_screen,
-    #     relief="flat",
-    # )
-    # button_2.place(
-    #     x=957.0,
-    #     y=765.0,
-    #     width=93.0,
-    #     height=103.0
-    # )
+    okay_label.place(x=1700, y=650, anchor="n") 
 
     # Handle the window's screen updates
     start_window.resizable(False, False)
@@ -858,7 +785,7 @@ def clarification_window():  # Clarification Window pops up before creating the 
 
     # X Button // Close the clarification window
     close_photo = ImageTk.PhotoImage(
-        Image.open('./Assets/window2/button_1.png'))
+        Image.open('./Assets/window2/x Button.png'))
     photo_list.append(close_photo)  # add photo object to the list
     no_button = Button(clarification_window, image=close_photo, command=clarification_window.destroy,
                        background='#F8BC3B', borderwidth=0, highlightthickness=0, activebackground='#F8BC3B')
@@ -866,7 +793,7 @@ def clarification_window():  # Clarification Window pops up before creating the 
 
     # v/ Button // Generate PDF File
     open_photo = ImageTk.PhotoImage(
-        Image.open('./Assets/window2/button_2.png'))
+        Image.open('./Assets/window2/check button.png'))
     photo_list.append(open_photo)  # add photo object to the list
     yes_button = Button(clarification_window, image=open_photo, command=lambda: generate_pdf,
                         background='#F8BC3B', borderwidth=0, highlightthickness=0, activebackground='#F8BC3B')
