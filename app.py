@@ -8,7 +8,6 @@
 # Edit Pages?
 # Character Expressions detector
 # Paragraph input chop chop (to avoid cutoff text)
-# Upload self created character
 # PDF MUST BE AUTOMATICALLY 2 PAGE
 # NEEDS UI that shows storybook has been created and exit the program
 # Video needs to have proper closing
@@ -17,9 +16,9 @@
 # ___________________________________________________________________________ DEPENDENCIES ___________________________________________________________________________
 # Import Tkinter for Python UI
 import tkinter as tk
-
+from tkinter import ttk 
 # Import Tkinter modules for buttons, labels, additional GUI
-from tkinter import Label, Button
+from tkinter import Label, Button, Canvas, Frame, messagebox
 
 # Import Tkinter module for video
 import tkvideo
@@ -78,6 +77,8 @@ def generate_image():   # Function to generate the images from the text prompt
         # Catch error if no text input is given
         if len(text_input) == 0 or text_input.isspace() == True:
             image = blank
+            edit_content_label.config(state="disabled")  # Disable the add character button if no input is given
+            save_label.config(state="disabled")  # Disable the save button if no input is given
         else:
             # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY!
             image = blank
@@ -85,7 +86,8 @@ def generate_image():   # Function to generate the images from the text prompt
             # Variable that contains the image result
             # image = pipe(cartoon_input, guidance_scale=10)[
             #     "images"][0]
-
+            edit_content_label.config(state="normal")  # Enable the add character button if the image is generated successfully
+            save_label.config(state="normal")  # Enable the save button in generate window if the image is generated successfully
     # Store image in a variable
     img = ImageTk.PhotoImage(image)
 
@@ -153,7 +155,6 @@ def generate_save():    # Saves the image in the current directory and displays 
             './GeneratedImages/{}.png'.format(text_input)).convert('RGBA')
 
         # Convert the PhotoImage object to a PIL Image object and convert to RGBA mode
-        print("Hotdog ni Mark")
         print(main_char_select)
         character_image = ImageTk.getimage(character).convert('RGBA')
 
@@ -179,7 +180,8 @@ def generate_save():    # Saves the image in the current directory and displays 
             img = ImageTk.PhotoImage(image)
             content = text_input
         else:
-            img = ImageTk.PhotoImage(base)
+            # img = ImageTk.PhotoImage(base)
+            img = ImageTk.PhotoImage(result)
             content = edit_textcontent_area.get('1.0', tk.END)
 
         # Makes the text input as a default content input if the user did not enter anything at the content textbox.
@@ -199,16 +201,16 @@ def generate_save():    # Saves the image in the current directory and displays 
         for text_item in content_list:
             j = j+1
             # Placeholder frame for the text input LISTS
-            ltext_list = ctk.CTkLabel(main_screen, height=512, width=512, text=text_item, font=(
-                "Arial", 12), text_color="white", fg_color="blue")
-            ltext_list.place(x=600, y=-100 + (200*j))
+            ltext_list = ctk.CTkLabel(main_screen, height=50, width=200, text=text_item, font=(
+                "Arial", 12), text_color="white", fg_color="#AB7A11")
+            ltext_list.place(x=1175, y=-50 + (400*j))
 
         # Displays the image list
         for pic in image_list:
-            i = i+1
             limg_list = ctk.CTkLabel(
-                main_screen, height=200, width=200, image=pic)
-            limg_list.place(x=1200, y=-100 + (200*i))
+                main_screen, image=pic)
+            limg_list.place(x=600, y=-20 + (800*i))
+            i = i+1
 
         # Destroy the edit content window and generate window
         # Check if there is a widget named addcharacter_screen.
@@ -242,13 +244,14 @@ def generate_cover_image():   # Function to generate the images from the text pr
         # Catch error if no text input is given
         if len(cover_input) == 0 or cover_input.isspace() == True:
             image_cover = blank
+            okay_label.config(state="disabled")  # Disable the button if no input is given
         else:
             image_cover = blank
             cartoon_input = "cartoonish " + cover_input
             # Variable that contains the image result
             # image_cover = pipe(cartoon_input, guidance_scale=10)[
             #     "images"][0]
-
+            okay_label.config(state="normal")  # Enable the button if the image is generated successfully
     # Store image in a variable
     img_cover = ImageTk.PhotoImage(image_cover)
 
@@ -262,6 +265,7 @@ def generate_cover_image():   # Function to generate the images from the text pr
 
 
 def generate_pdf():                 # Generate PicTale Story book
+
 
     pdf_name = prompt_pdf.get()    # Store text input in a variable, from the pdf window
 
@@ -348,13 +352,26 @@ def generate_pdf():                 # Generate PicTale Story book
     # Convert each PhotoImage object files into normal files
     for file in text_list:
 
+        # Store image file in a variable
+        file_image = Image.open(
+            './GeneratedImages/{}.png'.format(file))
+        
+        # Safely convert the rogue file image into a pdf page
+        if file_image.mode == 'RGBA':
+            file_image = file_image.convert('RGB')
+
         # Append main image file
-        pdf_list.append(Image.open(
-            './GeneratedImages/{}.png'.format(file)))
+        pdf_list.append(file_image)
+
+        file_text = Image.open(
+            './GeneratedImages/INPUT{}.png'.format(file))
+        
+        # Safely convert the rogue file text into a pdf page
+        if file_text.mode == 'RGBA':
+            file_text = file_text.convert('RGB')
 
         # Append the image file that has the text input drawn on a blank page
-        pdf_list.append(Image.open(
-            './GeneratedImages/INPUT{}.png'.format(file)))
+        pdf_list.append(file_text)
 
     # Check if storybook has content
     if pdf_list:
@@ -363,8 +380,11 @@ def generate_pdf():                 # Generate PicTale Story book
             pdf_path, "PDF", resolution=100.0, save_all=True, append_images=pdf_list[1:]
         )
 
-    # Destroy the rename window
-    # app_pdf.destroy()
+    # Show prompt that PDF was generated
+    messagebox.showinfo("Pictales", "Your PDF has been generated!")
+
+    # Close the app when storybook is made
+    app.destroy()
 
 
 # ___________________________________________________________________________ CONFIGURATIONS ___________________________________________________________________________
@@ -429,7 +449,7 @@ def about_window():     # the question mark button shows the about pictales moda
     # this block of code show the logo PICTALES and resize it, and append the image to be seen coz of resizing
     about_img = Image.open('./Assets/PICTALES LOGO Big w background.png')
     resized_img = about_img.resize(
-        (200, 200), resample=Image.Resampling.LANCZOS)
+        (200, 200), resample=Image.LANCZOS)
     about_photo = ImageTk.PhotoImage(resized_img)
 
     # MAGIC APPEND
@@ -464,7 +484,7 @@ def howTo_window():     # how to button will show this window playing the video 
     howTo_window = tk.Toplevel(app)
     howTo_window.title('How to use Pictales')
     howTo_window.grab_set()
-    howTo_window.geometry("1028x639+{}+{}".format(
+    howTo_window.geometry("1028x700+{}+{}".format(
         app.winfo_width()//2 - 480 + app.winfo_rootx(),
         app.winfo_height()//2 - 380 + app.winfo_rooty()
     ))
@@ -493,7 +513,7 @@ def funct_generate_window():    # This window is for getting the text prompt and
     generate_window.title("Prompt")
     generate_window.grab_set()
     # the geometry with app winfo width and height will center the window modal in main screen
-    generate_window.geometry("1228x739+{}+{}".format(
+    generate_window.geometry("1228x800+{}+{}".format(
         app.winfo_width()//2 - 614 + app.winfo_rootx(),
         app.winfo_height()//2 - 369 + app.winfo_rooty()
     ))
@@ -542,27 +562,29 @@ def funct_generate_window():    # This window is for getting the text prompt and
     photo_list.append(trigger_photo)  # add photo object to the list
     trigger_label = Button(generate_window, image=trigger_photo, borderwidth=0,
                            highlightthickness=0, bg='#F8BC3B', activebackground='#F8BC3B', command=generate_image)
-    trigger_label.place(x=110, y=620)
+    trigger_label.place(x=110, y=680)
 
     global ltext  # Globalize to pass on generate image function
     ltext = ctk.CTkLabel(generate_window, height=15, width=46, text="Image Title", font=(
         "Supersonic Rocketship", 20), text_color="black")
-    ltext.place(x=60, y=600)
+    ltext.place(x=60, y=635)
 
+    global save_label
     # Save content button (SAVES THE IMAGE WITH NO CHARACTER AND NO CONTENT)
     save_photo = ImageTk.PhotoImage(Image.open('./Assets/frame0/save.png'))
     photo_list.append(save_photo)  # add photo object to the list
     save_label = Button(generate_window, image=save_photo, borderwidth=0, highlightthickness=0,
-                        bg='#F8BC3B', activebackground='#F8BC3B', command=generate_save)
-    save_label.place(x=600, y=623)
+                        bg='#F8BC3B', activebackground='#F8BC3B', command=generate_save, state="disabled")
+    save_label.place(x=600, y=685)
 
+    global edit_content_label
     # EDIT CONTENT PHOTO // ADD STORY BUTTON
     edit_content_photo = ImageTk.PhotoImage(
         Image.open('./Assets/addStory_Button.png'))
     photo_list.append(edit_content_photo)  # add photo object to the list
     edit_content_label = Button(generate_window, image=edit_content_photo, borderwidth=0, highlightthickness=0,
-                                bg='#F8BC3B', activebackground='#F8BC3B', command=edit_content_page)
-    edit_content_label.place(x=900, y=623)
+                                bg='#F8BC3B', activebackground='#F8BC3B', command=edit_content_page, state="disabled")
+    edit_content_label.place(x=900, y=685)
 
 
 def title_window():  # Window to get author and title data in entry window 2
@@ -585,26 +607,21 @@ def title_window():  # Window to get author and title data in entry window 2
     # For Title Label
     ltext_title = ctk.CTkLabel(start_window, height=20, width=20, text="Title", font=(
         "Montserrat", 48 * -1), text_color="#AB7A11")
-    ltext_title.place(x=218, y=115)
+    ltext_title.place(x=218, y=125)
 
     # For Title Textbox
     prompt_pdf = ctk.CTkEntry(start_window, height=85, width=729, font=(
         "Arial", 20), text_color="black", fg_color="white", border_width=10, border_color="#DDC8A0")
-    prompt_pdf.place(x=201.0, y=165.0)
+    prompt_pdf.place(x=201.0, y=180.0)
 
     # For Author Label
     ltext_authname = ctk.CTkLabel(start_window, height=20, width=20, text="Author Name", font=(
         "Montserrat", 48 * -1), text_color="#AB7A11")
-    ltext_authname.place(x=218, y=264)
+    ltext_authname.place(x=218, y=295)
     # For Author Textbox
     author_name = ctk.CTkEntry(start_window, width=729.0, height=85.0, bg_color="#F9F4F1", font=(
         "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
-    author_name.place(x=201.0, y=314.0)
-
-    # This code is for the cover page border of the generated image
-    covgenerate_border = Label(start_window, height=34, width=72,
-                               bd=1, relief="solid", bg='#F9F4F1', borderwidth=10)
-    covgenerate_border.place(x=1250, y=200)
+    author_name.place(x=201.0, y=350.0)
 
     # Generate button for Cover img generator
     covergen_photo = ImageTk.PhotoImage(
@@ -612,7 +629,7 @@ def title_window():  # Window to get author and title data in entry window 2
     photo_list.append(covergen_photo)  # add photo object to the list
     covergen_label = Button(start_window, image=covergen_photo, borderwidth=0,
                             highlightthickness=0, command=generate_cover_image)
-    covergen_label.place(x=201, y=650)
+    covergen_label.place(x=201, y=750)
 
     global lmain_cover  # Globalize cover label frame holder
     global ltext_cover  # Globalize text label frame holder
@@ -621,26 +638,31 @@ def title_window():  # Window to get author and title data in entry window 2
     # For prompt Title Label
     prompt_title = ctk.CTkLabel(start_window, height=20, width=20, text="Enter prompt for Cover Image", font=(
         "Montserrat", 48 * -1), text_color="#AB7A11")
-    prompt_title.place(x=218, y=413)
+    prompt_title.place(x=218, y=465)
 
-    # Tkinter UI for the textbox prompt1
+    # Tkinter UI for the textbox prompt for the cover img
     cover_prompt = ctk.CTkEntry(start_window, width=729.0, height=185.0, bg_color="#F9F4F1", font=(
         "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
-    cover_prompt.place(x=201.0, y=469.0)
+    cover_prompt.place(x=201.0, y=520.0)
+
+    # # This code is for the cover page border of the generated image
+    # covgenerate_border = Label(start_window, height=34, width=72,
+    #                            bd=1, relief="solid", bg='#F9F4F1', borderwidth=8)
+    # covgenerate_border.place(x=1180, y=175)
 
     # For Cover image generated Label
     coverimglab = ctk.CTkLabel(start_window, height=20, width=20, text="Cover Image", font=(
         "Montserrat", 48 * -1), text_color="#AB7A11")
-    coverimglab.place(x=1218, y=115)
+    coverimglab.place(x=1185, y=115)
 
     # Placeholder frame for image result generated
-    lmain_cover = ctk.CTkLabel(start_window)
-    lmain_cover.place(x=1255, y=200)
+    lmain_cover = tk.Label(start_window)
+    lmain_cover.place(x=1180, y=183)
 
     # Placeholder frame for the text input
-    ltext_cover = ctk.CTkLabel(start_window, height=100, width=512, text="COVERPAGE", font=(
-        "Arial", 20), text_color="white")
-    ltext_cover.place(x=1218, y=715)
+    ltext_cover = ctk.CTkLabel(start_window, height=100, width=512, text="Cover Text", font=(
+        "Arial", 20), text_color="#AB7A11", fg_color=None)
+    ltext_cover.place(x=1182, y=650)
 
     # Back button to window 1
     back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
@@ -649,13 +671,14 @@ def title_window():  # Window to get author and title data in entry window 2
                         image=back_photo, command=start_window.destroy)
     back_label.place(x=100, y=50, anchor="n")
 
+    global okay_label  # global to be called in generate_cover image function
     # Ok button to accepts the data and goes to window 3
     okay_photo = ImageTk.PhotoImage(Image.open('./Assets/OkButton.png'))
     photo_list.append(okay_photo)  # add photo object to the list
     okay_label = Button(start_window, borderwidth=0, highlightthickness=0,
-                        image=okay_photo, command=main_operating_screen)
-    okay_label.place(x=1700, y=650, anchor="n")
-
+                        image=okay_photo, command=main_operating_screen, state="disabled") # disable if theres no cover image
+    okay_label.place(x=1600, y=750, anchor="n")
+    
     # Handle the window's screen updates
     start_window.resizable(False, False)
     start_window.mainloop()
@@ -675,6 +698,23 @@ def main_operating_screen():  # Main Operating Screen window 3
     main_screen.geometry("1832x932")
     main_screen.configure(bg='#F9F4F1')
 
+    #Testing Scrollbar - https://www.youtube.com/watch?v=0WafQCaok6g
+    main_frame = Frame(main_screen)
+    main_frame.pack(fill='both', expand=1)
+
+    canvas = Canvas(main_frame)
+    canvas.pack(side='left', fill='both', expand=1)
+
+    scrollbar = ttk.Scrollbar(main_frame, orient='vertical', command=canvas.yview)
+    scrollbar.pack(side='right', fill='y')
+
+    canvas.configure(yscrollcommand=scrollbar.set)
+    canvas.bind('<Configure>', lambda e:canvas.configure(scrollregion= canvas.bbox("all")))
+
+    scrollbar = tk.Scrollbar(main_screen, orient='vertical', command=main_screen)
+    scrollbar.pack(side= 'right', fill='y')
+
+
     # Back button to title and author
     back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
     photo_list.append(back_photo)  # add photo object to the list
@@ -683,41 +723,43 @@ def main_operating_screen():  # Main Operating Screen window 3
     back_label.place(x=100, y=50, anchor="n")
 
     # Will be the title based on the output of the user
-    pictales_title = tk.Label(main_screen, text='Title of Pictales',
-                              font=custom_font, fg='#F8BC3B', bg='#F9F4F1')
-    pictales_title.place(x=200, y=50)
-    pictales_title.config(font=("Supersonic Rocketship", 60))
+    pictales_title = tk.Label(main_screen, text=prompt_pdf.get(),
+                              font=custom_font, fg='#F8BC3B', bg='#F9F4F1') ## added the title of the pictales in window 3 text
+    pictales_title.place(x=200, y=75)
+    pictales_title.config(font=("Supersonic Rocketship", 24))
 
-    # Add page button
+    # Add page button // Cross Photo 
     addpage_photo = ImageTk.PhotoImage(Image.open('./Assets/addbutton.png'))
     photo_list.append(addpage_photo)  # add photo object to the list
     addpage_label = Button(main_screen, borderwidth=0,
                            highlightthickness=0, image=addpage_photo, command=funct_generate_window, bg='#F9F4F1', activebackground='#F8BC3B')
     addpage_label.place(x=300, y=250, anchor="n")
 
-    # Redirecting to modal window for Generating image // Create Pictales button in window 3
+    # Redirecting to modal window for Generating image // Create Pictales button in window 3 
     createpictales_photo = ImageTk.PhotoImage(
         Image.open('./Assets/createpictales.png'))
     photo_list.append(createpictales_photo)  # add photo object to the list
     createpictales_label = Button(main_screen, borderwidth=0,
-                                  highlightthickness=0, image=createpictales_photo, command=clarification_window)
+                                  highlightthickness=0, image=createpictales_photo, command=clarification_window) # show the prompt creation of pdf
     # createpictales_label = Button(main_operating_screen, borderwidth=0,
     #                               highlightthickness=0, image=createpictales_photo, command=pdf_window)
     createpictales_label.place(x=1450, y=50, anchor="n")
 
 
 def clarification_window():  # Clarification Window pops up before creating the pictales pdf window 5
-    clarification_window = tk.Toplevel(app)
-    clarification_window.title('Are you sure?')
-    clarification_window.grab_set()
-    clarification_window.geometry("690x603+{}+{}".format(
+    global clarification # globallize the value of clarification
+            
+    clarification = tk.Toplevel(app)
+    clarification.title('Are you sure?')
+    clarification.grab_set()
+    clarification.geometry("690x603+{}+{}".format(
         app.winfo_width()//2 - 378 + app.winfo_rootx(),
         app.winfo_height()//2 - 372 + app.winfo_rooty()
     ))
-    clarification_window.configure(bg='#F8BC3B')  # set background color
+    clarification.configure(bg='#F8BC3B')  # set background color
 
     # Set the clarification label on the window
-    clear_label = tk.Label(clarification_window, text='ARE YOU SURE TO \n REDISCOVER YOUR STORY AND \n CREATE YOUR OWN PICTALES?',
+    clear_label = tk.Label(clarification, text='ARE YOU SURE TO \n REDISCOVER YOUR STORY AND \n CREATE YOUR OWN PICTALES?',
                            font=custom_font, fg='white', bg='#F8BC3B')
     clear_label.place(x=40, y=50)
 
@@ -728,7 +770,7 @@ def clarification_window():  # Clarification Window pops up before creating the 
     close_photo = ImageTk.PhotoImage(
         Image.open('./Assets/window2/x Button.png'))
     photo_list.append(close_photo)  # add photo object to the list
-    no_button = Button(clarification_window, image=close_photo, command=clarification_window.destroy,
+    no_button = Button(clarification, image=close_photo, command=clarification.destroy,
                        background='#F8BC3B', borderwidth=0, highlightthickness=0, activebackground='#F8BC3B')
     no_button.place(x=200, y=400)
 
@@ -736,7 +778,7 @@ def clarification_window():  # Clarification Window pops up before creating the 
     open_photo = ImageTk.PhotoImage(
         Image.open('./Assets/window2/check button.png'))
     photo_list.append(open_photo)  # add photo object to the list
-    yes_button = Button(clarification_window, image=open_photo, command=generate_pdf,
+    yes_button = Button(clarification, image=open_photo, command=generate_pdf,
                         background='#F8BC3B', borderwidth=0, highlightthickness=0, activebackground='#F8BC3B')
     yes_button.place(x=400, y=400)
 
@@ -1018,7 +1060,7 @@ bg_img_label.place(x=0, y=0)
 
 # Load and display the logo image on the canvas in window 1
 logo_photo = ImageTk.PhotoImage(Image.open('./Assets/frame0/image_1.png'))
-logo_label = Label(app, image=logo_photo)
+logo_label = Label(app, image=logo_photo, bg='#F9F4F1')
 logo_label.place(x=800, y=90)
 
 # load and display start button
