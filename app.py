@@ -201,19 +201,18 @@ def generate_save():    # Saves the image in the current directory and displays 
         for text_item in content_list:
             j = j+1
             # Placeholder frame for the text input LISTS'
-            ltext_list = ctk.CTkLabel(inner_frame, height=50, width=200, text=text_item, font=(
-                "Arial", 12), text_color="white", fg_color="#AB7A11")
-            ltext_list.place(x=1175, y=-50 + (400*j))
-            ltext_list.pack()
-
-
+            ltext_list = Label(inner_frame, height=50, width=200, text=text_item, font=(
+                "Arial", 12), fg="#AB7A11")
+            # ltext_list.place(x=1175, y=-250 + (400*j))
+            ltext_list.pack(padx=10, pady=10)
+            
         # Displays the image list
         for pic in image_list:
-            limg_list = ctk.CTkLabel(
-                inner_frame, image=pic)
-            limg_list.place(x=600, y=-20 + (800*i))
             i = i+1
-            limg_list.pack()
+            limg_list = Label(
+                inner_frame, image=pic)
+            # limg_list.place(x=1500, y=-100 + (400*i))
+            limg_list.pack(padx=10, pady=10)
 
         # Destroy the edit content window and generate window
         # Check if there is a widget named addcharacter_screen.
@@ -632,7 +631,7 @@ def title_window():  # Window to get author and title data in entry window 2
     photo_list.append(covergen_photo)  # add photo object to the list
     covergen_label = Button(start_window, image=covergen_photo, borderwidth=0,
                             highlightthickness=0, command=generate_cover_image)
-    covergen_label.place(x=201, y=450) #y=750
+    covergen_label.place(x=201, y=750) #y=750
 
     global lmain_cover  # Globalize cover label frame holder
     global ltext_cover  # Globalize text label frame holder
@@ -680,7 +679,7 @@ def title_window():  # Window to get author and title data in entry window 2
     photo_list.append(okay_photo)  # add photo object to the list
     okay_label = Button(start_window, borderwidth=0, highlightthickness=0,
                         image=okay_photo, command=main_operating_screen, state="disabled") # disable if theres no cover image
-    okay_label.place(x=1600, y=450, anchor="n") # y=750
+    okay_label.place(x=1600, y=750, anchor="n") # y=750
     
     # Handle the window's screen updates
     start_window.resizable(False, False)
@@ -733,7 +732,7 @@ def main_operating_screen():  # Main Operating Screen window 3
     # create a new frame to hold the widgets inside the canvas
     global inner_frame
     inner_frame = Frame(canvas)
-    canvas.create_window((0, 0), window=inner_frame, anchor='nw')
+    canvas.create_window((0,0), window=inner_frame, anchor='center')
 
     # add some widgets to the inner frame
     # for i in range(20):
