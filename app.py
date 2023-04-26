@@ -4,19 +4,16 @@
 # TO-DO LIST FOR THE BREAK:
 
 # Auto Install # PRIORITY
+# Checks for same image names
 # PicTales options basic and advanced
-# Edit Pages?
-# Character Expressions detector
-# Paragraph input chop chop (to avoid cutoff text)
 # PDF MUST BE AUTOMATICALLY 2 PAGE
-# NEEDS UI that shows storybook has been created and exit the program
 # Video needs to have proper closing
 #########################################################
 
 # ___________________________________________________________________________ DEPENDENCIES ___________________________________________________________________________
 # Import Tkinter for Python UI
 import tkinter as tk
-from tkinter import ttk 
+from tkinter import ttk
 # Import Tkinter modules for buttons, labels, additional GUI
 from tkinter import Label, Button, Canvas, Frame, messagebox
 
@@ -77,8 +74,10 @@ def generate_image():   # Function to generate the images from the text prompt
         # Catch error if no text input is given
         if len(text_input) == 0 or text_input.isspace() == True:
             image = blank
-            edit_content_label.config(state="disabled")  # Disable the add character button if no input is given
-            save_label.config(state="disabled")  # Disable the save button if no input is given
+            # Disable the add character button if no input is given
+            edit_content_label.config(state="disabled")
+            # Disable the save button if no input is given
+            save_label.config(state="disabled")
         else:
             # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY!
             image = blank
@@ -86,8 +85,10 @@ def generate_image():   # Function to generate the images from the text prompt
             # Variable that contains the image result
             # image = pipe(cartoon_input, guidance_scale=10)[
             #     "images"][0]
-            edit_content_label.config(state="normal")  # Enable the add character button if the image is generated successfully
-            save_label.config(state="normal")  # Enable the save button in generate window if the image is generated successfully
+            # Enable the add character button if the image is generated successfully
+            edit_content_label.config(state="normal")
+            # Enable the save button in generate window if the image is generated successfully
+            save_label.config(state="normal")
     # Store image in a variable
     img = ImageTk.PhotoImage(image)
 
@@ -197,22 +198,37 @@ def generate_save():    # Saves the image in the current directory and displays 
         # Store previous image in a list
         image_list.append(img)
 
-        # Displays the text list
-        for text_item in content_list:
-            j = j+1
-            # Placeholder frame for the text input LISTS'
+        ############# MAIN OPERATING SCREEN IMAGES ADDED SO FAR IN FOR LOOP #############
+
+        # create a list to hold the labels for each item
+        label_list = []
+
+        # Displays the text and image list in the main operating window
+        counter = 0
+        for text_item, pic in zip(content_list, image_list):
+
+            counter += 1
+            print(f"{counter}: {text_item}, {pic}")
+
+            # remove the previous labels from the window
+            for label in label_list:
+                label.pack_forget()
+            label_list = []
+
             ltext_list = Label(inner_frame, height=50, width=200, text=text_item, font=(
                 "Arial", 12), fg="#AB7A11")
-            # ltext_list.place(x=1175, y=-250 + (400*j))
             ltext_list.pack(padx=10, pady=10)
-            
-        # Displays the image list
-        for pic in image_list:
-            i = i+1
-            limg_list = Label(
-                inner_frame, image=pic)
-            # limg_list.place(x=1500, y=-100 + (400*i))
+            label_list.append(ltext_list)
+
+            limg_list = Label(inner_frame, image=pic)
             limg_list.pack(padx=10, pady=10)
+            label_list.append(limg_list)
+
+            # update the scroll region of the canvas
+            canvas.update_idletasks()
+            canvas.config(scrollregion=canvas.bbox('all'))
+
+        ###########################################################################################
 
         # Destroy the edit content window and generate window
         # Check if there is a widget named addcharacter_screen.
@@ -246,14 +262,16 @@ def generate_cover_image():   # Function to generate the images from the text pr
         # Catch error if no text input is given
         if len(cover_input) == 0 or cover_input.isspace() == True:
             image_cover = blank
-            okay_label.config(state="disabled")  # Disable the button if no input is given
+            # Disable the button if no input is given
+            okay_label.config(state="disabled")
         else:
             image_cover = blank
             cartoon_input = "cartoonish " + cover_input
             # Variable that contains the image result
             # image_cover = pipe(cartoon_input, guidance_scale=10)[
             #     "images"][0]
-            okay_label.config(state="normal")  # Enable the button if the image is generated successfully
+            # Enable the button if the image is generated successfully
+            okay_label.config(state="normal")
     # Store image in a variable
     img_cover = ImageTk.PhotoImage(image_cover)
 
@@ -267,7 +285,6 @@ def generate_cover_image():   # Function to generate the images from the text pr
 
 
 def generate_pdf():                 # Generate PicTale Story book
-
 
     pdf_name = prompt_pdf.get()    # Store text input in a variable, from the pdf window
 
@@ -357,7 +374,7 @@ def generate_pdf():                 # Generate PicTale Story book
         # Store image file in a variable
         file_image = Image.open(
             './GeneratedImages/{}.png'.format(file))
-        
+
         # Safely convert the rogue file image into a pdf page
         if file_image.mode == 'RGBA':
             file_image = file_image.convert('RGB')
@@ -367,7 +384,7 @@ def generate_pdf():                 # Generate PicTale Story book
 
         file_text = Image.open(
             './GeneratedImages/INPUT{}.png'.format(file))
-        
+
         # Safely convert the rogue file text into a pdf page
         if file_text.mode == 'RGBA':
             file_text = file_text.convert('RGB')
@@ -622,7 +639,7 @@ def title_window():  # Window to get author and title data in entry window 2
     ltext_authname.place(x=218, y=295)
     # For Author Textbox
     author_name = ctk.CTkEntry(start_window, width=729.0, height=85.0, bg_color="#F9F4F1", font=(
-        "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
+        "Arial", 20), text_color="black", fg_color="white", border_width=10, border_color="#DDC8A0")
     author_name.place(x=201.0, y=350.0)
 
     # Generate button for Cover img generator
@@ -631,7 +648,7 @@ def title_window():  # Window to get author and title data in entry window 2
     photo_list.append(covergen_photo)  # add photo object to the list
     covergen_label = Button(start_window, image=covergen_photo, borderwidth=0,
                             highlightthickness=0, command=generate_cover_image)
-    covergen_label.place(x=201, y=750) #y=750
+    covergen_label.place(x=201, y=750)  # y=750
 
     global lmain_cover  # Globalize cover label frame holder
     global ltext_cover  # Globalize text label frame holder
@@ -644,13 +661,8 @@ def title_window():  # Window to get author and title data in entry window 2
 
     # Tkinter UI for the textbox prompt for the cover img
     cover_prompt = ctk.CTkEntry(start_window, width=729.0, height=185.0, bg_color="#F9F4F1", font=(
-        "Arial", 20), text_color="black", border_width=10, border_color="#DDC8A0")
+        "Arial", 20), text_color="black", fg_color="white", border_width=10, border_color="#DDC8A0")
     cover_prompt.place(x=201.0, y=520.0)
-
-    # # This code is for the cover page border of the generated image
-    # covgenerate_border = Label(start_window, height=34, width=72,
-    #                            bd=1, relief="solid", bg='#F9F4F1', borderwidth=8)
-    # covgenerate_border.place(x=1180, y=175)
 
     # For Cover image generated Label
     coverimglab = ctk.CTkLabel(start_window, height=20, width=20, text="Cover Image", font=(
@@ -678,9 +690,9 @@ def title_window():  # Window to get author and title data in entry window 2
     okay_photo = ImageTk.PhotoImage(Image.open('./Assets/OkButton.png'))
     photo_list.append(okay_photo)  # add photo object to the list
     okay_label = Button(start_window, borderwidth=0, highlightthickness=0,
-                        image=okay_photo, command=main_operating_screen, state="disabled") # disable if theres no cover image
-    okay_label.place(x=1600, y=750, anchor="n") # y=750
-    
+                        image=okay_photo, command=main_operating_screen, state="disabled")  # disable if theres no cover image
+    okay_label.place(x=1600, y=750, anchor="n")  # y=750
+
     # Handle the window's screen updates
     start_window.resizable(False, False)
     start_window.mainloop()
@@ -700,48 +712,38 @@ def main_operating_screen():  # Main Operating Screen window 3
     main_screen.geometry("1832x932")
     main_screen.configure(bg='#F9F4F1')
 
-    # #Testing Scrollbar - https://www.youtube.com/watch?v=0WafQCaok6g
-    # main_frame = Frame(main_screen)
-    # main_frame.pack(fill='both', expand=1)
+    ################################################# MESSY SCROLL BAR CODE #####################################################
 
-    # canvas = Canvas(main_frame)
-    # canvas.pack(side='left', fill='both', expand=1)
+    # create a new frame to hold the canvas and scrollbar
+    main_frame = Frame(main_screen)
+    # make the frame fill the entire main_screen window
+    main_frame.pack(fill='both', expand=1)
 
-    # scrollbar = ttk.Scrollbar(main_frame, orient='vertical', command=canvas.yview)
-    # scrollbar.pack(side='right', fill='y')
+    global canvas  # Globalize canvas to pass to Main operating window
 
-    # canvas.configure(yscrollcommand=scrollbar.set)
-    # canvas.bind('<Configure>', lambda e:canvas.configure(scrollregion= canvas.bbox("all")))
+    # create a new canvas widget and add it to the main_frame
+    canvas = Canvas(main_frame)
+    # make the canvas fill the entire main_frame
+    canvas.pack(side='left', fill='both', expand=1)
 
-    # scrollbar = tk.Scrollbar(main_screen, orient='vertical', command=main_screen)
-    # scrollbar.pack(side= 'right', fill='y')
+    # create a new vertical scrollbar widget
+    scrollbar = ttk.Scrollbar(
+        main_frame, orient='vertical', command=canvas.yview)
+    # place the scrollbar on the right side of the main_frame
+    scrollbar.pack(side='right', fill='y')
 
-    main_frame = Frame(main_screen)       # create a new frame to hold the canvas and scrollbar
-    main_frame.pack(fill='both', expand=1)   # make the frame fill the entire main_screen window
-
-    canvas = Canvas(main_frame)            # create a new canvas widget and add it to the main_frame
-    canvas.pack(side='left', fill='both', expand=1)   # make the canvas fill the entire main_frame
-
-    scrollbar = ttk.Scrollbar(main_frame, orient='vertical', command=canvas.yview)   # create a new vertical scrollbar widget
-    scrollbar.pack(side='right', fill='y')   # place the scrollbar on the right side of the main_frame
-
-    canvas.configure(yscrollcommand=scrollbar.set)   # configure the canvas to scroll using the scrollbar
-    canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox('all')))   # bind the <Configure> event to the canvas and update the scroll region when the canvas is resized
-
+    # configure the canvas to scroll using the scrollbar
+    canvas.configure(yscrollcommand=scrollbar.set)
+    # bind the <Configure> event to the canvas and update the scroll region when the canvas is resized
+    canvas.bind('<Configure>', lambda e: canvas.configure(
+        scrollregion=canvas.bbox('all')))
 
     # create a new frame to hold the widgets inside the canvas
     global inner_frame
     inner_frame = Frame(canvas)
-    canvas.create_window((0,0), window=inner_frame, anchor='center')
+    canvas.create_window((0, 0), window=inner_frame, anchor='center')
 
-    # add some widgets to the inner frame
-    # for i in range(20):
-    #     label = Label(inner_frame, text=f"Label {i}", font=("ariel", 30))
-    #     label.pack()
-
-    # update the scroll region of the canvas
-    canvas.update_idletasks()
-    canvas.config(scrollregion=canvas.bbox('all'))
+    ######################################################################################################
 
     # Back button to title and author
     back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
@@ -752,31 +754,29 @@ def main_operating_screen():  # Main Operating Screen window 3
 
     # Will be the title based on the output of the user
     pictales_title = tk.Label(main_screen, text=prompt_pdf.get(),
-                              font=custom_font, fg='#F8BC3B', bg='#F9F4F1') ## added the title of the pictales in window 3 text
+                              font=custom_font, fg='#F8BC3B', bg='#F9F4F1')  # added the title of the pictales in window 3 text
     pictales_title.place(x=200, y=75)
     pictales_title.config(font=("Supersonic Rocketship", 24))
 
-    # Add page button // Cross Photo 
+    # Add page button // Cross Photo
     addpage_photo = ImageTk.PhotoImage(Image.open('./Assets/addbutton.png'))
     photo_list.append(addpage_photo)  # add photo object to the list
     addpage_label = Button(main_screen, borderwidth=0,
                            highlightthickness=0, image=addpage_photo, command=funct_generate_window, bg='#F9F4F1', activebackground='#F8BC3B')
     addpage_label.place(x=300, y=250, anchor="n")
 
-    # Redirecting to modal window for Generating image // Create Pictales button in window 3 
+    # Redirecting to modal window for Generating image // Create Pictales button in window 3
     createpictales_photo = ImageTk.PhotoImage(
         Image.open('./Assets/createpictales.png'))
     photo_list.append(createpictales_photo)  # add photo object to the list
     createpictales_label = Button(main_screen, borderwidth=0,
-                                  highlightthickness=0, image=createpictales_photo, command=clarification_window) # show the prompt creation of pdf
-    # createpictales_label = Button(main_operating_screen, borderwidth=0,
-    #                               highlightthickness=0, image=createpictales_photo, command=pdf_window)
+                                  highlightthickness=0, image=createpictales_photo, command=clarification_window)  # show the prompt creation of pdf
     createpictales_label.place(x=1450, y=50, anchor="n")
 
 
 def clarification_window():  # Clarification Window pops up before creating the pictales pdf window 5
-    global clarification # globallize the value of clarification
-            
+    global clarification  # globallize the value of clarification
+
     clarification = tk.Toplevel(app)
     clarification.title('Are you sure?')
     clarification.grab_set()
