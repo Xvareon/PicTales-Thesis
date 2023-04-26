@@ -200,17 +200,20 @@ def generate_save():    # Saves the image in the current directory and displays 
         # Displays the text list
         for text_item in content_list:
             j = j+1
-            # Placeholder frame for the text input LISTS
-            ltext_list = ctk.CTkLabel(main_screen, height=50, width=200, text=text_item, font=(
+            # Placeholder frame for the text input LISTS'
+            ltext_list = ctk.CTkLabel(inner_frame, height=50, width=200, text=text_item, font=(
                 "Arial", 12), text_color="white", fg_color="#AB7A11")
             ltext_list.place(x=1175, y=-50 + (400*j))
+            ltext_list.pack()
+
 
         # Displays the image list
         for pic in image_list:
             limg_list = ctk.CTkLabel(
-                main_screen, image=pic)
+                inner_frame, image=pic)
             limg_list.place(x=600, y=-20 + (800*i))
             i = i+1
+            limg_list.pack()
 
         # Destroy the edit content window and generate window
         # Check if there is a widget named addcharacter_screen.
@@ -629,7 +632,7 @@ def title_window():  # Window to get author and title data in entry window 2
     photo_list.append(covergen_photo)  # add photo object to the list
     covergen_label = Button(start_window, image=covergen_photo, borderwidth=0,
                             highlightthickness=0, command=generate_cover_image)
-    covergen_label.place(x=201, y=750)
+    covergen_label.place(x=201, y=450) #y=750
 
     global lmain_cover  # Globalize cover label frame holder
     global ltext_cover  # Globalize text label frame holder
@@ -677,7 +680,7 @@ def title_window():  # Window to get author and title data in entry window 2
     photo_list.append(okay_photo)  # add photo object to the list
     okay_label = Button(start_window, borderwidth=0, highlightthickness=0,
                         image=okay_photo, command=main_operating_screen, state="disabled") # disable if theres no cover image
-    okay_label.place(x=1600, y=750, anchor="n")
+    okay_label.place(x=1600, y=450, anchor="n") # y=750
     
     # Handle the window's screen updates
     start_window.resizable(False, False)
@@ -698,22 +701,48 @@ def main_operating_screen():  # Main Operating Screen window 3
     main_screen.geometry("1832x932")
     main_screen.configure(bg='#F9F4F1')
 
-    #Testing Scrollbar - https://www.youtube.com/watch?v=0WafQCaok6g
-    main_frame = Frame(main_screen)
-    main_frame.pack(fill='both', expand=1)
+    # #Testing Scrollbar - https://www.youtube.com/watch?v=0WafQCaok6g
+    # main_frame = Frame(main_screen)
+    # main_frame.pack(fill='both', expand=1)
 
-    canvas = Canvas(main_frame)
-    canvas.pack(side='left', fill='both', expand=1)
+    # canvas = Canvas(main_frame)
+    # canvas.pack(side='left', fill='both', expand=1)
 
-    scrollbar = ttk.Scrollbar(main_frame, orient='vertical', command=canvas.yview)
-    scrollbar.pack(side='right', fill='y')
+    # scrollbar = ttk.Scrollbar(main_frame, orient='vertical', command=canvas.yview)
+    # scrollbar.pack(side='right', fill='y')
 
-    canvas.configure(yscrollcommand=scrollbar.set)
-    canvas.bind('<Configure>', lambda e:canvas.configure(scrollregion= canvas.bbox("all")))
+    # canvas.configure(yscrollcommand=scrollbar.set)
+    # canvas.bind('<Configure>', lambda e:canvas.configure(scrollregion= canvas.bbox("all")))
 
-    scrollbar = tk.Scrollbar(main_screen, orient='vertical', command=main_screen)
-    scrollbar.pack(side= 'right', fill='y')
+    # scrollbar = tk.Scrollbar(main_screen, orient='vertical', command=main_screen)
+    # scrollbar.pack(side= 'right', fill='y')
 
+    main_frame = Frame(main_screen)       # create a new frame to hold the canvas and scrollbar
+    main_frame.pack(fill='both', expand=1)   # make the frame fill the entire main_screen window
+
+    canvas = Canvas(main_frame)            # create a new canvas widget and add it to the main_frame
+    canvas.pack(side='left', fill='both', expand=1)   # make the canvas fill the entire main_frame
+
+    scrollbar = ttk.Scrollbar(main_frame, orient='vertical', command=canvas.yview)   # create a new vertical scrollbar widget
+    scrollbar.pack(side='right', fill='y')   # place the scrollbar on the right side of the main_frame
+
+    canvas.configure(yscrollcommand=scrollbar.set)   # configure the canvas to scroll using the scrollbar
+    canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox('all')))   # bind the <Configure> event to the canvas and update the scroll region when the canvas is resized
+
+
+    # create a new frame to hold the widgets inside the canvas
+    global inner_frame
+    inner_frame = Frame(canvas)
+    canvas.create_window((0, 0), window=inner_frame, anchor='nw')
+
+    # add some widgets to the inner frame
+    # for i in range(20):
+    #     label = Label(inner_frame, text=f"Label {i}", font=("ariel", 30))
+    #     label.pack()
+
+    # update the scroll region of the canvas
+    canvas.update_idletasks()
+    canvas.config(scrollregion=canvas.bbox('all'))
 
     # Back button to title and author
     back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
