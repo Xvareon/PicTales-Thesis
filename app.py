@@ -5,21 +5,19 @@
 
 # Auto Install # PRIORITY
 # Checks for same image names
-# PicTales options basic and advanced
-# PDF MUST BE AUTOMATICALLY 2 PAGE
-# Video needs to have proper closing
 #########################################################
 
 # ___________________________________________________________________________ DEPENDENCIES ___________________________________________________________________________
 # Import Tkinter for Python UI
 import tkinter as tk
 from tkinter import ttk
+from tkVideoPlayer import TkinterVideo
 # Import Tkinter modules for buttons, labels, additional GUI
 from tkinter import Label, Button, Canvas, Frame, messagebox
 
 # Import Tkinter module for video
-import tkvideo
-
+import pygame
+import textwrap
 # Import CustomTkinter for additional Tkinter configurations
 import customtkinter as ctk
 
@@ -93,8 +91,8 @@ def generate_image():   # Function to generate the images from the text prompt
     img = ImageTk.PhotoImage(image)
 
     # Displays the text input in the Tkinter UI after generation
-    ltext.configure(text=text_input)
-    ltext.update()
+    # ltext.configure(text=text_input)
+    # ltext.update()
 
     # # Displays the image in the Tkinter UI after generation
     lmain.configure(image=img)
@@ -205,6 +203,7 @@ def generate_save():    # Saves the image in the current directory and displays 
 
         # Displays the text and image list in the main operating window
         counter = 0
+    
         for text_item, pic in zip(content_list, image_list):
 
             counter += 1
@@ -215,13 +214,17 @@ def generate_save():    # Saves the image in the current directory and displays 
                 label.pack_forget()
             label_list = []
 
-            ltext_list = Label(inner_frame, height=50, width=200, text=text_item, font=(
-                "Arial", 12), fg="#AB7A11")
-            ltext_list.pack(padx=10, pady=10)
+            ltext_list = Label(inner_frame, height=10, width=50, text="\n".join(textwrap.wrap(text_item, width=50)), font=(
+                            "Arial", 16), fg="#AB7A11", bg="#F9F4F1")
+            # ltext_list = Label(inner_frame, height=10, width=70, text=text_item, font=(
+            #     "Arial", 12), fg="#AB7A11", bg="#F9F4F1")
+            # ltext_list.pack(side = 'right')
+            ltext_list.grid(row=counter-1, column=0, padx=20, pady=10, ipadx=10, ipady=150, sticky='n')
             label_list.append(ltext_list)
 
-            limg_list = Label(inner_frame, image=pic)
-            limg_list.pack(padx=10, pady=10)
+            limg_list = Label(inner_frame, image=pic, bg="#F9F4F1")
+            # limg_list.pack(side = 'right')
+            limg_list.grid(row=counter-1, column=1, padx=20, pady=10, ipadx=10, ipady=80, sticky='n')
             label_list.append(limg_list)
 
             # update the scroll region of the canvas
@@ -306,25 +309,36 @@ def generate_pdf():                 # Generate PicTale Story book
 
     # Choose font
     font = ImageFont.truetype('arial.ttf', 16)
+    titlefont = ImageFont.truetype('comic.ttf',30)
+    
+    # Set the maximum width for each line
+    max_width = 15
 
-    # Write the text input based on the details provided by the user
+    # Wrap the text into multiple lines based on the maximum width
+    wrapped_text = textwrap.wrap(pdf_name, width=max_width)
+
+    # Calculate the y-coordinate for the second line of text
+    y_coord = 95 
+    # Draw each line of text with white color and increment the y-coordinate
+    for line in wrapped_text:
+        covertext.text((150, y_coord), line, font=titlefont, fill=(255, 255, 255))
+        y_coord += titlefont.getsize(line)[1] + 10
 
     # For Author
-    covertext.text((10, 10), author_name.get(),
-                   font=font, fill=(255, 255, 255))
-
-    # For Title
-    covertext.text((10, 210), pdf_name, font=font, fill=(255, 255, 255))
+    covertext.text((50, 380), author_name.get(),
+                   font=font, fill=(255, 255, 255)) 
 
     # For Date Created
-    covertext.text((10, 410), now.strftime("%m-%d-%Y"),
+    covertext.text((50, 410), now.strftime("%m-%d-%Y"),
                    font=font, fill=(255, 255, 255))
 
-    # Save cover image to local directory
+
+    # Save cover image to local directory // This has the Generated Cover Image // Page 1
     image_cover.save('./GeneratedImages/TitlePage_{}.png'.format(pdf_name))
 
-    # Store the coverpage into an object variable
+    # Store the coverpage into an object variable // Static Image Page 2
     cover = Image.open('./Assets/CoverPage.png')
+
     # Safely convert the rogue image into a pdf page
     if cover.mode == 'RGBA':
         cover = cover.convert('RGB')
@@ -446,7 +460,7 @@ custom_font = (font_path, font_size, "bold")
 # ABOUT WINDOW POP UP
 
 
-def about_window():     # the question mark button shows the about pictales modal
+def funct_about_window():     # the question mark button shows the about pictales modal
 
     # this code will pop up the window about in top level
     # the geometry with app winfo width and height will center the window modal in main screen
@@ -497,9 +511,10 @@ def about_window():     # the question mark button shows the about pictales moda
 # -----------------------------------------------------------------------------------
 
 
-def howTo_window():     # how to button will show this window playing the video about pictales
+def funct_howTo_window():     # how to button will show this window playing the video about pictales
     # this code will pop up the window how to in top level
     # the geometry with app winfo width and height will center the window modal in main screen
+    global howTo_window # Globalize to be destroyed later
     howTo_window = tk.Toplevel(app)
     howTo_window.title('How to use Pictales')
     howTo_window.grab_set()
@@ -509,20 +524,22 @@ def howTo_window():     # how to button will show this window playing the video 
     ))
     howTo_window.configure(bg='#F8BC3B')  # set background color
 
-    # this block of code play the video using the tkvideo library
-    my_label = Label(howTo_window)
-    my_label.pack()
-    # to change soon if video pictales is available
-    player = tkvideo.tkvideo("./Assets/sample.mp4",
-                             my_label, loop=1,  size=(820, 420))
-    # change the function to play or stop the video
-    player.play()
-
-    # Center the label/video in the window
-    my_label.place(x=520, y=300, anchor="center")
+    # Video Player on playing the tutorial video in howTo_window
+    videoplayer = TkinterVideo(howTo_window, scaled=True)
+    # Path of video file
+    videoplayer.load("./Assets/sample.mp4")
+    videoplayer.pack(expand=True, fill="both")
+    videoplayer.play() # play the video
 
     howTo_window.resizable(False, False)
-
+    
+    #back button of the How To 
+    back_photo = ImageTk.PhotoImage(
+        Image.open('./Assets/inverted_backbutton.png'))
+    photo_list.append(back_photo)  # add photo object to the list
+    back_label = Button(howTo_window, borderwidth=0, highlightthickness=0,
+                        image=back_photo, command=howTo_window.destroy, bg='#F8BC3B', activebackground='#F8BC3B')
+    back_label.place(x=85, y=20, anchor="n")
 
 def funct_generate_window():    # This window is for getting the text prompt and image generated result from that prompt
 
@@ -575,18 +592,18 @@ def funct_generate_window():    # This window is for getting the text prompt and
     lmain = tk.Label(generate_window, bg='#F8BC3B')
     lmain.place(x=50, y=100)
 
+    # global ltext  # Globalize to pass on generate image function
+    # ltext = ctk.CTkLabel(generate_window, height=15, width=46, text="Image Title", font=(
+    #     "Supersonic Rocketship", 20), text_color="black")
+    # ltext.place(x=60, y=635)
+
     # Generate button
     trigger_photo = ImageTk.PhotoImage(
         Image.open('./Assets/frame0/Generate Button.png'))
     photo_list.append(trigger_photo)  # add photo object to the list
     trigger_label = Button(generate_window, image=trigger_photo, borderwidth=0,
                            highlightthickness=0, bg='#F8BC3B', activebackground='#F8BC3B', command=generate_image)
-    trigger_label.place(x=110, y=680)
-
-    global ltext  # Globalize to pass on generate image function
-    ltext = ctk.CTkLabel(generate_window, height=15, width=46, text="Image Title", font=(
-        "Supersonic Rocketship", 20), text_color="black")
-    ltext.place(x=60, y=635)
+    trigger_label.place(x=110, y=660)
 
     global save_label
     # Save content button (SAVES THE IMAGE WITH NO CHARACTER AND NO CONTENT)
@@ -594,7 +611,7 @@ def funct_generate_window():    # This window is for getting the text prompt and
     photo_list.append(save_photo)  # add photo object to the list
     save_label = Button(generate_window, image=save_photo, borderwidth=0, highlightthickness=0,
                         bg='#F8BC3B', activebackground='#F8BC3B', command=generate_save, state="disabled")
-    save_label.place(x=600, y=685)
+    save_label.place(x=600, y=665)
 
     global edit_content_label
     # EDIT CONTENT PHOTO // ADD STORY BUTTON
@@ -603,7 +620,7 @@ def funct_generate_window():    # This window is for getting the text prompt and
     photo_list.append(edit_content_photo)  # add photo object to the list
     edit_content_label = Button(generate_window, image=edit_content_photo, borderwidth=0, highlightthickness=0,
                                 bg='#F8BC3B', activebackground='#F8BC3B', command=edit_content_page, state="disabled")
-    edit_content_label.place(x=900, y=685)
+    edit_content_label.place(x=900, y=665)
 
 
 def title_window():  # Window to get author and title data in entry window 2
@@ -674,7 +691,7 @@ def title_window():  # Window to get author and title data in entry window 2
     lmain_cover.place(x=1180, y=183)
 
     # Placeholder frame for the text input
-    ltext_cover = ctk.CTkLabel(start_window, height=100, width=512, text="Cover Text", font=(
+    ltext_cover = ctk.CTkLabel(start_window, height=100, width=512, text=" ", font=(
         "Arial", 20), text_color="#AB7A11", fg_color=None)
     ltext_cover.place(x=1182, y=650)
 
@@ -720,27 +737,23 @@ def main_operating_screen():  # Main Operating Screen window 3
     main_frame.pack(fill='both', expand=1)
 
     global canvas  # Globalize canvas to pass to Main operating window
+    
+    canvas = Canvas(main_frame) # create a new canvas widget and add it to the main_frame
+    canvas.configure(bg="#F9F4F1")          # set the background color of the canvas
+    canvas.pack(side='left', fill='both', expand=1)     # make the canvas fill the entire main_frame
 
-    # create a new canvas widget and add it to the main_frame
-    canvas = Canvas(main_frame)
-    # make the canvas fill the entire main_frame
-    canvas.pack(side='left', fill='both', expand=1)
-
-    # create a new vertical scrollbar widget
-    scrollbar = ttk.Scrollbar(
+    scrollbar = ttk.Scrollbar(     # create a new vertical scrollbar widget
         main_frame, orient='vertical', command=canvas.yview)
-    # place the scrollbar on the right side of the main_frame
-    scrollbar.pack(side='right', fill='y')
+    scrollbar.pack(side='right', fill='y') # place the scrollbar on the right side of the main_frame
 
-    # configure the canvas to scroll using the scrollbar
-    canvas.configure(yscrollcommand=scrollbar.set)
-    # bind the <Configure> event to the canvas and update the scroll region when the canvas is resized
-    canvas.bind('<Configure>', lambda e: canvas.configure(
+    canvas.configure(yscrollcommand=scrollbar.set) # configure the canvas to scroll using the scrollbar
+    canvas.bind('<Configure>', lambda e: canvas.configure(  # bind the <Configure> event to the canvas and update the scroll region when the canvas is resized
         scrollregion=canvas.bbox('all')))
 
     # create a new frame to hold the widgets inside the canvas
     global inner_frame
     inner_frame = Frame(canvas)
+    inner_frame.configure(bg="#F9F4F1")      # set the background color of the inner frame
     canvas.create_window((0, 0), window=inner_frame, anchor='center')
 
     ######################################################################################################
@@ -752,18 +765,26 @@ def main_operating_screen():  # Main Operating Screen window 3
                         image=back_photo, command=main_screen.destroy)
     back_label.place(x=100, y=50, anchor="n")
 
-    # Will be the title based on the output of the user
-    pictales_title = tk.Label(main_screen, text=prompt_pdf.get(),
-                              font=custom_font, fg='#F8BC3B', bg='#F9F4F1')  # added the title of the pictales in window 3 text
-    pictales_title.place(x=200, y=75)
-    pictales_title.config(font=("Supersonic Rocketship", 24))
-
+    text = prompt_pdf.get()
+    if len(text) >= 40 or  25 <= len(text):
+        wrapped_text = '\n'.join(text[i:i+40] for i in range(0, len(text), 40))
+        pictales_title = tk.Label(main_screen, text=wrapped_text, font=custom_font,
+                                    fg='#F8BC3B', bg='#F9F4F1', wraplength=500, justify='right')
+        pictales_title.place(x=1325, y=78)
+        pictales_title.config(font=("Supersonic Rocketship", 28))
+    else:
+        pictales_title = tk.Label(main_screen, text=text, font=custom_font,
+                                fg='#F8BC3B', bg='#F9F4F1', justify='right')
+        pictales_title.place(x=1275, y=78)
+        pictales_title.config(font=("Supersonic Rocketship", 28))
+    
+    
     # Add page button // Cross Photo
-    addpage_photo = ImageTk.PhotoImage(Image.open('./Assets/addbutton.png'))
+    addpage_photo = ImageTk.PhotoImage(Image.open('./Assets/addpage.png'))
     photo_list.append(addpage_photo)  # add photo object to the list
     addpage_label = Button(main_screen, borderwidth=0,
-                           highlightthickness=0, image=addpage_photo, command=funct_generate_window, bg='#F9F4F1', activebackground='#F8BC3B')
-    addpage_label.place(x=300, y=250, anchor="n")
+                           highlightthickness=0, image=addpage_photo, command=funct_generate_window, bg='#F9F4F1', activebackground='#F9F4F1')
+    addpage_label.place(x=1450, y=625)
 
     # Redirecting to modal window for Generating image // Create Pictales button in window 3
     createpictales_photo = ImageTk.PhotoImage(
@@ -771,7 +792,7 @@ def main_operating_screen():  # Main Operating Screen window 3
     photo_list.append(createpictales_photo)  # add photo object to the list
     createpictales_label = Button(main_screen, borderwidth=0,
                                   highlightthickness=0, image=createpictales_photo, command=clarification_window)  # show the prompt creation of pdf
-    createpictales_label.place(x=1450, y=50, anchor="n")
+    createpictales_label.place(x=1300, y=750)
 
 
 def clarification_window():  # Clarification Window pops up before creating the pictales pdf window 5
@@ -1073,6 +1094,12 @@ app.title("Pictales")
 app.geometry("1832x932")
 ctk.set_appearance_mode("F9F4F1")
 
+# Initialize sound player
+pygame.mixer.init()
+# Play sound (converted mp4 to mp3 video of how to video)
+pygame.mixer.music.load("./Assets/samplesound.mp3")
+# Loop it indefinitely
+pygame.mixer.music.play(loops=-1)
 
 # Globalize the value of character selection WITH the expressions
 main_char_select = 0
@@ -1100,14 +1127,14 @@ start_button.place(x=770, y=530)
 # load and display howto button
 howTo_photo = ImageTk.PhotoImage(Image.open('./Assets/frame0/button_2.png'))
 howTo_button = Button(app, image=howTo_photo, borderwidth=0,
-                      highlightthickness=0, command=howTo_window)
+                      highlightthickness=0, command=funct_howTo_window)
 howTo_button.place(x=770, y=690)
 
 # Question Mark in Window 1/ Main Window
 about_icon = ImageTk.PhotoImage(Image.open('./Assets/frame0/button_1.png'))
 photo_list.append(about_icon)  # add photo object to the list
 about_button = Button(app, image=about_icon, borderwidth=0,
-                      highlightthickness=0, command=about_window)
+                      highlightthickness=0, command=funct_about_window)
 about_button.place(x=50, y=50)
 
 # Testing Phase - Background transparency window 1
