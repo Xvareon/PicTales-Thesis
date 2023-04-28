@@ -3,8 +3,12 @@
 #########################################################
 # TO-DO LIST FOR THE BREAK:
 
-# Auto Install # PRIORITY
+# Auto Install # !!!PRIORITY!!!
 # Checks for same image names
+# Loading window when generating image/cover image
+# PicTales for adults which disables cartoon input but still filters out bad data/harmful inputs/outputs
+# Cute size some windows
+# Check for grabbing windows, will break the program
 #########################################################
 
 # ___________________________________________________________________________ DEPENDENCIES ___________________________________________________________________________
@@ -48,9 +52,22 @@ photo_list = []     # create a global list to store photo objects for GUI
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
 # Loads the model
-# model = torch.load('./results/model-1.pt')
+model = torch.load('./results/model-1.pt')
 
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
+
+
+def funct_play_music():
+    # Initialize sound player
+    pygame.mixer.init()
+    # Play sound (converted mp4 to mp3 video of to video)
+    pygame.mixer.music.load("./Assets/PicTalesBGsound.mp3")
+    # Loop it indefinitely
+    pygame.mixer.music.play(loops=-1)
+
+
+def funct_stop_music():
+    pygame.mixer.music.stop()
 
 
 def generate_image():   # Function to generate the images from the text prompt
@@ -78,15 +95,16 @@ def generate_image():   # Function to generate the images from the text prompt
             save_label.config(state="disabled")
         else:
             # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY!
-            image = blank
+            # image = blank
             cartoon_input = "cartoonish " + text_input
             # Variable that contains the image result
-            # image = pipe(cartoon_input, guidance_scale=10)[
-            #     "images"][0]
+            image = pipe(cartoon_input, guidance_scale=10)[
+                "images"][0]
             # Enable the add character button if the image is generated successfully
             edit_content_label.config(state="normal")
             # Enable the save button in generate window if the image is generated successfully
             save_label.config(state="normal")
+
     # Store image in a variable
     img = ImageTk.PhotoImage(image)
 
@@ -98,8 +116,9 @@ def generate_image():   # Function to generate the images from the text prompt
     lmain.configure(image=img)
     lmain.update()
 
-
 # Function for getting the character selected WITH the expressions, essentially the image we pass for saving a page.
+
+
 def funct_main_char_select(main_char_value, main_char_image):
 
     # Call global main_char_select variable to override the initial value
@@ -148,26 +167,29 @@ def generate_save():    # Saves the image in the current directory and displays 
         image.save('./GeneratedImages/{}.png'.format(text_input))
 
         ##################################################################
+        # If a character has been chosen
+        if main_char_select > 0:
+            # Load the base image on which the character will be pasted
+            base = Image.open(
+                './GeneratedImages/{}.png'.format(text_input)).convert('RGBA')
 
-        # Load the base image on which the character will be pasted
-        base = Image.open(
-            './GeneratedImages/{}.png'.format(text_input)).convert('RGBA')
+            # Convert the PhotoImage object to a PIL Image object and convert to RGBA mode
+            character_image = ImageTk.getimage(character).convert('RGBA')
 
-        # Convert the PhotoImage object to a PIL Image object and convert to RGBA mode
-        print(main_char_select)
-        character_image = ImageTk.getimage(character).convert('RGBA')
+            # Create a new transparent image of the same size as the base image
+            result = Image.new('RGBA', base.size, (0, 0, 0, 0))
 
-        # Create a new transparent image of the same size as the base image
-        result = Image.new('RGBA', base.size, (0, 0, 0, 0))
+            # Paste the base image onto the new image
+            result.paste(base, (0, 0))
 
-        # Paste the base image onto the new image
-        result.paste(base, (0, 0))
+            # Paste the character image onto the new image using alpha_composite
+            result.alpha_composite(character_image, dest=(0, 360))
 
-        # Paste the character image onto the new image using alpha_composite
-        result.alpha_composite(character_image, dest=(0, 360))
+            # Save the result image to disk
+            result.save('./GeneratedImages/{}.png'.format(text_input))
 
-        # Save the result image to disk
-        result.save('./GeneratedImages/{}.png'.format(text_input))
+            img = ImageTk.PhotoImage(result)
+            content = edit_textcontent_area.get('1.0', tk.END)
 
         ##################################################################
 
@@ -178,13 +200,9 @@ def generate_save():    # Saves the image in the current directory and displays 
         if main_char_select == 0:
             img = ImageTk.PhotoImage(image)
             content = text_input
-        else:
-            # img = ImageTk.PhotoImage(base)
-            img = ImageTk.PhotoImage(result)
-            content = edit_textcontent_area.get('1.0', tk.END)
 
         # Makes the text input as a default content input if the user did not enter anything at the content textbox.
-        if (content == ''):
+        if (content == '' or len(content) == 0 or content.isspace() == True):
             content = text_input
 
         # Add the content to the list
@@ -203,11 +221,10 @@ def generate_save():    # Saves the image in the current directory and displays 
 
         # Displays the text and image list in the main operating window
         counter = 0
-    
+
         for text_item, pic in zip(content_list, image_list):
 
             counter += 1
-            print(f"{counter}: {text_item}, {pic}")
 
             # remove the previous labels from the window
             for label in label_list:
@@ -215,16 +232,18 @@ def generate_save():    # Saves the image in the current directory and displays 
             label_list = []
 
             ltext_list = Label(inner_frame, height=10, width=50, text="\n".join(textwrap.wrap(text_item, width=50)), font=(
-                            "Arial", 16), fg="#AB7A11", bg="#F9F4F1")
+                "Arial", 16), fg="#AB7A11", bg="#F9F4F1")
             # ltext_list = Label(inner_frame, height=10, width=70, text=text_item, font=(
             #     "Arial", 12), fg="#AB7A11", bg="#F9F4F1")
             # ltext_list.pack(side = 'right')
-            ltext_list.grid(row=counter-1, column=0, padx=20, pady=10, ipadx=10, ipady=150, sticky='n')
+            ltext_list.grid(row=counter-1, column=0, padx=20,
+                            pady=10, ipadx=10, ipady=150, sticky='n')
             label_list.append(ltext_list)
 
             limg_list = Label(inner_frame, image=pic, bg="#F9F4F1")
             # limg_list.pack(side = 'right')
-            limg_list.grid(row=counter-1, column=1, padx=20, pady=10, ipadx=10, ipady=80, sticky='n')
+            limg_list.grid(row=counter-1, column=1, padx=20,
+                           pady=10, ipadx=10, ipady=80, sticky='n')
             label_list.append(limg_list)
 
             # update the scroll region of the canvas
@@ -268,11 +287,11 @@ def generate_cover_image():   # Function to generate the images from the text pr
             # Disable the button if no input is given
             okay_label.config(state="disabled")
         else:
-            image_cover = blank
+            # image_cover = blank
             cartoon_input = "cartoonish " + cover_input
             # Variable that contains the image result
-            # image_cover = pipe(cartoon_input, guidance_scale=10)[
-            #     "images"][0]
+            image_cover = pipe(cartoon_input, guidance_scale=10)[
+                "images"][0]
             # Enable the button if the image is generated successfully
             okay_label.config(state="normal")
     # Store image in a variable
@@ -295,11 +314,13 @@ def generate_pdf():                 # Generate PicTale Story book
     now = datetime.datetime.now()
 
     # Store the pdf file name into a variable, sets this as default for errors and etc like if the title name is not set.
-    if (pdf_name == ''):
+    if (pdf_name == '' or len(pdf_name) == 0 or pdf_name.isspace() == True):
         pdf_name = 'PicTales'
 
     # Specifies the directory where the pdf will generate
     pdf_path = "./StoryBooks/{}.pdf".format(pdf_name)
+
+    #######################################################################################
 
     # Save image file name as PNG based on text input
     image_cover.save('./GeneratedImages/TitlePage_{}.png'.format(pdf_name))
@@ -309,8 +330,8 @@ def generate_pdf():                 # Generate PicTale Story book
 
     # Choose font
     font = ImageFont.truetype('arial.ttf', 16)
-    titlefont = ImageFont.truetype('comic.ttf',30)
-    
+    titlefont = ImageFont.truetype('comic.ttf', 30)
+
     # Set the maximum width for each line
     max_width = 15
 
@@ -318,26 +339,40 @@ def generate_pdf():                 # Generate PicTale Story book
     wrapped_text = textwrap.wrap(pdf_name, width=max_width)
 
     # Calculate the y-coordinate for the second line of text
-    y_coord = 95 
+    y_coord = 95
+
     # Draw each line of text with white color and increment the y-coordinate
     for line in wrapped_text:
-        covertext.text((150, y_coord), line, font=titlefont, fill=(255, 255, 255))
+        # Black background for anti camo in title name / pdf name
+        text_width, text_height = titlefont.getsize(line)
+        bbox = (150, y_coord, 150 + text_width, y_coord + text_height)
+        covertext.rectangle(bbox, fill=(0, 0, 0))
+        # For writing title page / pdf name input in cover page
+        covertext.text((150, y_coord), line,
+                       font=titlefont, fill=(255, 255, 255))
         y_coord += titlefont.getsize(line)[1] + 10
 
-    # For Author
+    # Black background for anti camo in author name
+    bbox = covertext.textbbox((50, 380), author_name.get(), font=font)
+    covertext.rectangle(bbox, fill=(0, 0, 0))
+    # For writing author input in cover page
     covertext.text((50, 380), author_name.get(),
-                   font=font, fill=(255, 255, 255)) 
-
-    # For Date Created
-    covertext.text((50, 410), now.strftime("%m-%d-%Y"),
                    font=font, fill=(255, 255, 255))
 
+    # Black background for anti camo in date created
+    bbox = covertext.textbbox((50, 410), now.strftime("%m-%d-%Y"), font=font)
+    covertext.rectangle(bbox, fill=(0, 0, 0))
+    # For writing date created in cover page
+    covertext.text((50, 410), now.strftime("%m-%d-%Y"),
+                   font=font, fill=(255, 255, 255))
 
     # Save cover image to local directory // This has the Generated Cover Image // Page 1
     image_cover.save('./GeneratedImages/TitlePage_{}.png'.format(pdf_name))
 
     # Store the coverpage into an object variable // Static Image Page 2
     cover = Image.open('./Assets/CoverPage.png')
+
+    #######################################################################################
 
     # Safely convert the rogue image into a pdf page
     if cover.mode == 'RGBA':
@@ -421,29 +456,29 @@ def generate_pdf():                 # Generate PicTale Story book
 
 
 # ___________________________________________________________________________ CONFIGURATIONS ___________________________________________________________________________
-# isExist = os.path.exists('./results/model-1.pt')
+isExist = os.path.exists('./results/model-1.pt')
 
-# if (isExist == False):
-#     sys.exit(0)
+if (isExist == False):
+    sys.exit(0)
 
-# # loads the model used to a pre-defined library online
-# modelid = "CompVis/stable-diffusion-v1-4"
+# loads the model used to a pre-defined library online
+modelid = "CompVis/stable-diffusion-v1-4"
 
 # # Specifies the graphics driver to be used
-# device = "cuda"
-device = "cpu"
+device = "cuda"
+# device = "cpu"
 
 # # Loads the model into torch
-# torch.load('./results/model-1.pt')
+torch.load('./results/model-1.pt')
 
-# auth_token = "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"
+auth_token = "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"
 
 # # Uses the pipe from the online library for model translation to produce the image.
-# pipe = StableDiffusionPipeline.from_pretrained(
-#     modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
+pipe = StableDiffusionPipeline.from_pretrained(
+    modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
 
 # # # Uses the graphics driver (Must atleast be 4GB ram)
-# pipe.to(device)
+pipe.to(device)
 
 # -----------------------------------------------------------------------------------
 # Create template page for the title page image
@@ -481,8 +516,10 @@ def funct_about_window():     # the question mark button shows the about pictale
 
     # this block of code show the logo PICTALES and resize it, and append the image to be seen coz of resizing
     about_img = Image.open('./Assets/PICTALES LOGO Big w background.png')
+    # resized_img = about_img.resize(
+    #     (200, 200), resample=Image.LANCZOS)
     resized_img = about_img.resize(
-        (200, 200), resample=Image.LANCZOS)
+        (200, 200), resample=Image.Resampling.LANCZOS)
     about_photo = ImageTk.PhotoImage(resized_img)
 
     # MAGIC APPEND
@@ -514,7 +551,7 @@ def funct_about_window():     # the question mark button shows the about pictale
 def funct_howTo_window():     # how to button will show this window playing the video about pictales
     # this code will pop up the window how to in top level
     # the geometry with app winfo width and height will center the window modal in main screen
-    global howTo_window # Globalize to be destroyed later
+    global howTo_window  # Globalize to be destroyed later
     howTo_window = tk.Toplevel(app)
     howTo_window.title('How to use Pictales')
     howTo_window.grab_set()
@@ -529,17 +566,18 @@ def funct_howTo_window():     # how to button will show this window playing the 
     # Path of video file
     videoplayer.load("./Assets/sample.mp4")
     videoplayer.pack(expand=True, fill="both")
-    videoplayer.play() # play the video
+    videoplayer.play()  # play the video
 
     howTo_window.resizable(False, False)
-    
-    #back button of the How To 
+
+    # back button of the How To
     back_photo = ImageTk.PhotoImage(
         Image.open('./Assets/inverted_backbutton.png'))
     photo_list.append(back_photo)  # add photo object to the list
     back_label = Button(howTo_window, borderwidth=0, highlightthickness=0,
                         image=back_photo, command=howTo_window.destroy, bg='#F8BC3B', activebackground='#F8BC3B')
     back_label.place(x=85, y=20, anchor="n")
+
 
 def funct_generate_window():    # This window is for getting the text prompt and image generated result from that prompt
 
@@ -621,6 +659,7 @@ def funct_generate_window():    # This window is for getting the text prompt and
     edit_content_label = Button(generate_window, image=edit_content_photo, borderwidth=0, highlightthickness=0,
                                 bg='#F8BC3B', activebackground='#F8BC3B', command=edit_content_page, state="disabled")
     edit_content_label.place(x=900, y=665)
+    generate_window.resizable(False, False)
 
 
 def title_window():  # Window to get author and title data in entry window 2
@@ -695,12 +734,25 @@ def title_window():  # Window to get author and title data in entry window 2
         "Arial", 20), text_color="#AB7A11", fg_color=None)
     ltext_cover.place(x=1182, y=650)
 
-    # Back button to window 1
+    # Back button to window 2
     back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
     photo_list.append(back_photo)  # add photo object to the list
     back_label = Button(start_window, borderwidth=0, highlightthickness=0,
                         image=back_photo, command=start_window.destroy)
     back_label.place(x=100, y=50, anchor="n")
+    # Mute Sound button in Window 2 / start Window
+    musicOff_icon = ImageTk.PhotoImage(
+        Image.open('./Assets/ButtonmusicOff.png'))
+    photo_list.append(musicOff_icon)  # add photo object to the list
+    music_button = Button(start_window, image=musicOff_icon, borderwidth=0,
+                          highlightthickness=0, command=funct_stop_music)
+    music_button.place(x=50, y=180)
+    # Play Sound button in Window 2 / start Window
+    musicOn_icon = ImageTk.PhotoImage(Image.open('./Assets/ButtonmusicOn.png'))
+    photo_list.append(musicOn_icon)  # add photo object to the list
+    music_button = Button(start_window, image=musicOn_icon, borderwidth=0,
+                          highlightthickness=0, command=funct_play_music)
+    music_button.place(x=50, y=310)
 
     global okay_label  # global to be called in generate_cover image function
     # Ok button to accepts the data and goes to window 3
@@ -737,23 +789,29 @@ def main_operating_screen():  # Main Operating Screen window 3
     main_frame.pack(fill='both', expand=1)
 
     global canvas  # Globalize canvas to pass to Main operating window
-    
-    canvas = Canvas(main_frame) # create a new canvas widget and add it to the main_frame
-    canvas.configure(bg="#F9F4F1")          # set the background color of the canvas
-    canvas.pack(side='left', fill='both', expand=1)     # make the canvas fill the entire main_frame
+
+    # create a new canvas widget and add it to the main_frame
+    canvas = Canvas(main_frame)
+    # set the background color of the canvas
+    canvas.configure(bg="#F9F4F1")
+    # make the canvas fill the entire main_frame
+    canvas.pack(side='left', fill='both', expand=1)
 
     scrollbar = ttk.Scrollbar(     # create a new vertical scrollbar widget
         main_frame, orient='vertical', command=canvas.yview)
-    scrollbar.pack(side='right', fill='y') # place the scrollbar on the right side of the main_frame
+    # place the scrollbar on the right side of the main_frame
+    scrollbar.pack(side='right', fill='y')
 
-    canvas.configure(yscrollcommand=scrollbar.set) # configure the canvas to scroll using the scrollbar
+    # configure the canvas to scroll using the scrollbar
+    canvas.configure(yscrollcommand=scrollbar.set)
     canvas.bind('<Configure>', lambda e: canvas.configure(  # bind the <Configure> event to the canvas and update the scroll region when the canvas is resized
         scrollregion=canvas.bbox('all')))
 
     # create a new frame to hold the widgets inside the canvas
     global inner_frame
     inner_frame = Frame(canvas)
-    inner_frame.configure(bg="#F9F4F1")      # set the background color of the inner frame
+    # set the background color of the inner frame
+    inner_frame.configure(bg="#F9F4F1")
     canvas.create_window((0, 0), window=inner_frame, anchor='center')
 
     ######################################################################################################
@@ -764,21 +822,33 @@ def main_operating_screen():  # Main Operating Screen window 3
     back_label = Button(main_screen, borderwidth=0, highlightthickness=0,
                         image=back_photo, command=main_screen.destroy)
     back_label.place(x=100, y=50, anchor="n")
+    # Mute Sound button in Window 3 / Main Operating Screen
+    musicOff_icon = ImageTk.PhotoImage(
+        Image.open('./Assets/ButtonmusicOff.png'))
+    photo_list.append(musicOff_icon)  # add photo object to the list
+    music_button = Button(main_screen, image=musicOff_icon, borderwidth=0,
+                          highlightthickness=0, command=funct_stop_music)
+    music_button.place(x=50, y=180)
+    # Play Sound button in Window 3 / Main Operating Screen
+    musicOn_icon = ImageTk.PhotoImage(Image.open('./Assets/ButtonmusicOn.png'))
+    photo_list.append(musicOn_icon)  # add photo object to the list
+    music_button = Button(main_screen, image=musicOn_icon, borderwidth=0,
+                          highlightthickness=0, command=funct_play_music)
+    music_button.place(x=50, y=310)
 
     text = prompt_pdf.get()
-    if len(text) >= 40 or  25 <= len(text):
+    if len(text) >= 40 or 25 <= len(text):
         wrapped_text = '\n'.join(text[i:i+40] for i in range(0, len(text), 40))
         pictales_title = tk.Label(main_screen, text=wrapped_text, font=custom_font,
-                                    fg='#F8BC3B', bg='#F9F4F1', wraplength=500, justify='right')
+                                  fg='#F8BC3B', bg='#F9F4F1', wraplength=500, justify='right')
         pictales_title.place(x=1325, y=78)
         pictales_title.config(font=("Supersonic Rocketship", 28))
     else:
         pictales_title = tk.Label(main_screen, text=text, font=custom_font,
-                                fg='#F8BC3B', bg='#F9F4F1', justify='right')
+                                  fg='#F8BC3B', bg='#F9F4F1', justify='right')
         pictales_title.place(x=1275, y=78)
         pictales_title.config(font=("Supersonic Rocketship", 28))
-    
-    
+
     # Add page button // Cross Photo
     addpage_photo = ImageTk.PhotoImage(Image.open('./Assets/addpage.png'))
     photo_list.append(addpage_photo)  # add photo object to the list
@@ -831,6 +901,8 @@ def clarification_window():  # Clarification Window pops up before creating the 
                         background='#F8BC3B', borderwidth=0, highlightthickness=0, activebackground='#F8BC3B')
     yes_button.place(x=400, y=400)
 
+    clarification.resizable(False, False)
+
 
 def on_enter_main(e, hover_photo, char_key):  # For main on hover effect
     if (char_key == 1):
@@ -879,6 +951,19 @@ def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WI
     back_label = Button(addcharacter_screen, borderwidth=0, highlightthickness=0, image=back_photo,
                         command=addcharacter_screen.destroy, bg='#F8BC3B', activebackground='#F8BC3B')
     back_label.place(x=100, y=50, anchor="n")
+    # Mute Sound button in Window 5.1 / Edit Content Window
+    musicOff_icon = ImageTk.PhotoImage(
+        Image.open('./Assets/ButtonmusicOff.png'))
+    photo_list.append(musicOff_icon)  # add photo object to the list
+    music_button = Button(addcharacter_screen, image=musicOff_icon, borderwidth=0,
+                          highlightthickness=0, command=funct_stop_music,  bg='#F8BC3B', activebackground='#F8BC3B')
+    music_button.place(x=50, y=180)
+    # Play Sound button in Window 5.1 / Edit Content Window
+    musicOn_icon = ImageTk.PhotoImage(Image.open('./Assets/ButtonmusicOn.png'))
+    photo_list.append(musicOn_icon)  # add photo object to the list
+    music_button = Button(addcharacter_screen, image=musicOn_icon, borderwidth=0,
+                          highlightthickness=0, command=funct_play_music,  bg='#F8BC3B', activebackground='#F8BC3B')
+    music_button.place(x=50, y=310)
 
     # Show the selected character from the 8 expressions:
     selected_character_label = tk.Label(
@@ -977,8 +1062,10 @@ def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WI
                         bg='#F8BC3B', activebackground='#F8BC3B', command=generate_save)
     save_label.place(x=1250, y=800)
 
+    addcharacter_screen.resizable(False, False)
 
-def character_expression_window():  # Boy Character
+
+def character_expression_window():  # Choosing expression window
     # Globalize the screen to destroy it later on selection in funct_main_char_select
     global character_screen
     character_screen = tk.Toplevel(app)
@@ -1001,6 +1088,21 @@ def character_expression_window():  # Boy Character
     back_label = Button(character_screen, borderwidth=0, highlightthickness=0, image=back_photo,
                         command=character_screen.destroy, bg='#F8BC3B', activebackground='#F8BC3B')
     back_label.place(x=100, y=50, anchor="n")
+    # Mute Sound button in Expression Window
+    musicOff_icon = ImageTk.PhotoImage(
+        Image.open('./Assets/ButtonmusicOff.png'))
+    photo_list.append(musicOff_icon)  # add photo object to the list
+    music_button = Button(character_screen, image=musicOff_icon, borderwidth=0,
+                          highlightthickness=0, command=funct_stop_music, bg='#F8BC3B', activebackground='#F8BC3B')
+    music_button.place(x=50, y=180)
+
+    # Play Sound button in Expression Window
+    musicOn_icon = ImageTk.PhotoImage(Image.open('./Assets/ButtonmusicOn.png'))
+    photo_list.append(musicOn_icon)  # add photo object to the list
+    music_button = Button(character_screen, image=musicOn_icon, borderwidth=0,
+                          highlightthickness=0, command=funct_play_music, bg='#F8BC3B', activebackground='#F8BC3B')
+    music_button.place(x=50, y=310)
+
     # Label to choose which emotion to include in the generated image
     character1_label = tk.Label(
         character_screen, text='WHAT DOES YOUR CHARACTER FEEL?', font=custom_font, fg='white', bg='#F8BC3B')
@@ -1086,6 +1188,8 @@ def character_expression_window():  # Boy Character
     char8_label.bind("<Enter>", lambda e: on_enter(e, "#fad689"))
     char8_label.bind("<Leave>", on_leave)
 
+    character_screen.resizable(False, False)
+
 
 # ___________________________________________________________________________ MAIN TKINTER UI ___________________________________________________________________________
 # Create the app
@@ -1094,12 +1198,8 @@ app.title("Pictales")
 app.geometry("1832x932")
 ctk.set_appearance_mode("F9F4F1")
 
-# Initialize sound player
-pygame.mixer.init()
-# Play sound (converted mp4 to mp3 video of how to video)
-pygame.mixer.music.load("./Assets/samplesound.mp3")
-# Loop it indefinitely
-pygame.mixer.music.play(loops=-1)
+# Play background music
+funct_play_music()
 
 # Globalize the value of character selection WITH the expressions
 main_char_select = 0
@@ -1130,14 +1230,27 @@ howTo_button = Button(app, image=howTo_photo, borderwidth=0,
                       highlightthickness=0, command=funct_howTo_window)
 howTo_button.place(x=770, y=690)
 
-# Question Mark in Window 1/ Main Window
+# Question Mark in Window 1 / Main Window
 about_icon = ImageTk.PhotoImage(Image.open('./Assets/frame0/button_1.png'))
 photo_list.append(about_icon)  # add photo object to the list
 about_button = Button(app, image=about_icon, borderwidth=0,
                       highlightthickness=0, command=funct_about_window)
 about_button.place(x=50, y=50)
 
-# Testing Phase - Background transparency window 1
+# Mute Sound button in Window 1 / Main Window
+musicOff_icon = ImageTk.PhotoImage(Image.open('./Assets/ButtonmusicOff.png'))
+photo_list.append(musicOff_icon)  # add photo object to the list
+music_button = Button(app, image=musicOff_icon, borderwidth=0,
+                      highlightthickness=0, command=funct_stop_music)
+music_button.place(x=50, y=180)
+# Play Sound button in Window 1 / Main Window
+musicOn_icon = ImageTk.PhotoImage(Image.open('./Assets/ButtonmusicOn.png'))
+photo_list.append(musicOn_icon)  # add photo object to the list
+music_button = Button(app, image=musicOn_icon, borderwidth=0,
+                      highlightthickness=0, command=funct_play_music)
+music_button.place(x=50, y=310)
+
+app.resizable(False, False)
 # ___________________________________________________________________________ DRIVER CODE ___________________________________________________________________________
 # Get text input prompts again by automatically restarting the app
 app.mainloop()
