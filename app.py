@@ -898,6 +898,9 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
     createpictales_label = Button(main_screen, borderwidth=0,
                                   highlightthickness=0, image=createpictales_photo, command=clarification_window)  # show the prompt creation of pdf
     createpictales_label.place(x=1300, y=750)
+
+    # Disable main operating screen window resizing
+    main_screen.resizable(False, False)
 # ________________________________________________________________________________
 
 
@@ -1131,7 +1134,7 @@ def character_expression_window():  # Choosing expression window
 
     # This code will pop up the window how to in top level
     character_screen.grab_set()
-    character_screen.geometry("1832x932")
+    character_screen.geometry("1228x600")
     character_screen.configure(bg='#F8BC3B')
 
     # Get the character data from the global variable and function
