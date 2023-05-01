@@ -298,7 +298,7 @@ def generate_cover_image():   # Function to generate the cover image from the te
             # Disable the button if no input is given
             okay_label.config(state="disabled")
         else:
-            # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY!
+            # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
             # image_cover = blank
             cartoon_input = "cartoonish " + cover_input
             # Variable that contains the image cover result // COMMENT THIS FOR CPU MODE
@@ -463,6 +463,9 @@ def generate_pdf():                # Generate PicTale Story book
     # Show prompt that PDF was generated
     messagebox.showinfo("Pictales", "Your PDF has been generated!")
 
+    # Open the storybook upon the app's exit
+    os.system('start %s' % pdf_path)
+
     # Close the app when storybook is made
     app.destroy()
 
@@ -478,7 +481,9 @@ modelid = "CompVis/stable-diffusion-v1-4"
 
 # Specifies the graphics driver to be used // COMMENT THIS FOR CPU MODE
 device = "cuda"
-# device = "cpu" // UNCOMMENT THIS FOR CPU MODE
+
+# // UNCOMMENT THIS FOR CPU MODE
+# device = "cpu"
 
 # Loads the model into torch // COMMENT THIS FOR CPU MODE
 torch.load('./results/model-1.pt')
