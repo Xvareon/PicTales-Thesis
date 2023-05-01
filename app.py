@@ -55,7 +55,7 @@ photo_list = []     # create a global list to store photo objects for GUI
 
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
-# Loads the model
+# Loads the model // COMMENT THIS FOR CPU MODE
 model = torch.load('./results/model-1.pt')
 
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
@@ -101,10 +101,10 @@ def generate_image():   # Function to generate the images from the text prompt
             # Disable the save button if no input is given
             save_label.config(state="disabled")
         else:
-            # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY!
+            # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
             # image = blank
             cartoon_input = "cartoonish " + text_input
-            # Variable that contains the image result
+            # Variable that contains the image result // COMMENT THIS FOR CPU MODE
             image = pipe(cartoon_input, guidance_scale=10)[
                 "images"][0]
             # Enable the add character button if the image is generated successfully
@@ -169,6 +169,9 @@ def generate_save():    # Saves the image in the current directory and displays 
 
         # Store the base image on which the character would be pasted on
         global base
+
+        # Recall the main char select value
+        global main_char_select
 
         # Save image file name as PNG based on text input
         image.save('./GeneratedImages/{}.png'.format(text_input))
@@ -253,6 +256,9 @@ def generate_save():    # Saves the image in the current directory and displays 
             canvas.update_idletasks()
             canvas.config(scrollregion=canvas.bbox('all'))
 
+        # Reset the main_char_select value
+        main_char_select = 0
+
         # Check if there is a widget named addcharacter_screen.
         try:
             addcharacter_screen
@@ -263,8 +269,10 @@ def generate_save():    # Saves the image in the current directory and displays 
 
         # If an image has been generated
         if is_window_open:
+
             # Destroy the edit content window
             addcharacter_screen.destroy()
+
         # Destroy the generate window
         generate_window.destroy()
 # ________________________________________________________________________________
@@ -293,7 +301,7 @@ def generate_cover_image():   # Function to generate the cover image from the te
             # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY!
             # image_cover = blank
             cartoon_input = "cartoonish " + cover_input
-            # Variable that contains the image result
+            # Variable that contains the image cover result // COMMENT THIS FOR CPU MODE
             image_cover = pipe(cartoon_input, guidance_scale=10)[
                 "images"][0]
             # Enable the button if the image is generated successfully
@@ -465,23 +473,23 @@ isExist = os.path.exists('./results/model-1.pt')
 if (isExist == False):
     sys.exit(0)
 
-# loads the model used to a pre-defined library online
+# loads the model used to a pre-defined library online // COMMENT THIS FOR CPU MODE
 modelid = "CompVis/stable-diffusion-v1-4"
 
-# Specifies the graphics driver to be used
+# Specifies the graphics driver to be used // COMMENT THIS FOR CPU MODE
 device = "cuda"
-# device = "cpu"
+# device = "cpu" // UNCOMMENT THIS FOR CPU MODE
 
-# Loads the model into torch
+# Loads the model into torch // COMMENT THIS FOR CPU MODE
 torch.load('./results/model-1.pt')
 
 auth_token = "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"
 
-# Uses the pipe from the online library for model translation to produce the image.
+# Uses the pipe from the online library for model translation to produce the image. // COMMENT THIS FOR CPU MODE
 pipe = StableDiffusionPipeline.from_pretrained(
     modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
 
-# Uses the graphics driver (Must atleast be 4GB ram)
+# Uses the graphics driver (Must atleast be 4GB ram) // COMMENT THIS FOR CPU MODE
 pipe.to(device)
 
 # Create template page for the title page image
