@@ -192,7 +192,7 @@ def funct_inner_frame():  # Dynamically configures the widgets in the inner fram
         photo_list.append(lupdate_photo) 
         lupdate_list = Button(inner_frame, image=lupdate_photo, 
                               text="UPDATE", command=lambda index=counter: update_page(index), 
-                              bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0,)
+                              bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0)
         lupdate_list.grid(row=counter, column=2)
         label_list[counter].append(lupdate_list)
 
@@ -201,7 +201,7 @@ def funct_inner_frame():  # Dynamically configures the widgets in the inner fram
         photo_list.append(ldelete_photo) 
         ldelete_list = Button(inner_frame, image=ldelete_photo, 
                                text="DELETE", command=lambda index=counter: delete_page(index), 
-                               bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0,)
+                               bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0)
         ldelete_list.grid(row=counter, column=3)
         label_list[counter].append(ldelete_list)
 
@@ -431,9 +431,9 @@ def generate_cover_image():   # Function to generate the cover image from the te
             image_cover = blank
 
             if enable_realistic == 0:
-                cartoon_input = "cartoonish " + text_input
+                cartoon_input = "cartoonish " + cover_input
             else:
-                cartoon_input = text_input
+                cartoon_input = cover_input
 
             # Variable that contains the image cover result // COMMENT THIS FOR CPU MODE
             # image_cover = pipe(cartoon_input, guidance_scale=10)[
