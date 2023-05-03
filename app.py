@@ -54,8 +54,8 @@ label_list = {}     # Globalize label list to pass to delete page function
 
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
-# Loads the model // COMMENT THIS FOR CPU MODE
-model = torch.load('./results/model-1.pt')
+# # Loads the model // COMMENT THIS FOR CPU MODE
+# model = torch.load('./results/model-1.pt')
 
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
 
@@ -103,7 +103,7 @@ def generate_image():   # Function to generate the images from the text prompt
 
         else:
 
-            # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
+            # # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
             image = blank
 
             cartoon_input = "cartoonish " + text_input
@@ -173,19 +173,24 @@ def funct_inner_frame():  # Dynamically configures the widgets in the inner fram
 
         # Reset the elements inside the label list
         label_list[counter] = []
-
+        
         # Widget for displaying a update button pointing to the current page
-        lupdate_list = Button(inner_frame, height=5,
-                              width=5, text="UPDATE", bg="blue", command=lambda index=counter: update_page(index))
+        lupdate_photo = ImageTk.PhotoImage(Image.open('./Assets/editbutton.png'))
+        photo_list.append(lupdate_photo)
+        lupdate_list = Button(inner_frame, borderwidth=0,
+                           highlightthickness=0, image=lupdate_photo, 
+                             command=lambda index=counter: update_page(index))
         lupdate_list.grid(row=counter, column=2, padx=20,
                           pady=10, ipadx=10, ipady=10)
         label_list[counter].append(lupdate_list)
 
         # Widget for displaying a delete button pointing to the current page
-        ldelete_list = Button(inner_frame, height=5,
-                              width=5, text="DELETE", bg="blue", command=lambda index=counter: delete_page(index))
+        ldelete_photo = ImageTk.PhotoImage(Image.open('./Assets/trashbutton.png'))
+        photo_list.append(ldelete_photo) 
+        ldelete_list = Button(inner_frame, borderwidth=0, highlightthickness=0, image=ldelete_photo, 
+                                command=lambda index=counter: delete_page(index))
         ldelete_list.grid(row=counter, column=3, padx=20,
-                          pady=10, ipadx=10, ipady=10)
+                          pady=30, ipadx=10, ipady=10)
         label_list[counter].append(ldelete_list)
 
         # Widget for displaying a label frame object that contains a content page of the storybook
@@ -220,6 +225,7 @@ def update_page(index):  # Update a page
     # Set the value to a bool, for a condition in generate save
     update_value = index
 
+    # Open the generate window with the update value being passed so it would not be None 
     funct_generate_window()
 
     # Delete the ghost widgets when pressing update
@@ -305,6 +311,7 @@ def generate_save():    # Saves the image in the current directory and displays 
 
             # Store image in img variable if a character is selected
             img = ImageTk.PhotoImage(result)
+            
             # Get story content if user adds a story
             content = edit_textcontent_area.get('1.0', tk.END)
 
@@ -584,26 +591,26 @@ isExist = os.path.exists('./results/model-1.pt')
 if (isExist == False):
     sys.exit(0)
 
-# loads the model used to a pre-defined library online // COMMENT THIS FOR CPU MODE
-modelid = "CompVis/stable-diffusion-v1-4"
+# # loads the model used to a pre-defined library online // COMMENT THIS FOR CPU MODE
+# modelid = "CompVis/stable-diffusion-v1-4"
 
-# Specifies the graphics driver to be used // COMMENT THIS FOR CPU MODE
-device = "cuda"
+# # Specifies the graphics driver to be used // COMMENT THIS FOR CPU MODE
+# device = "cuda"
 
 # // UNCOMMENT THIS FOR CPU MODE
-# device = "cpu"
+device = "cpu"
 
-# Loads the model into torch // COMMENT THIS FOR CPU MODE
-torch.load('./results/model-1.pt')
+# # Loads the model into torch // COMMENT THIS FOR CPU MODE
+# torch.load('./results/model-1.pt')
 
 auth_token = "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"
 
 # Uses the pipe from the online library for model translation to produce the image. // COMMENT THIS FOR CPU MODE
-pipe = StableDiffusionPipeline.from_pretrained(
-    modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
+# pipe = StableDiffusionPipeline.from_pretrained(
+#     modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
 
 # Uses the graphics driver (Must atleast be 4GB ram) // COMMENT THIS FOR CPU MODE
-pipe.to(device)
+# pipe.to(device)
 
 # Create template page for the title page image
 blank = Image.new('RGB', (512, 512))
@@ -853,7 +860,7 @@ def title_window():  # Window to get author and title data // Window 2
     photo_list.append(covergen_photo)  # add photo object to the list
     covergen_label = Button(start_window, image=covergen_photo, borderwidth=0,
                             highlightthickness=0, command=generate_cover_image)
-    covergen_label.place(x=201, y=750)  # y=750
+    covergen_label.place(x=201, y=650)  # y=750
 
     global lmain_cover  # Globalize cover label frame holder
     global ltext_cover  # Globalize text label frame holder
@@ -911,7 +918,7 @@ def title_window():  # Window to get author and title data // Window 2
     photo_list.append(okay_photo)  # add photo object to the list
     okay_label = Button(start_window, borderwidth=0, highlightthickness=0,
                         image=okay_photo, command=main_operating_screen, state="disabled")  # disable if theres no cover image
-    okay_label.place(x=1600, y=750, anchor="n")  # y=750
+    okay_label.place(x=1600, y=650, anchor="n")  # y=750
 
     # Handle the window's screen updates
     # Disable title window resizing
@@ -1025,7 +1032,7 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
     photo_list.append(createpictales_photo)  # add photo object to the list
     createpictales_label = Button(main_screen, borderwidth=0,
                                   highlightthickness=0, image=createpictales_photo, command=clarification_window)  # show the prompt creation of pdf
-    createpictales_label.place(x=1300, y=750)
+    createpictales_label.place(x=1300, y=650)
 
     # Disable main operating screen window resizing
     main_screen.resizable(False, False)
@@ -1244,7 +1251,7 @@ def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WI
     photo_list.append(save_photo_with_char)  # add photo object to the list
     save_label = Button(addcharacter_screen, image=save_photo_with_char, borderwidth=0, highlightthickness=0,
                         bg='#F8BC3B', activebackground='#F8BC3B', command=generate_save)
-    save_label.place(x=1250, y=800)
+    save_label.place(x=1250, y=600)
 
     addcharacter_screen.resizable(False, False)
 # ________________________________________________________________________________
