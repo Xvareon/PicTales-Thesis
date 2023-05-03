@@ -5,9 +5,7 @@
 # Checks for same image names
 # Loading window when generating image/cover image
 # PicTales for adults which disables cartoon input but still filters out bad data/harmful inputs/outputs
-# Cute size some windows
 # Check for grabbing windows, will break the program
-# Edit and Delete pages (make this modular)
 #########################################################
 
 # ___________________________________________________________________________ DEPENDENCIES ___________________________________________________________________________
@@ -147,8 +145,6 @@ def funct_main_char_select(main_char_value, main_char_image):
     # Set the image for the character that will be later pasted onto the generated image if selected
     character = main_char_image
 
-    print("main value (1-8):", main_char_select)
-
     # Update the image for the select character window (1-3)
     selected_character_photo.configure(image=character)
     selected_character_photo.update()
@@ -170,14 +166,20 @@ def funct_inner_frame():  # Dynamically configures the widgets in the inner fram
     for index in label_list:
         for label in label_list[index]:
             label.grid_forget()
-    label_list = {}
+    label_list = {}  # Reset the stack everytime this window is called
 
     # Loop for the text items and image items added by the user to the story to display them in the main operating window
     for text_item, pic in zip(content_list, image_list):
 
-        # Print text_list item
-        print("Page List: {}".format(text_list[counter]))
+        # Reset the elements inside the label list
         label_list[counter] = []
+
+        # Widget for displaying a update button pointing to the current page
+        lupdate_list = Button(inner_frame, height=5,
+                              width=5, text="UPDATE", bg="blue", command=lambda index=counter: update_page(index))
+        lupdate_list.grid(row=counter, column=2, padx=20,
+                          pady=10, ipadx=10, ipady=10)
+        label_list[counter].append(lupdate_list)
 
         # Widget for displaying a delete button pointing to the current page
         ldelete_list = Button(inner_frame, height=5,
@@ -205,25 +207,22 @@ def funct_inner_frame():  # Dynamically configures the widgets in the inner fram
 
         # Move the counter to 1 already to skip the cover text and cover image
         counter += 1
-
-    print("--------------------------")
-    print("Updated List: ")
-    for index in label_list:
-        print("index: ", index)
-        for value in label_list[index]:
-            print(type(value))
-    print("--------------------------")
+# ________________________________________________________________________________
 
 
-def delete_page(index):  # Delete a page
+def update_page(index):  # Update a page
 
-    global label_list  # Recall the label_list
+    global label_list   # Recall the label_list
 
-    # Remove the corresponding content, text, and image from the lists
-    content_list.pop(index)
-    image_list.pop(index)
-    text_list.pop(index)
+    # Globalize value to pass to generate save, turning it essentially into an update
+    global update_value
 
+    # Set the value to a bool, for a condition in generate save
+    update_value = index
+
+    funct_generate_window()
+
+    # Delete the ghost widgets when pressing update
     for label in label_list[index]:
         label.grid_forget()
 
@@ -233,6 +232,29 @@ def delete_page(index):  # Delete a page
     # Update the scroll region of the canvas
     canvas.update_idletasks()
     canvas.config(scrollregion=canvas.bbox('all'))
+# ________________________________________________________________________________
+
+
+def delete_page(index):  # Delete a page
+
+    global label_list   # Recall the label_list
+
+    # Remove the corresponding content, text, and image from the lists
+    content_list.pop(index)
+    image_list.pop(index)
+    text_list.pop(index)
+
+    # Delete the ghost widgets when pressing delete
+    for label in label_list[index]:
+        label.grid_forget()
+
+    # Update the widgets
+    funct_inner_frame()
+
+    # Update the scroll region of the canvas
+    canvas.update_idletasks()
+    canvas.config(scrollregion=canvas.bbox('all'))
+# ________________________________________________________________________________
 
 
 def generate_save():    # Saves the image in the current directory and displays the current images selected for the picture book
@@ -299,16 +321,39 @@ def generate_save():    # Saves the image in the current directory and displays 
 
         ### ADD THE SAVED PAGE TO THEIR RESPECTIVE ARRAYS ###
 
-        # Add the content to the list
-        content_list.append(content)
+        global update_value  # Recall the update value from update page function
 
-        # Add the previously stored text in a list
-        text_list.append(text_input)
+        # When updating a page
+        if update_value != None:
 
-        # Store previous image in a list
-        image_list.append(img)
+            print("YOU ARE IN UPDATE: {}".format(update_value))
 
-        ### _______________________________________________###
+            # Update the previous content to the list using the update_value as the pointer index
+            content_list[update_value] = content
+
+            # Update the previously stored text in the list using the update_value as the pointer index
+            text_list[update_value] = text_input
+
+            # Update the previous image in the list using the update_value as the pointer index
+            image_list[update_value] = img
+
+        # Regular adding of a page
+        else:
+
+            print("YOU ARE IN ADD Page: {}".format(update_value))
+
+            # Add the content to the list
+            content_list.append(content)
+
+            # Add the previously stored text in a list
+            text_list.append(text_input)
+
+            # Store previous image in a list
+            image_list.append(img)
+
+        update_value = None  # Reset the value of update
+
+        ########################################################
 
         # Update the widgets
         funct_inner_frame()
@@ -614,13 +659,13 @@ def funct_about_window():     # The question mark button shows the about pictale
     # Set the font of the label to Supersonic Rocketship with a size of 20
     modal_label.config(font=("Supersonic Rocketship", 64))
 
-    # This code is for printing the copyright
+    # This code is for displaying the copyright
     ver_label = tk.Label(about_window, text='Copyright © 2023, PICTALES',
                          font=custom_font, fg='white', bg='#F8BC3B')
     ver_label.place(relx=0.25, rely=0.75)
     ver_label.config(font=("Supersonic Rocketship", 24))
 
-    # This code is for printing the version of the app
+    # This code is for displaying the version of the app
     copy_label = tk.Label(about_window, text='VER. 1.0',
                           font=custom_font, fg='white', bg='#F8BC3B')
     copy_label.pack(pady=190)
@@ -739,6 +784,7 @@ def funct_generate_window():    # This window is for getting the text prompt and
 
     # Globalize this so it can be disabled when no image is generated in generate image function
     global save_label
+
     # Save content button (SAVES THE IMAGE WITH NO CHARACTER AND NO CONTENT)
     save_photo = ImageTk.PhotoImage(Image.open('./Assets/frame0/save.png'))
     photo_list.append(save_photo)  # add photo object to the photo list
@@ -887,6 +933,12 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
     main_screen.grab_set()
     main_screen.geometry("1832x932")
     main_screen.configure(bg='#F9F4F1')
+
+    # First declaration of global update value
+    global update_value
+
+    # First instance of update value to have the value None to define it in generate save function
+    update_value = None
 
     ################################################# SCROLL BAR CODE #####################################################
 
@@ -1052,7 +1104,6 @@ def funct_char_select(char_value):  # Function for getting the character selecte
     global char_select  # Globalize the value of character selection
 
     char_select = char_value    # Get the value passed from addcharacter screen
-    print("current value (1-3):", char_select)
 
     # Call the character expression window to select the selected character's expressions
     character_expression_window()
