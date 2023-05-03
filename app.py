@@ -4,7 +4,6 @@
 # Auto Install # !!!PRIORITY!!!
 # Checks for same image names
 # Loading window when generating image/cover image
-# PicTales for adults which disables cartoon input but still filters out bad data/harmful inputs/outputs
 # Check for grabbing windows, will break the program
 #########################################################
 
@@ -45,16 +44,17 @@ import datetime
 
 # ___________________________________________________________________________ GLOBAL VARIABLES ___________________________________________________________________________
 
-image_list = []     # ARRAY OF IMAGES
-text_list = []      # ARRAY OF TEXT INPUTS
-content_list = []   # ARRAY OF PAGE CONTENT (mostly the text)
-pdf_list = []       # ARRAY OF PDF PAGES
-photo_list = []     # create a global list to store photo objects for GUI
-label_list = {}     # Globalize label list to pass to delete page function
+image_list = []      # ARRAY OF IMAGES
+text_list = []       # ARRAY OF TEXT INPUTS
+content_list = []    # ARRAY OF PAGE CONTENT (mostly the text)
+pdf_list = []        # ARRAY OF PDF PAGES
+photo_list = []      # create a global list to store photo objects for GUI
+label_list = {}      # Globalize label list to pass to delete page function
+enable_realistic = 0 # Globalize value to determine whether images generated are realistic or not // set to 0 to disable by default
 
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
-# # Loads the model // COMMENT THIS FOR CPU MODE
+# Loads the model // COMMENT THIS FOR CPU MODE
 # model = torch.load('./results/model-1.pt')
 
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
@@ -69,11 +69,21 @@ def funct_play_music():  # Function to play background music
     pygame.mixer.music.play(loops=-1)
 # ________________________________________________________________________________
 
-
 def funct_stop_music():  # Function to stop playing background music
     pygame.mixer.music.stop()
 # ________________________________________________________________________________
 
+def funct_realistic_on():   # Function to toggle on realistic image generation
+    global enable_realistic # Recall the global variable for enable realistic
+    enable_realistic = 1    # Set to 1 to enable realistic image generation to pass to generate image and generate cover image
+    print(enable_realistic)
+# ________________________________________________________________________________
+
+def funct_realistic_off():   # Function to toggle off realistic image generation
+    global enable_realistic # Recall the global variable for enable realistic
+    enable_realistic = 0    # Set to 0 to disable realistic image generation to pass to generate image and generate cover image
+    print(enable_realistic)
+# ________________________________________________________________________________
 
 def generate_image():   # Function to generate the images from the text prompt
 
@@ -103,10 +113,13 @@ def generate_image():   # Function to generate the images from the text prompt
 
         else:
 
-            # # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
+            # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
             image = blank
 
-            cartoon_input = "cartoonish " + text_input
+            if enable_realistic == 0:
+                cartoon_input = "cartoonish " + text_input
+            else:
+                cartoon_input = text_input
 
             # Variable that contains the image result // COMMENT THIS FOR CPU MODE
             # image = pipe(cartoon_input, guidance_scale=10)[
@@ -173,37 +186,36 @@ def funct_inner_frame():  # Dynamically configures the widgets in the inner fram
 
         # Reset the elements inside the label list
         label_list[counter] = []
-        
+
         # Widget for displaying a update button pointing to the current page
         lupdate_photo = ImageTk.PhotoImage(Image.open('./Assets/editbutton.png'))
-        photo_list.append(lupdate_photo)
-        lupdate_list = Button(inner_frame, borderwidth=0,
-                           highlightthickness=0, image=lupdate_photo, 
-                             command=lambda index=counter: update_page(index))
-        lupdate_list.grid(row=counter, column=2, padx=20,
-                          pady=10, ipadx=10, ipady=10)
+        photo_list.append(lupdate_photo) 
+        lupdate_list = Button(inner_frame, image=lupdate_photo, 
+                              text="UPDATE", command=lambda index=counter: update_page(index), 
+                              bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0,)
+        lupdate_list.grid(row=counter, column=2)
         label_list[counter].append(lupdate_list)
 
         # Widget for displaying a delete button pointing to the current page
         ldelete_photo = ImageTk.PhotoImage(Image.open('./Assets/trashbutton.png'))
         photo_list.append(ldelete_photo) 
-        ldelete_list = Button(inner_frame, borderwidth=0, highlightthickness=0, image=ldelete_photo, 
-                                command=lambda index=counter: delete_page(index))
-        ldelete_list.grid(row=counter, column=3, padx=20,
-                          pady=30, ipadx=10, ipady=10)
+        ldelete_list = Button(inner_frame, image=ldelete_photo, 
+                               text="DELETE", command=lambda index=counter: delete_page(index), 
+                               bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0,)
+        ldelete_list.grid(row=counter, column=3)
         label_list[counter].append(ldelete_list)
 
         # Widget for displaying a label frame object that contains a content page of the storybook
-        ltext_list = Label(inner_frame, height=10, width=50, text="\n".join(textwrap.wrap(text_item, width=50)), font=(
+        ltext_list = Label(inner_frame, height=10, width=40, text="\n".join(textwrap.wrap(text_item, width=50)), font=(
             "Arial", 16), fg="#AB7A11", bg="#F9F4F1")
         ltext_list.grid(row=counter, column=0, padx=20,
-                        pady=10, ipadx=10, ipady=150, sticky='n')
+                        pady=10, ipadx=10, ipady=300, sticky='n')
         label_list[counter].append(ltext_list)
 
         # Widget for displaying a label frame object that contains an image page of the storybook
         limg_list = Label(inner_frame, image=pic, bg="#F9F4F1")
         limg_list.grid(row=counter, column=1, padx=20,
-                       pady=10, ipadx=10, ipady=80, sticky='n')
+                       pady=10, ipadx=10, ipady=150, sticky='n')
         label_list[counter].append(limg_list)
 
         # Update the scroll region of the canvas
@@ -225,7 +237,6 @@ def update_page(index):  # Update a page
     # Set the value to a bool, for a condition in generate save
     update_value = index
 
-    # Open the generate window with the update value being passed so it would not be None 
     funct_generate_window()
 
     # Delete the ghost widgets when pressing update
@@ -288,8 +299,9 @@ def generate_save():    # Saves the image in the current directory and displays 
         # Save image file name as PNG based on text input
         image.save('./GeneratedImages/{}.png'.format(text_input))
 
-        # If a character was chosen and the edit content page has been clicked
-        if main_char_select > 0:
+        # If a character was chosen and the edit content page has been clicked or the edit_content_area has value
+        if main_char_select > 0 and main_char_select < 4:
+
             # Load the base image on which the character will be pasted
             base = Image.open(
                 './GeneratedImages/{}.png'.format(text_input)).convert('RGBA')
@@ -311,19 +323,24 @@ def generate_save():    # Saves the image in the current directory and displays 
 
             # Store image in img variable if a character is selected
             img = ImageTk.PhotoImage(result)
-            
+
             # Get story content if user adds a story
             content = edit_textcontent_area.get('1.0', tk.END)
 
         # If no character was chosen and the user did not clicked edit content page
-        if main_char_select == 0:
+        if main_char_select == 0 or main_char_select == 4:
             # Store image in img variable if no character is selected
             img = ImageTk.PhotoImage(image)
             # If edit story was not invoked, default the content to the text input for generating image
             content = text_input
 
+            # If the add story button was clicked
+            if main_char_select == 4:
+                # Get story content if user adds a story
+                content = edit_textcontent_area.get('1.0', tk.END)
+
         # Makes the text input as a default content input if the user did not enter anything at the content textbox.
-        if (content == '' or len(content) == 0 or content.isspace() == True):
+        if content == '' or len(content) == 0 or content.isspace() == True:
             content = text_input
 
         ### ADD THE SAVED PAGE TO THEIR RESPECTIVE ARRAYS ###
@@ -413,7 +430,10 @@ def generate_cover_image():   # Function to generate the cover image from the te
             # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
             image_cover = blank
 
-            cartoon_input = "cartoonish " + cover_input
+            if enable_realistic == 0:
+                cartoon_input = "cartoonish " + text_input
+            else:
+                cartoon_input = text_input
 
             # Variable that contains the image cover result // COMMENT THIS FOR CPU MODE
             # image_cover = pipe(cartoon_input, guidance_scale=10)[
@@ -591,16 +611,16 @@ isExist = os.path.exists('./results/model-1.pt')
 if (isExist == False):
     sys.exit(0)
 
-# # loads the model used to a pre-defined library online // COMMENT THIS FOR CPU MODE
+# loads the model used to a pre-defined library online // COMMENT THIS FOR CPU MODE
 # modelid = "CompVis/stable-diffusion-v1-4"
 
-# # Specifies the graphics driver to be used // COMMENT THIS FOR CPU MODE
+# Specifies the graphics driver to be used // COMMENT THIS FOR CPU MODE
 # device = "cuda"
 
 # // UNCOMMENT THIS FOR CPU MODE
 device = "cpu"
 
-# # Loads the model into torch // COMMENT THIS FOR CPU MODE
+# Loads the model into torch // COMMENT THIS FOR CPU MODE
 # torch.load('./results/model-1.pt')
 
 auth_token = "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"
@@ -739,7 +759,7 @@ def funct_generate_window():    # This window is for getting the text prompt and
     ))
     generate_window.configure(bg='#F8BC3B')  # set background color
 
-    # Back button to main_operation_window
+    # Back button to generate_window
     back_photo = ImageTk.PhotoImage(
         Image.open('./Assets/inverted_backbutton.png'))
     photo_list.append(back_photo)  # add photo object to the photo list
@@ -860,7 +880,7 @@ def title_window():  # Window to get author and title data // Window 2
     photo_list.append(covergen_photo)  # add photo object to the list
     covergen_label = Button(start_window, image=covergen_photo, borderwidth=0,
                             highlightthickness=0, command=generate_cover_image)
-    covergen_label.place(x=201, y=650)  # y=750
+    covergen_label.place(x=201, y=750)  # y=750
 
     global lmain_cover  # Globalize cover label frame holder
     global ltext_cover  # Globalize text label frame holder
@@ -890,7 +910,7 @@ def title_window():  # Window to get author and title data // Window 2
         "Arial", 20), text_color="#AB7A11", fg_color=None)
     ltext_cover.place(x=1182, y=650)
 
-    # Back button in window 2
+    # Back button in window 2 // start Window
     back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
     photo_list.append(back_photo)  # add photo object to the list
     back_label = Button(start_window, borderwidth=0, highlightthickness=0,
@@ -912,13 +932,27 @@ def title_window():  # Window to get author and title data // Window 2
                           highlightthickness=0, command=funct_play_music)
     music_button.place(x=50, y=310)
 
+    # Toggle realistic button to ON in Window 2 / start Window
+    realisticOn_icon = ImageTk.PhotoImage(Image.open('./Assets/cartoonOn.png'))
+    photo_list.append(realisticOn_icon)  # add photo object to the list
+    realisticOn_button = Button(start_window, image=realisticOn_icon, borderwidth=0,
+                          highlightthickness=0, command=funct_realistic_on)
+    realisticOn_button.place(x=50, y=440)
+
+    # Toggle realistic button to OFF in Window 2 / start Window
+    realisticOff_icon = ImageTk.PhotoImage(Image.open('./Assets/cartoonOff.png'))
+    photo_list.append(realisticOff_icon)  # add photo object to the list
+    realisticOff_button = Button(start_window, image=realisticOff_icon, borderwidth=0,
+                          highlightthickness=0, command=funct_realistic_off)
+    realisticOff_button.place(x=50, y=570)
+
     global okay_label  # global to be called in generate_cover image function
     # Ok button to accepts the data and goes to window 3
     okay_photo = ImageTk.PhotoImage(Image.open('./Assets/OkButton.png'))
     photo_list.append(okay_photo)  # add photo object to the list
     okay_label = Button(start_window, borderwidth=0, highlightthickness=0,
                         image=okay_photo, command=main_operating_screen, state="disabled")  # disable if theres no cover image
-    okay_label.place(x=1600, y=650, anchor="n")  # y=750
+    okay_label.place(x=1600, y=750, anchor="n")  # y=750
 
     # Handle the window's screen updates
     # Disable title window resizing
@@ -982,7 +1016,7 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
 
     #########################################################################################################################
 
-    # Back button to title and author
+    # Back button in Window 3 / Main Operating Screen
     back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
     photo_list.append(back_photo)  # add photo object to the list
     back_label = Button(main_screen, borderwidth=0, highlightthickness=0,
@@ -1032,7 +1066,7 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
     photo_list.append(createpictales_photo)  # add photo object to the list
     createpictales_label = Button(main_screen, borderwidth=0,
                                   highlightthickness=0, image=createpictales_photo, command=clarification_window)  # show the prompt creation of pdf
-    createpictales_label.place(x=1300, y=650)
+    createpictales_label.place(x=1300, y=750)
 
     # Disable main operating screen window resizing
     main_screen.resizable(False, False)
@@ -1121,6 +1155,12 @@ def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WI
 
     # Globalize edit content page to destroy it later in generate save function
     global addcharacter_screen
+
+    # Globalize Flag for main_char_select to detect if add story button was clicked
+    global main_char_select
+
+    # Set the flag to 4 since there is no designated character at value 4 to mimic the button being clicked
+    main_char_select = 4
 
     # Initiate edit content page window's tk GUI
     addcharacter_screen = tk.Toplevel(app)
@@ -1251,7 +1291,7 @@ def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WI
     photo_list.append(save_photo_with_char)  # add photo object to the list
     save_label = Button(addcharacter_screen, image=save_photo_with_char, borderwidth=0, highlightthickness=0,
                         bg='#F8BC3B', activebackground='#F8BC3B', command=generate_save)
-    save_label.place(x=1250, y=600)
+    save_label.place(x=1250, y=800)
 
     addcharacter_screen.resizable(False, False)
 # ________________________________________________________________________________
@@ -1279,12 +1319,13 @@ def character_expression_window():  # Choosing expression window
     elif (char_select == 3):
         char_name = "dog"
 
-    # Back button on boycharacter_screen
+    # Back button on character_screen
     back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
     photo_list.append(back_photo)  # add photo object to the list
     back_label = Button(character_screen, borderwidth=0, highlightthickness=0, image=back_photo,
                         command=character_screen.destroy, bg='#F8BC3B', activebackground='#F8BC3B')
     back_label.place(x=100, y=50, anchor="n")
+
     # Mute Sound button in Expression Window
     musicOff_icon = ImageTk.PhotoImage(
         Image.open('./Assets/ButtonmusicOff.png'))
@@ -1460,3 +1501,4 @@ app.resizable(False, False)
 # ___________________________________________________________________________ DRIVER CODE ___________________________________________________________________________
 # Get text input prompts again by automatically restarting the app
 app.mainloop()
+
