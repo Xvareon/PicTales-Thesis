@@ -52,6 +52,7 @@ text_list = []      # ARRAY OF TEXT INPUTS
 content_list = []   # ARRAY OF PAGE CONTENT (mostly the text)
 pdf_list = []       # ARRAY OF PDF PAGES
 photo_list = []     # create a global list to store photo objects for GUI
+label_list = {}     # Globalize label list to pass to delete page function
 
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
@@ -95,18 +96,24 @@ def generate_image():   # Function to generate the images from the text prompt
 
         # Catch error if no text input is given
         if text_input == '' or len(text_input) == 0 or text_input.isspace() == True:
+
             image = blank
             # Disable the add character button if no input is given
             edit_content_label.config(state="disabled")
             # Disable the save button if no input is given
             save_label.config(state="disabled")
+
         else:
+
             # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
-            # image = blank
+            image = blank
+
             cartoon_input = "cartoonish " + text_input
+
             # Variable that contains the image result // COMMENT THIS FOR CPU MODE
-            image = pipe(cartoon_input, guidance_scale=10)[
-                "images"][0]
+            # image = pipe(cartoon_input, guidance_scale=10)[
+            #     "images"][0]
+
             # Enable the add character button if the image is generated successfully
             edit_content_label.config(state="normal")
             # Enable the save button in generate window if the image is generated successfully
@@ -149,6 +156,83 @@ def funct_main_char_select(main_char_value, main_char_image):
     # Destroy the character expression screen
     character_screen.destroy()
 # ________________________________________________________________________________
+
+
+def funct_inner_frame():  # Dynamically configures the widgets in the inner frame
+
+    # Recall the global label list since its gonna detect a non-existing local variable otherwise
+    global label_list
+
+    # Initiate a counter for text, image label frames positioning, and index pointing
+    counter = 0
+
+    # Remove the previous labels from the window
+    for index in label_list:
+        for label in label_list[index]:
+            label.grid_forget()
+    label_list = {}
+
+    # Loop for the text items and image items added by the user to the story to display them in the main operating window
+    for text_item, pic in zip(content_list, image_list):
+
+        # Print text_list item
+        print("Page List: {}".format(text_list[counter]))
+        label_list[counter] = []
+
+        # Widget for displaying a delete button pointing to the current page
+        ldelete_list = Button(inner_frame, height=5,
+                              width=5, text="DELETE", bg="blue", command=lambda index=counter: delete_page(index))
+        ldelete_list.grid(row=counter, column=3, padx=20,
+                          pady=10, ipadx=10, ipady=10)
+        label_list[counter].append(ldelete_list)
+
+        # Widget for displaying a label frame object that contains a content page of the storybook
+        ltext_list = Label(inner_frame, height=10, width=50, text="\n".join(textwrap.wrap(text_item, width=50)), font=(
+            "Arial", 16), fg="#AB7A11", bg="#F9F4F1")
+        ltext_list.grid(row=counter, column=0, padx=20,
+                        pady=10, ipadx=10, ipady=150, sticky='n')
+        label_list[counter].append(ltext_list)
+
+        # Widget for displaying a label frame object that contains an image page of the storybook
+        limg_list = Label(inner_frame, image=pic, bg="#F9F4F1")
+        limg_list.grid(row=counter, column=1, padx=20,
+                       pady=10, ipadx=10, ipady=80, sticky='n')
+        label_list[counter].append(limg_list)
+
+        # Update the scroll region of the canvas
+        canvas.update_idletasks()
+        canvas.config(scrollregion=canvas.bbox('all'))
+
+        # Move the counter to 1 already to skip the cover text and cover image
+        counter += 1
+
+    print("--------------------------")
+    print("Updated List: ")
+    for index in label_list:
+        print("index: ", index)
+        for value in label_list[index]:
+            print(type(value))
+    print("--------------------------")
+
+
+def delete_page(index):  # Delete a page
+
+    global label_list  # Recall the label_list
+
+    # Remove the corresponding content, text, and image from the lists
+    content_list.pop(index)
+    image_list.pop(index)
+    text_list.pop(index)
+
+    for label in label_list[index]:
+        label.grid_forget()
+
+    # Update the widgets
+    funct_inner_frame()
+
+    # Update the scroll region of the canvas
+    canvas.update_idletasks()
+    canvas.config(scrollregion=canvas.bbox('all'))
 
 
 def generate_save():    # Saves the image in the current directory and displays the current images selected for the picture book
@@ -213,6 +297,8 @@ def generate_save():    # Saves the image in the current directory and displays 
         if (content == '' or len(content) == 0 or content.isspace() == True):
             content = text_input
 
+        ### ADD THE SAVED PAGE TO THEIR RESPECTIVE ARRAYS ###
+
         # Add the content to the list
         content_list.append(content)
 
@@ -222,39 +308,10 @@ def generate_save():    # Saves the image in the current directory and displays 
         # Store previous image in a list
         image_list.append(img)
 
-        # create a list to hold the labels for each item
-        label_list = []
+        ### _______________________________________________###
 
-        # Initiate a counter for text and image label frames positioning
-        counter = 0
-
-        # Loop for the text items and image items added by the user to the story to display them in the main operating window
-        for text_item, pic in zip(content_list, image_list):
-
-            # Move the counter
-            counter += 1
-
-            # Remove the previous labels from the window
-            for label in label_list:
-                label.pack_forget()
-            label_list = []
-
-            # Widget for displaying a label frame object that contains a content page of the storybook
-            ltext_list = Label(inner_frame, height=10, width=50, text="\n".join(textwrap.wrap(text_item, width=50)), font=(
-                "Arial", 16), fg="#AB7A11", bg="#F9F4F1")
-            ltext_list.grid(row=counter-1, column=0, padx=20,
-                            pady=10, ipadx=10, ipady=150, sticky='n')
-            label_list.append(ltext_list)
-
-            # Widget for displaying a label frame object that contains an image page of the storybook
-            limg_list = Label(inner_frame, image=pic, bg="#F9F4F1")
-            limg_list.grid(row=counter-1, column=1, padx=20,
-                           pady=10, ipadx=10, ipady=80, sticky='n')
-            label_list.append(limg_list)
-
-            # Update the scroll region of the canvas
-            canvas.update_idletasks()
-            canvas.config(scrollregion=canvas.bbox('all'))
+        # Update the widgets
+        funct_inner_frame()
 
         # Reset the main_char_select value
         main_char_select = 0
@@ -294,16 +351,22 @@ def generate_cover_image():   # Function to generate the cover image from the te
 
         # Catch error if no text input is given
         if cover_input == '' or len(cover_input) == 0 or cover_input.isspace() == True:
+
             image_cover = blank
             # Disable the button if no input is given
             okay_label.config(state="disabled")
+
         else:
+
             # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
-            # image_cover = blank
+            image_cover = blank
+
             cartoon_input = "cartoonish " + cover_input
+
             # Variable that contains the image cover result // COMMENT THIS FOR CPU MODE
-            image_cover = pipe(cartoon_input, guidance_scale=10)[
-                "images"][0]
+            # image_cover = pipe(cartoon_input, guidance_scale=10)[
+            #     "images"][0]
+
             # Enable the button if the image is generated successfully
             okay_label.config(state="normal")
 
@@ -389,11 +452,11 @@ def generate_pdf():                # Generate PicTale Story book
     if cover.mode == 'RGBA':
         cover = cover.convert('RGB')
 
-    # Add the title page to page 2 of storybook
+    # Add the title page with the AI generated image to page 1 of storybook
     pdf_list.append(Image.open(
         './GeneratedImages/TitlePage_{}.png'.format(pdf_name)))
 
-    # Add the PicTales cover page (Page 2) to page 1 of storybook
+    # Add the PicTales cover page page 2 of storybook
     pdf_list.append(cover)
 
     # Pointer/Flag for content for content list access later and start at 1 so index 0 can store title page / IMPORTANT DO NOT REPLACE FOR FILE IN LOOP
