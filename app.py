@@ -50,7 +50,7 @@ content_list = []    # ARRAY OF PAGE CONTENT (mostly the text)
 pdf_list = []        # ARRAY OF PDF PAGES
 photo_list = []      # create a global list to store photo objects for GUI
 label_list = {}      # Globalize label list to pass to delete page function
-enable_realistic = 0  # Globalize value to determine whether images generated are realistic or not // set to 0 to disable by default
+enable_realistic = 1  # Globalize value to determine whether images generated are realistic or not // set to 1 to disable by default
 
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
@@ -79,7 +79,7 @@ def funct_realistic_on():   # Function to toggle on realistic image generation
     global enable_realistic  # Recall the global variable for enable realistic
     # Set to 1 to enable realistic image generation to pass to generate image and generate cover image
     enable_realistic = 1
-    print(enable_realistic)
+    print("Realistic On")
 # ________________________________________________________________________________
 
 
@@ -87,7 +87,7 @@ def funct_realistic_off():   # Function to toggle off realistic image generation
     global enable_realistic  # Recall the global variable for enable realistic
     # Set to 0 to disable realistic image generation to pass to generate image and generate cover image
     enable_realistic = 0
-    print(enable_realistic)
+    print("Realistic Off")
 # ________________________________________________________________________________
 
 
@@ -940,21 +940,40 @@ def title_window():  # Window to get author and title data // Window 2
                           highlightthickness=0, command=funct_play_music)
     music_button.place(x=50, y=310)
 
-    # Toggle realistic button to ON in Window 2 / start Window
+    # # Toggle realistic button to ON in Window 2 / start Window
+    # realisticOn_icon = ImageTk.PhotoImage(Image.open('./Assets/cartoonOn.png'))
+    # photo_list.append(realisticOn_icon)  # add photo object to the list
+    # realisticOn_button = Button(start_window, image=realisticOn_icon, borderwidth=0,
+    #                             highlightthickness=0, command=funct_realistic_on)
+    # realisticOn_button.place(x=50, y=440)
+
+    # # Toggle realistic button to OFF in Window 2 / start Window
+    # realisticOff_icon = ImageTk.PhotoImage(
+    #     Image.open('./Assets/cartoonOff.png'))
+    # photo_list.append(realisticOff_icon)  # add photo object to the list
+    # realisticOff_button = Button(start_window, image=realisticOff_icon, borderwidth=0,
+    #                              highlightthickness=0, command=funct_realistic_off)
+    # realisticOff_button.place(x=50, y=570)
+    
     realisticOn_icon = ImageTk.PhotoImage(Image.open('./Assets/cartoonOn.png'))
-    photo_list.append(realisticOn_icon)  # add photo object to the list
-    realisticOn_button = Button(start_window, image=realisticOn_icon, borderwidth=0,
-                                highlightthickness=0, command=funct_realistic_on)
-    realisticOn_button.place(x=50, y=440)
+    realisticOff_icon = ImageTk.PhotoImage(Image.open('./Assets/cartoonOff.png'))
+    photo_list.extend([realisticOn_icon, realisticOff_icon])  # add photo objects to the list
 
-    # Toggle realistic button to OFF in Window 2 / start Window
-    realisticOff_icon = ImageTk.PhotoImage(
-        Image.open('./Assets/cartoonOff.png'))
-    photo_list.append(realisticOff_icon)  # add photo object to the list
-    realisticOff_button = Button(start_window, image=realisticOff_icon, borderwidth=0,
-                                 highlightthickness=0, command=funct_realistic_off)
-    realisticOff_button.place(x=50, y=570)
-
+    def funct_realistic_switch(): 
+        global enable_realistic
+        if enable_realistic == 1:
+            funct_realistic_off()
+            enable_realistic = 0
+            realistic_button['image'] = realisticOff_icon
+        else:
+            funct_realistic_on()
+            enable_realistic = 1
+            realistic_button['image'] = realisticOn_icon
+        
+    realistic_button = Button(start_window, image=realisticOn_icon, borderwidth=0,
+                            highlightthickness=0, command=funct_realistic_switch)
+    realistic_button.place(x=50, y=500)
+        
     global okay_label  # global to be called in generate_cover image function
     # Ok button to accepts the data and goes to window 3
     okay_photo = ImageTk.PhotoImage(Image.open('./Assets/OkButton.png'))
