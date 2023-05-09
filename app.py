@@ -50,12 +50,13 @@ content_list = []    # ARRAY OF PAGE CONTENT (mostly the text)
 pdf_list = []        # ARRAY OF PDF PAGES
 photo_list = []      # create a global list to store photo objects for GUI
 label_list = {}      # Globalize label list to pass to delete page function
-enable_realistic = 0  # Globalize value to determine whether images generated are realistic or not // set to 0 to disable by default
+enable_realistic = 1  # Globalize value to determine whether images generated are realistic or not // set to 1 to disable by default
+music_switch = 1     # Globalize value to determine whether toggle background music are On or not // set to 1 to disable by default
 
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
 # Loads the model // COMMENT THIS FOR CPU MODE
-# model = torch.load('./results/model-1.pt')
+model = torch.load('./results/model-1.pt')
 
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
 
@@ -67,11 +68,13 @@ def funct_play_music():  # Function to play background music
     pygame.mixer.music.load("./Assets/PicTalesBGsound.mp3")
     # Loop it indefinitely
     pygame.mixer.music.play(loops=-1)
+    print('ON')
 # ________________________________________________________________________________
 
 
 def funct_stop_music():  # Function to stop playing background music
     pygame.mixer.music.stop()
+    print('OFF')
 # ________________________________________________________________________________
 
 
@@ -79,7 +82,7 @@ def funct_realistic_on():   # Function to toggle on realistic image generation
     global enable_realistic  # Recall the global variable for enable realistic
     # Set to 1 to enable realistic image generation to pass to generate image and generate cover image
     enable_realistic = 1
-    print(enable_realistic)
+    print("Realistic On")
 # ________________________________________________________________________________
 
 
@@ -87,7 +90,7 @@ def funct_realistic_off():   # Function to toggle off realistic image generation
     global enable_realistic  # Recall the global variable for enable realistic
     # Set to 0 to disable realistic image generation to pass to generate image and generate cover image
     enable_realistic = 0
-    print(enable_realistic)
+    print("Realistic Off")
 # ________________________________________________________________________________
 
 
@@ -120,16 +123,16 @@ def generate_image():   # Function to generate the images from the text prompt
         else:
 
             # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
-            image = blank
+            # image = blank
 
-            if enable_realistic == 0:
+            if enable_realistic == 1:
                 cartoon_input = "cartoonish " + text_input
             else:
                 cartoon_input = text_input
 
             # Variable that contains the image result // COMMENT THIS FOR CPU MODE
-            # image = pipe(cartoon_input, guidance_scale=10)[
-            #     "images"][0]
+            image = pipe(cartoon_input, guidance_scale=10)[
+                "images"][0]
 
             # Enable the add character button if the image is generated successfully
             edit_content_label.config(state="normal")
@@ -146,6 +149,19 @@ def generate_image():   # Function to generate the images from the text prompt
     # Displays the image in the Tkinter UI after generation
     lmain.configure(image=img)
     lmain.update()
+# ________________________________________________________________________________
+
+
+def toggle_music():  # Function to Toggle on/off background music
+    global music_switch
+    if music_switch == 1:
+        funct_stop_music()
+        music_switch = 0
+        music_button['image'] = musicOff_icon
+    else:
+        funct_play_music()
+        music_switch = 1
+        music_button['image'] = musicOn_icon
 # ________________________________________________________________________________
 
 
@@ -287,9 +303,9 @@ def generate_save():    # Saves the image in the current directory and displays 
     # Check if user has already generated an image first before saving.
     try:
         image
-    except NameError:   # If variable image is empty, return false
+    except NameError:   # If variable is empty or not defined, return false
         is_generated = False
-    else:               # If image variable is defined
+    else:               # If variable is not empty or defined, return true
         is_generated = True
 
     # If an image has been generated
@@ -344,8 +360,10 @@ def generate_save():    # Saves the image in the current directory and displays 
 
             # If the add story button was clicked
             if main_char_select == 9:
-                # Get story content if user adds a story
-                content = edit_textcontent_area.get('1.0', tk.END)
+                if addcharacter_screen.winfo_exists():  # Check if addcharacter_screen is still open
+                    content = edit_textcontent_area.get('1.0', tk.END)
+                else:  # If page was saved in the generate window
+                    content = text_input
 
         # Makes the text input as a default content input if the user did not enter anything at the content textbox.
         if content == '' or len(content) == 0 or content.isspace() == True:
@@ -393,15 +411,15 @@ def generate_save():    # Saves the image in the current directory and displays 
         # Reset the main_char_select value
         main_char_select = 0
 
-        # Check if there is a widget named addcharacter_screen.
+        # Check if addcharacter_screen is defined
         try:
             addcharacter_screen
-        except NameError:   # If variable addcharacter_screen is empty, return false
+        except NameError:   # If variable is empty or not defined, return false
             is_window_open = False
-        else:               # If addcharacter_screen variable is defined
+        else:               # If variable is not empty or defined, return true
             is_window_open = True
 
-        # If an image has been generated
+        # If window is opened
         if is_window_open:
 
             # Destroy the edit content window
@@ -436,16 +454,16 @@ def generate_cover_image():   # Function to generate the cover image from the te
         else:
 
             # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
-            image_cover = blank
+            # image_cover = blank
 
-            if enable_realistic == 0:
+            if enable_realistic == 1:
                 cartoon_input = "cartoonish " + cover_input
             else:
                 cartoon_input = cover_input
 
             # Variable that contains the image cover result // COMMENT THIS FOR CPU MODE
-            # image_cover = pipe(cartoon_input, guidance_scale=10)[
-            #     "images"][0]
+            image_cover = pipe(cartoon_input, guidance_scale=10)[
+                "images"][0]
 
             # Enable the button if the image is generated successfully
             okay_label.config(state="normal")
@@ -620,25 +638,25 @@ if (isExist == False):
     sys.exit(0)
 
 # loads the model used to a pre-defined library online // COMMENT THIS FOR CPU MODE
-# modelid = "CompVis/stable-diffusion-v1-4"
+modelid = "CompVis/stable-diffusion-v1-4"
 
 # Specifies the graphics driver to be used // COMMENT THIS FOR CPU MODE
-# device = "cuda"
+device = "cuda"
 
 # // UNCOMMENT THIS FOR CPU MODE
-device = "cpu"
+# device = "cpu"
 
 # Loads the model into torch // COMMENT THIS FOR CPU MODE
-# torch.load('./results/model-1.pt')
+torch.load('./results/model-1.pt')
 
 auth_token = "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"
 
 # Uses the pipe from the online library for model translation to produce the image. // COMMENT THIS FOR CPU MODE
-# pipe = StableDiffusionPipeline.from_pretrained(
-#     modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
+pipe = StableDiffusionPipeline.from_pretrained(
+    modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
 
 # Uses the graphics driver (Must atleast be 4GB ram) // COMMENT THIS FOR CPU MODE
-# pipe.to(device)
+pipe.to(device)
 
 # Create template page for the title page image
 blank = Image.new('RGB', (512, 512))
@@ -682,7 +700,7 @@ def funct_about_window():     # The question mark button shows the about pictale
     # This block of code show the logo PICTALES and resize it, and append the image to be seen coz of resizing
     about_img = Image.open('./Assets/PICTALES LOGO Big w background.png')
     resized_img = about_img.resize(
-        (200, 200), resample=Image.Resampling.LANCZOS)
+        (200, 200), resample=Image.LANCZOS)
     about_photo = ImageTk.PhotoImage(resized_img)
 
     # MAGIC APPEND
@@ -918,42 +936,35 @@ def title_window():  # Window to get author and title data // Window 2
         "Arial", 20), text_color="#AB7A11", fg_color=None)
     ltext_cover.place(x=1182, y=650)
 
-    # Back button in window 2 // start Window
+    # Back button in window 2 //
     back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
     photo_list.append(back_photo)  # add photo object to the list
     back_label = Button(start_window, borderwidth=0, highlightthickness=0,
                         image=back_photo, command=start_window.destroy)
     back_label.place(x=100, y=50, anchor="n")
 
-    # Mute Sound button in Window 2 / start Window
-    musicOff_icon = ImageTk.PhotoImage(
-        Image.open('./Assets/ButtonmusicOff.png'))
-    photo_list.append(musicOff_icon)  # add photo object to the list
-    music_button = Button(start_window, image=musicOff_icon, borderwidth=0,
-                          highlightthickness=0, command=funct_stop_music)
-    music_button.place(x=50, y=180)
-
-    # Play Sound button in Window 2 / start Window
-    musicOn_icon = ImageTk.PhotoImage(Image.open('./Assets/ButtonmusicOn.png'))
-    photo_list.append(musicOn_icon)  # add photo object to the list
-    music_button = Button(start_window, image=musicOn_icon, borderwidth=0,
-                          highlightthickness=0, command=funct_play_music)
-    music_button.place(x=50, y=310)
-
-    # Toggle realistic button to ON in Window 2 / start Window
+    # called the 2 different icon which is on and off
     realisticOn_icon = ImageTk.PhotoImage(Image.open('./Assets/cartoonOn.png'))
-    photo_list.append(realisticOn_icon)  # add photo object to the list
-    realisticOn_button = Button(start_window, image=realisticOn_icon, borderwidth=0,
-                                highlightthickness=0, command=funct_realistic_on)
-    realisticOn_button.place(x=50, y=440)
-
-    # Toggle realistic button to OFF in Window 2 / start Window
     realisticOff_icon = ImageTk.PhotoImage(
         Image.open('./Assets/cartoonOff.png'))
-    photo_list.append(realisticOff_icon)  # add photo object to the list
-    realisticOff_button = Button(start_window, image=realisticOff_icon, borderwidth=0,
-                                 highlightthickness=0, command=funct_realistic_off)
-    realisticOff_button.place(x=50, y=570)
+    photo_list.extend([realisticOn_icon, realisticOff_icon]
+                      )  # add photo objects to the list
+
+    # switch function to check if on and off
+    def funct_realistic_switch():
+        global enable_realistic
+        if enable_realistic == 1:  # to check if on
+            funct_realistic_off()  # if on called the off function
+            enable_realistic = 0  # make the var = 0 to off
+            realistic_button['image'] = realisticOff_icon  # called the image
+        else:
+            funct_realistic_on()
+            enable_realistic = 1  # make the var = 1 to make on the switch
+            realistic_button['image'] = realisticOn_icon  # called the image
+
+    realistic_button = Button(start_window, image=realisticOn_icon, borderwidth=0,
+                              highlightthickness=0, command=funct_realistic_switch)  # called the funct_realistic_switch
+    realistic_button.place(x=50, y=500)
 
     global okay_label  # global to be called in generate_cover image function
     # Ok button to accepts the data and goes to window 3
@@ -1031,21 +1042,6 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
     back_label = Button(main_screen, borderwidth=0, highlightthickness=0,
                         image=back_photo, command=main_screen.destroy)
     back_label.place(x=100, y=50, anchor="n")
-
-    # Mute Sound button in Window 3 / Main Operating Screen
-    musicOff_icon = ImageTk.PhotoImage(
-        Image.open('./Assets/ButtonmusicOff.png'))
-    photo_list.append(musicOff_icon)  # add photo object to the list
-    music_button = Button(main_screen, image=musicOff_icon, borderwidth=0,
-                          highlightthickness=0, command=funct_stop_music)
-    music_button.place(x=50, y=180)
-
-    # Play Sound button in Window 3 / Main Operating Screen
-    musicOn_icon = ImageTk.PhotoImage(Image.open('./Assets/ButtonmusicOn.png'))
-    photo_list.append(musicOn_icon)  # add photo object to the list
-    music_button = Button(main_screen, image=musicOn_icon, borderwidth=0,
-                          highlightthickness=0, command=funct_play_music)
-    music_button.place(x=50, y=310)
 
     # Block of code for adjusting its display position in main operating system // Window 3
     # Get the prompt text in title window that contains the storybook title
@@ -1187,21 +1183,6 @@ def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WI
                         command=addcharacter_screen.destroy, bg='#F8BC3B', activebackground='#F8BC3B')
     back_label.place(x=100, y=50, anchor="n")
 
-    # Mute Sound button in Window 5.1 / Edit Content Window
-    musicOff_icon = ImageTk.PhotoImage(
-        Image.open('./Assets/ButtonmusicOff.png'))
-    photo_list.append(musicOff_icon)  # add photo object to the list
-    music_button = Button(addcharacter_screen, image=musicOff_icon, borderwidth=0,
-                          highlightthickness=0, command=funct_stop_music,  bg='#F8BC3B', activebackground='#F8BC3B')
-    music_button.place(x=50, y=180)
-
-    # Play Sound button in Window 5.1 / Edit Content Window
-    musicOn_icon = ImageTk.PhotoImage(Image.open('./Assets/ButtonmusicOn.png'))
-    photo_list.append(musicOn_icon)  # add photo object to the list
-    music_button = Button(addcharacter_screen, image=musicOn_icon, borderwidth=0,
-                          highlightthickness=0, command=funct_play_music,  bg='#F8BC3B', activebackground='#F8BC3B')
-    music_button.place(x=50, y=310)
-
     # Show the selected character from the 8 expressions:
     selected_character_label = tk.Label(
         addcharacter_screen, text='Selected Character:', font=custom_font, fg='white', bg='#F8BC3B')
@@ -1334,21 +1315,6 @@ def character_expression_window():  # Choosing expression window
     back_label = Button(character_screen, borderwidth=0, highlightthickness=0, image=back_photo,
                         command=character_screen.destroy, bg='#F8BC3B', activebackground='#F8BC3B')
     back_label.place(x=100, y=50, anchor="n")
-
-    # Mute Sound button in Expression Window
-    musicOff_icon = ImageTk.PhotoImage(
-        Image.open('./Assets/ButtonmusicOff.png'))
-    photo_list.append(musicOff_icon)  # add photo object to the list
-    music_button = Button(character_screen, image=musicOff_icon, borderwidth=0,
-                          highlightthickness=0, command=funct_stop_music, bg='#F8BC3B', activebackground='#F8BC3B')
-    music_button.place(x=50, y=180)
-
-    # Play Sound button in Expression Window
-    musicOn_icon = ImageTk.PhotoImage(Image.open('./Assets/ButtonmusicOn.png'))
-    photo_list.append(musicOn_icon)  # add photo object to the list
-    music_button = Button(character_screen, image=musicOn_icon, borderwidth=0,
-                          highlightthickness=0, command=funct_play_music, bg='#F8BC3B', activebackground='#F8BC3B')
-    music_button.place(x=50, y=310)
 
     # Label to choose which emotion to include in the generated image
     character1_label = tk.Label(
@@ -1492,18 +1458,16 @@ about_button = Button(app, image=about_icon, borderwidth=0,
                       highlightthickness=0, command=funct_about_window)
 about_button.place(x=50, y=50)
 
-# Mute Sound button in Window 1 / Main Window
-musicOff_icon = ImageTk.PhotoImage(Image.open('./Assets/ButtonmusicOff.png'))
-photo_list.append(musicOff_icon)  # add photo object to the list
-music_button = Button(app, image=musicOff_icon, borderwidth=0,
-                      highlightthickness=0, command=funct_stop_music)
-music_button.place(x=50, y=180)
-# Play Sound button in Window 1 / Main Window
+# Toggle Sound button in Window 1 / Main Window
 musicOn_icon = ImageTk.PhotoImage(Image.open('./Assets/ButtonmusicOn.png'))
-photo_list.append(musicOn_icon)  # add photo object to the list
+musicOff_icon = ImageTk.PhotoImage(Image.open('./Assets/ButtonmusicOff.png'))
+# add photo objects to the list
+photo_list.append([musicOn_icon, musicOff_icon])
+
+# Play Sound button in Window 1 / Main Window
 music_button = Button(app, image=musicOn_icon, borderwidth=0,
-                      highlightthickness=0, command=funct_play_music)
-music_button.place(x=50, y=310)
+                      highlightthickness=0, command=toggle_music)
+music_button.place(x=50, y=180)
 
 # Disable the main widget's resizing
 app.resizable(False, False)
