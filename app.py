@@ -56,7 +56,7 @@ music_switch = 1     # Globalize value to determine whether toggle background mu
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
 # Loads the model // COMMENT THIS FOR CPU MODE
-# model = torch.load('./results/model-1.pt')
+model = torch.load('./results/model-1.pt')
 
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
 
@@ -123,16 +123,16 @@ def generate_image():   # Function to generate the images from the text prompt
         else:
 
             # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
-            image = blank
+            # image = blank
 
-            if enable_realistic == 0:
+            if enable_realistic == 1:
                 cartoon_input = "cartoonish " + text_input
             else:
                 cartoon_input = text_input
 
             # Variable that contains the image result // COMMENT THIS FOR CPU MODE
-            # image = pipe(cartoon_input, guidance_scale=10)[
-            #     "images"][0]
+            image = pipe(cartoon_input, guidance_scale=10)[
+                "images"][0]
 
             # Enable the add character button if the image is generated successfully
             edit_content_label.config(state="normal")
@@ -151,8 +151,8 @@ def generate_image():   # Function to generate the images from the text prompt
     lmain.update()
 # ________________________________________________________________________________
 
-# Function to Toggle on/off background music 
-def toggle_music():
+
+def toggle_music():  # Function to Toggle on/off background music
     global music_switch
     if music_switch == 1:
         funct_stop_music()
@@ -162,6 +162,8 @@ def toggle_music():
         funct_play_music()
         music_switch = 1
         music_button['image'] = musicOn_icon
+# ________________________________________________________________________________
+
 
 # Function for getting the character selected WITH the expressions, essentially the image we pass for saving a page.
 def funct_main_char_select(main_char_value, main_char_image):
@@ -301,9 +303,9 @@ def generate_save():    # Saves the image in the current directory and displays 
     # Check if user has already generated an image first before saving.
     try:
         image
-    except NameError:   # If variable image is empty, return false
+    except NameError:   # If variable is empty or not defined, return false
         is_generated = False
-    else:               # If image variable is defined
+    else:               # If variable is not empty or defined, return true
         is_generated = True
 
     # If an image has been generated
@@ -358,8 +360,10 @@ def generate_save():    # Saves the image in the current directory and displays 
 
             # If the add story button was clicked
             if main_char_select == 9:
-                # Get story content if user adds a story
-                content = edit_textcontent_area.get('1.0', tk.END)
+                if addcharacter_screen.winfo_exists():  # Check if addcharacter_screen is still open
+                    content = edit_textcontent_area.get('1.0', tk.END)
+                else:  # If page was saved in the generate window
+                    content = text_input
 
         # Makes the text input as a default content input if the user did not enter anything at the content textbox.
         if content == '' or len(content) == 0 or content.isspace() == True:
@@ -407,15 +411,15 @@ def generate_save():    # Saves the image in the current directory and displays 
         # Reset the main_char_select value
         main_char_select = 0
 
-        # Check if there is a widget named addcharacter_screen.
+        # Check if addcharacter_screen is defined
         try:
             addcharacter_screen
-        except NameError:   # If variable addcharacter_screen is empty, return false
+        except NameError:   # If variable is empty or not defined, return false
             is_window_open = False
-        else:               # If addcharacter_screen variable is defined
+        else:               # If variable is not empty or defined, return true
             is_window_open = True
 
-        # If an image has been generated
+        # If window is opened
         if is_window_open:
 
             # Destroy the edit content window
@@ -450,16 +454,16 @@ def generate_cover_image():   # Function to generate the cover image from the te
         else:
 
             # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
-            image_cover = blank
+            # image_cover = blank
 
-            if enable_realistic == 0:
+            if enable_realistic == 1:
                 cartoon_input = "cartoonish " + cover_input
             else:
                 cartoon_input = cover_input
 
             # Variable that contains the image cover result // COMMENT THIS FOR CPU MODE
-            # image_cover = pipe(cartoon_input, guidance_scale=10)[
-            #     "images"][0]
+            image_cover = pipe(cartoon_input, guidance_scale=10)[
+                "images"][0]
 
             # Enable the button if the image is generated successfully
             okay_label.config(state="normal")
@@ -634,25 +638,25 @@ if (isExist == False):
     sys.exit(0)
 
 # loads the model used to a pre-defined library online // COMMENT THIS FOR CPU MODE
-# modelid = "CompVis/stable-diffusion-v1-4"
+modelid = "CompVis/stable-diffusion-v1-4"
 
 # Specifies the graphics driver to be used // COMMENT THIS FOR CPU MODE
-# device = "cuda"
+device = "cuda"
 
 # // UNCOMMENT THIS FOR CPU MODE
-device = "cpu"
+# device = "cpu"
 
 # Loads the model into torch // COMMENT THIS FOR CPU MODE
-# torch.load('./results/model-1.pt')
+torch.load('./results/model-1.pt')
 
 auth_token = "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"
 
 # Uses the pipe from the online library for model translation to produce the image. // COMMENT THIS FOR CPU MODE
-# pipe = StableDiffusionPipeline.from_pretrained(
-#     modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
+pipe = StableDiffusionPipeline.from_pretrained(
+    modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
 
 # Uses the graphics driver (Must atleast be 4GB ram) // COMMENT THIS FOR CPU MODE
-# pipe.to(device)
+pipe.to(device)
 
 # Create template page for the title page image
 blank = Image.new('RGB', (512, 512))
@@ -932,34 +936,36 @@ def title_window():  # Window to get author and title data // Window 2
         "Arial", 20), text_color="#AB7A11", fg_color=None)
     ltext_cover.place(x=1182, y=650)
 
-    # Back button in window 2 // 
+    # Back button in window 2 //
     back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
     photo_list.append(back_photo)  # add photo object to the list
     back_label = Button(start_window, borderwidth=0, highlightthickness=0,
                         image=back_photo, command=start_window.destroy)
     back_label.place(x=100, y=50, anchor="n")
-    
+
     # called the 2 different icon which is on and off
     realisticOn_icon = ImageTk.PhotoImage(Image.open('./Assets/cartoonOn.png'))
-    realisticOff_icon = ImageTk.PhotoImage(Image.open('./Assets/cartoonOff.png'))
-    photo_list.extend([realisticOn_icon, realisticOff_icon])  # add photo objects to the list
+    realisticOff_icon = ImageTk.PhotoImage(
+        Image.open('./Assets/cartoonOff.png'))
+    photo_list.extend([realisticOn_icon, realisticOff_icon]
+                      )  # add photo objects to the list
 
     # switch function to check if on and off
-    def funct_realistic_switch(): 
+    def funct_realistic_switch():
         global enable_realistic
-        if enable_realistic == 1: # to check if on 
-            funct_realistic_off() # if on called the o
-            enable_realistic = 0
-            realistic_button['image'] = realisticOff_icon
+        if enable_realistic == 1:  # to check if on
+            funct_realistic_off()  # if on called the off function
+            enable_realistic = 0  # make the var = 0 to off
+            realistic_button['image'] = realisticOff_icon  # called the image
         else:
             funct_realistic_on()
-            enable_realistic = 1
-            realistic_button['image'] = realisticOn_icon
-        
+            enable_realistic = 1  # make the var = 1 to make on the switch
+            realistic_button['image'] = realisticOn_icon  # called the image
+
     realistic_button = Button(start_window, image=realisticOn_icon, borderwidth=0,
-                            highlightthickness=0, command=funct_realistic_switch)
+                              highlightthickness=0, command=funct_realistic_switch)  # called the funct_realistic_switch
     realistic_button.place(x=50, y=500)
-        
+
     global okay_label  # global to be called in generate_cover image function
     # Ok button to accepts the data and goes to window 3
     okay_photo = ImageTk.PhotoImage(Image.open('./Assets/OkButton.png'))
@@ -1455,7 +1461,8 @@ about_button.place(x=50, y=50)
 # Toggle Sound button in Window 1 / Main Window
 musicOn_icon = ImageTk.PhotoImage(Image.open('./Assets/ButtonmusicOn.png'))
 musicOff_icon = ImageTk.PhotoImage(Image.open('./Assets/ButtonmusicOff.png'))
-photo_list.append([musicOn_icon, musicOff_icon])  # add photo objects to the list
+# add photo objects to the list
+photo_list.append([musicOn_icon, musicOff_icon])
 
 # Play Sound button in Window 1 / Main Window
 music_button = Button(app, image=musicOn_icon, borderwidth=0,
