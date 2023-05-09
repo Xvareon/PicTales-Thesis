@@ -50,7 +50,7 @@ content_list = []    # ARRAY OF PAGE CONTENT (mostly the text)
 pdf_list = []        # ARRAY OF PDF PAGES
 photo_list = []      # create a global list to store photo objects for GUI
 label_list = {}      # Globalize label list to pass to delete page function
-enable_realistic = 0 # Globalize value to determine whether images generated are realistic or not // set to 0 to disable by default
+enable_realistic = 0  # Globalize value to determine whether images generated are realistic or not // set to 0 to disable by default
 
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
@@ -69,21 +69,27 @@ def funct_play_music():  # Function to play background music
     pygame.mixer.music.play(loops=-1)
 # ________________________________________________________________________________
 
+
 def funct_stop_music():  # Function to stop playing background music
     pygame.mixer.music.stop()
 # ________________________________________________________________________________
 
+
 def funct_realistic_on():   # Function to toggle on realistic image generation
-    global enable_realistic # Recall the global variable for enable realistic
-    enable_realistic = 1    # Set to 1 to enable realistic image generation to pass to generate image and generate cover image
+    global enable_realistic  # Recall the global variable for enable realistic
+    # Set to 1 to enable realistic image generation to pass to generate image and generate cover image
+    enable_realistic = 1
     print(enable_realistic)
 # ________________________________________________________________________________
 
+
 def funct_realistic_off():   # Function to toggle off realistic image generation
-    global enable_realistic # Recall the global variable for enable realistic
-    enable_realistic = 0    # Set to 0 to disable realistic image generation to pass to generate image and generate cover image
+    global enable_realistic  # Recall the global variable for enable realistic
+    # Set to 0 to disable realistic image generation to pass to generate image and generate cover image
+    enable_realistic = 0
     print(enable_realistic)
 # ________________________________________________________________________________
+
 
 def generate_image():   # Function to generate the images from the text prompt
 
@@ -188,20 +194,22 @@ def funct_inner_frame():  # Dynamically configures the widgets in the inner fram
         label_list[counter] = []
 
         # Widget for displaying a update button pointing to the current page
-        lupdate_photo = ImageTk.PhotoImage(Image.open('./Assets/editbutton.png'))
-        photo_list.append(lupdate_photo) 
-        lupdate_list = Button(inner_frame, image=lupdate_photo, 
-                              text="UPDATE", command=lambda index=counter: update_page(index), 
+        lupdate_photo = ImageTk.PhotoImage(
+            Image.open('./Assets/editbutton.png'))
+        photo_list.append(lupdate_photo)
+        lupdate_list = Button(inner_frame, image=lupdate_photo,
+                              text="UPDATE", command=lambda index=counter: update_page(index),
                               bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0)
         lupdate_list.grid(row=counter, column=2)
         label_list[counter].append(lupdate_list)
 
         # Widget for displaying a delete button pointing to the current page
-        ldelete_photo = ImageTk.PhotoImage(Image.open('./Assets/trashbutton.png'))
-        photo_list.append(ldelete_photo) 
-        ldelete_list = Button(inner_frame, image=ldelete_photo, 
-                               text="DELETE", command=lambda index=counter: delete_page(index), 
-                               bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0)
+        ldelete_photo = ImageTk.PhotoImage(
+            Image.open('./Assets/trashbutton.png'))
+        photo_list.append(ldelete_photo)
+        ldelete_list = Button(inner_frame, image=ldelete_photo,
+                              text="DELETE", command=lambda index=counter: delete_page(index),
+                              bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0)
         ldelete_list.grid(row=counter, column=3)
         label_list[counter].append(ldelete_list)
 
@@ -299,8 +307,8 @@ def generate_save():    # Saves the image in the current directory and displays 
         # Save image file name as PNG based on text input
         image.save('./GeneratedImages/{}.png'.format(text_input))
 
-        # If a character was chosen and the edit content page has been clicked or the edit_content_area has value
-        if main_char_select > 0 and main_char_select < 4:
+        # If a character was chosen and the edit content page has been clicked
+        if main_char_select > 0 and main_char_select < 9:
 
             # Load the base image on which the character will be pasted
             base = Image.open(
@@ -327,15 +335,15 @@ def generate_save():    # Saves the image in the current directory and displays 
             # Get story content if user adds a story
             content = edit_textcontent_area.get('1.0', tk.END)
 
-        # If no character was chosen and the user did not clicked edit content page
-        if main_char_select == 0 or main_char_select == 4:
+        # If no character was chosen or the user did not clicked edit content page
+        if main_char_select == 0 or main_char_select == 9:
             # Store image in img variable if no character is selected
             img = ImageTk.PhotoImage(image)
             # If edit story was not invoked, default the content to the text input for generating image
             content = text_input
 
             # If the add story button was clicked
-            if main_char_select == 4:
+            if main_char_select == 9:
                 # Get story content if user adds a story
                 content = edit_textcontent_area.get('1.0', tk.END)
 
@@ -936,14 +944,15 @@ def title_window():  # Window to get author and title data // Window 2
     realisticOn_icon = ImageTk.PhotoImage(Image.open('./Assets/cartoonOn.png'))
     photo_list.append(realisticOn_icon)  # add photo object to the list
     realisticOn_button = Button(start_window, image=realisticOn_icon, borderwidth=0,
-                          highlightthickness=0, command=funct_realistic_on)
+                                highlightthickness=0, command=funct_realistic_on)
     realisticOn_button.place(x=50, y=440)
 
     # Toggle realistic button to OFF in Window 2 / start Window
-    realisticOff_icon = ImageTk.PhotoImage(Image.open('./Assets/cartoonOff.png'))
+    realisticOff_icon = ImageTk.PhotoImage(
+        Image.open('./Assets/cartoonOff.png'))
     photo_list.append(realisticOff_icon)  # add photo object to the list
     realisticOff_button = Button(start_window, image=realisticOff_icon, borderwidth=0,
-                          highlightthickness=0, command=funct_realistic_off)
+                                 highlightthickness=0, command=funct_realistic_off)
     realisticOff_button.place(x=50, y=570)
 
     global okay_label  # global to be called in generate_cover image function
@@ -1159,8 +1168,8 @@ def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WI
     # Globalize Flag for main_char_select to detect if add story button was clicked
     global main_char_select
 
-    # Set the flag to 4 since there is no designated character at value 4 to mimic the button being clicked
-    main_char_select = 4
+    # Set the flag to 9 since there is no designated character at value 9 to mimic the button being clicked
+    main_char_select = 9
 
     # Initiate edit content page window's tk GUI
     addcharacter_screen = tk.Toplevel(app)
@@ -1501,4 +1510,3 @@ app.resizable(False, False)
 # ___________________________________________________________________________ DRIVER CODE ___________________________________________________________________________
 # Get text input prompts again by automatically restarting the app
 app.mainloop()
-
