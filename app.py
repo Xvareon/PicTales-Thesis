@@ -4,10 +4,7 @@
 # Auto Install # !!!PRIORITY!!!
 # Checks for same image names
 # Loading window when generating image/cover image
-# PicTales for adults which disables cartoon input but still filters out bad data/harmful inputs/outputs
-# Cute size some windows
 # Check for grabbing windows, will break the program
-# Edit and Delete pages (make this modular)
 #########################################################
 
 # ___________________________________________________________________________ DEPENDENCIES ___________________________________________________________________________
@@ -47,16 +44,18 @@ import datetime
 
 # ___________________________________________________________________________ GLOBAL VARIABLES ___________________________________________________________________________
 
-image_list = []     # ARRAY OF IMAGES
-text_list = []      # ARRAY OF TEXT INPUTS
-content_list = []   # ARRAY OF PAGE CONTENT (mostly the text)
-pdf_list = []       # ARRAY OF PDF PAGES
-photo_list = []     # create a global list to store photo objects for GUI
+image_list = []      # ARRAY OF IMAGES
+text_list = []       # ARRAY OF TEXT INPUTS
+content_list = []    # ARRAY OF PAGE CONTENT (mostly the text)
+pdf_list = []        # ARRAY OF PDF PAGES
+photo_list = []      # create a global list to store photo objects for GUI
+label_list = {}      # Globalize label list to pass to delete page function
+enable_realistic = 0  # Globalize value to determine whether images generated are realistic or not // set to 0 to disable by default
 
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
-# Loads the model
-model = torch.load('./results/model-1.pt')
+# Loads the model // COMMENT THIS FOR CPU MODE
+# model = torch.load('./results/model-1.pt')
 
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
 
@@ -73,6 +72,22 @@ def funct_play_music():  # Function to play background music
 
 def funct_stop_music():  # Function to stop playing background music
     pygame.mixer.music.stop()
+# ________________________________________________________________________________
+
+
+def funct_realistic_on():   # Function to toggle on realistic image generation
+    global enable_realistic  # Recall the global variable for enable realistic
+    # Set to 1 to enable realistic image generation to pass to generate image and generate cover image
+    enable_realistic = 1
+    print(enable_realistic)
+# ________________________________________________________________________________
+
+
+def funct_realistic_off():   # Function to toggle off realistic image generation
+    global enable_realistic  # Recall the global variable for enable realistic
+    # Set to 0 to disable realistic image generation to pass to generate image and generate cover image
+    enable_realistic = 0
+    print(enable_realistic)
 # ________________________________________________________________________________
 
 
@@ -95,18 +110,27 @@ def generate_image():   # Function to generate the images from the text prompt
 
         # Catch error if no text input is given
         if text_input == '' or len(text_input) == 0 or text_input.isspace() == True:
+
             image = blank
             # Disable the add character button if no input is given
             edit_content_label.config(state="disabled")
             # Disable the save button if no input is given
             save_label.config(state="disabled")
+
         else:
-            # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY!
-            # image = blank
-            cartoon_input = "cartoonish " + text_input
-            # Variable that contains the image result
-            image = pipe(cartoon_input, guidance_scale=10)[
-                "images"][0]
+
+            # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
+            image = blank
+
+            if enable_realistic == 0:
+                cartoon_input = "cartoonish " + text_input
+            else:
+                cartoon_input = text_input
+
+            # Variable that contains the image result // COMMENT THIS FOR CPU MODE
+            # image = pipe(cartoon_input, guidance_scale=10)[
+            #     "images"][0]
+
             # Enable the add character button if the image is generated successfully
             edit_content_label.config(state="normal")
             # Enable the save button in generate window if the image is generated successfully
@@ -140,14 +164,121 @@ def funct_main_char_select(main_char_value, main_char_image):
     # Set the image for the character that will be later pasted onto the generated image if selected
     character = main_char_image
 
-    print("main value (1-8):", main_char_select)
-
     # Update the image for the select character window (1-3)
     selected_character_photo.configure(image=character)
     selected_character_photo.update()
 
     # Destroy the character expression screen
     character_screen.destroy()
+# ________________________________________________________________________________
+
+
+def funct_inner_frame():  # Dynamically configures the widgets in the inner frame
+
+    # Recall the global label list since its gonna detect a non-existing local variable otherwise
+    global label_list
+
+    # Initiate a counter for text, image label frames positioning, and index pointing
+    counter = 0
+
+    # Remove the previous labels from the window
+    for index in label_list:
+        for label in label_list[index]:
+            label.grid_forget()
+    label_list = {}  # Reset the stack everytime this window is called
+
+    # Loop for the text items and image items added by the user to the story to display them in the main operating window
+    for text_item, pic in zip(content_list, image_list):
+
+        # Reset the elements inside the label list
+        label_list[counter] = []
+
+        # Widget for displaying a update button pointing to the current page
+        lupdate_photo = ImageTk.PhotoImage(
+            Image.open('./Assets/editbutton.png'))
+        photo_list.append(lupdate_photo)
+        lupdate_list = Button(inner_frame, image=lupdate_photo,
+                              text="UPDATE", command=lambda index=counter: update_page(index),
+                              bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0)
+        lupdate_list.grid(row=counter, column=2)
+        label_list[counter].append(lupdate_list)
+
+        # Widget for displaying a delete button pointing to the current page
+        ldelete_photo = ImageTk.PhotoImage(
+            Image.open('./Assets/trashbutton.png'))
+        photo_list.append(ldelete_photo)
+        ldelete_list = Button(inner_frame, image=ldelete_photo,
+                              text="DELETE", command=lambda index=counter: delete_page(index),
+                              bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0)
+        ldelete_list.grid(row=counter, column=3)
+        label_list[counter].append(ldelete_list)
+
+        # Widget for displaying a label frame object that contains a content page of the storybook
+        ltext_list = Label(inner_frame, height=10, width=40, text="\n".join(textwrap.wrap(text_item, width=50)), font=(
+            "Arial", 16), fg="#AB7A11", bg="#F9F4F1")
+        ltext_list.grid(row=counter, column=0, padx=20,
+                        pady=10, ipadx=10, ipady=300, sticky='n')
+        label_list[counter].append(ltext_list)
+
+        # Widget for displaying a label frame object that contains an image page of the storybook
+        limg_list = Label(inner_frame, image=pic, bg="#F9F4F1")
+        limg_list.grid(row=counter, column=1, padx=20,
+                       pady=10, ipadx=10, ipady=150, sticky='n')
+        label_list[counter].append(limg_list)
+
+        # Update the scroll region of the canvas
+        canvas.update_idletasks()
+        canvas.config(scrollregion=canvas.bbox('all'))
+
+        # Move the counter to 1 already to skip the cover text and cover image
+        counter += 1
+# ________________________________________________________________________________
+
+
+def update_page(index):  # Update a page
+
+    global label_list   # Recall the label_list
+
+    # Globalize value to pass to generate save, turning it essentially into an update
+    global update_value
+
+    # Set the value to a bool, for a condition in generate save
+    update_value = index
+
+    funct_generate_window()
+
+    # Delete the ghost widgets when pressing update
+    for label in label_list[index]:
+        label.grid_forget()
+
+    # Update the widgets
+    funct_inner_frame()
+
+    # Update the scroll region of the canvas
+    canvas.update_idletasks()
+    canvas.config(scrollregion=canvas.bbox('all'))
+# ________________________________________________________________________________
+
+
+def delete_page(index):  # Delete a page
+
+    global label_list   # Recall the label_list
+
+    # Remove the corresponding content, text, and image from the lists
+    content_list.pop(index)
+    image_list.pop(index)
+    text_list.pop(index)
+
+    # Delete the ghost widgets when pressing delete
+    for label in label_list[index]:
+        label.grid_forget()
+
+    # Update the widgets
+    funct_inner_frame()
+
+    # Update the scroll region of the canvas
+    canvas.update_idletasks()
+    canvas.config(scrollregion=canvas.bbox('all'))
 # ________________________________________________________________________________
 
 
@@ -170,11 +301,15 @@ def generate_save():    # Saves the image in the current directory and displays 
         # Store the base image on which the character would be pasted on
         global base
 
+        # Recall the main char select value
+        global main_char_select
+
         # Save image file name as PNG based on text input
         image.save('./GeneratedImages/{}.png'.format(text_input))
 
         # If a character was chosen and the edit content page has been clicked
-        if main_char_select > 0:
+        if main_char_select > 0 and main_char_select < 9:
+
             # Load the base image on which the character will be pasted
             base = Image.open(
                 './GeneratedImages/{}.png'.format(text_input)).convert('RGBA')
@@ -196,62 +331,67 @@ def generate_save():    # Saves the image in the current directory and displays 
 
             # Store image in img variable if a character is selected
             img = ImageTk.PhotoImage(result)
+
             # Get story content if user adds a story
             content = edit_textcontent_area.get('1.0', tk.END)
 
-        # If no character was chosen and the user did not clicked edit content page
-        if main_char_select == 0:
+        # If no character was chosen or the user did not clicked edit content page
+        if main_char_select == 0 or main_char_select == 9:
             # Store image in img variable if no character is selected
             img = ImageTk.PhotoImage(image)
             # If edit story was not invoked, default the content to the text input for generating image
             content = text_input
 
+            # If the add story button was clicked
+            if main_char_select == 9:
+                # Get story content if user adds a story
+                content = edit_textcontent_area.get('1.0', tk.END)
+
         # Makes the text input as a default content input if the user did not enter anything at the content textbox.
-        if (content == '' or len(content) == 0 or content.isspace() == True):
+        if content == '' or len(content) == 0 or content.isspace() == True:
             content = text_input
 
-        # Add the content to the list
-        content_list.append(content)
+        ### ADD THE SAVED PAGE TO THEIR RESPECTIVE ARRAYS ###
 
-        # Add the previously stored text in a list
-        text_list.append(text_input)
+        global update_value  # Recall the update value from update page function
 
-        # Store previous image in a list
-        image_list.append(img)
+        # When updating a page
+        if update_value != None:
 
-        # create a list to hold the labels for each item
-        label_list = []
+            print("YOU ARE IN UPDATE: {}".format(update_value))
 
-        # Initiate a counter for text and image label frames positioning
-        counter = 0
+            # Update the previous content to the list using the update_value as the pointer index
+            content_list[update_value] = content
 
-        # Loop for the text items and image items added by the user to the story to display them in the main operating window
-        for text_item, pic in zip(content_list, image_list):
+            # Update the previously stored text in the list using the update_value as the pointer index
+            text_list[update_value] = text_input
 
-            # Move the counter
-            counter += 1
+            # Update the previous image in the list using the update_value as the pointer index
+            image_list[update_value] = img
 
-            # Remove the previous labels from the window
-            for label in label_list:
-                label.pack_forget()
-            label_list = []
+        # Regular adding of a page
+        else:
 
-            # Widget for displaying a label frame object that contains a content page of the storybook
-            ltext_list = Label(inner_frame, height=10, width=50, text="\n".join(textwrap.wrap(text_item, width=50)), font=(
-                "Arial", 16), fg="#AB7A11", bg="#F9F4F1")
-            ltext_list.grid(row=counter-1, column=0, padx=20,
-                            pady=10, ipadx=10, ipady=150, sticky='n')
-            label_list.append(ltext_list)
+            print("YOU ARE IN ADD Page: {}".format(update_value))
 
-            # Widget for displaying a label frame object that contains an image page of the storybook
-            limg_list = Label(inner_frame, image=pic, bg="#F9F4F1")
-            limg_list.grid(row=counter-1, column=1, padx=20,
-                           pady=10, ipadx=10, ipady=80, sticky='n')
-            label_list.append(limg_list)
+            # Add the content to the list
+            content_list.append(content)
 
-            # Update the scroll region of the canvas
-            canvas.update_idletasks()
-            canvas.config(scrollregion=canvas.bbox('all'))
+            # Add the previously stored text in a list
+            text_list.append(text_input)
+
+            # Store previous image in a list
+            image_list.append(img)
+
+        update_value = None  # Reset the value of update
+
+        ########################################################
+
+        # Update the widgets
+        funct_inner_frame()
+
+        # Reset the main_char_select value
+        main_char_select = 0
 
         # Check if there is a widget named addcharacter_screen.
         try:
@@ -263,8 +403,10 @@ def generate_save():    # Saves the image in the current directory and displays 
 
         # If an image has been generated
         if is_window_open:
+
             # Destroy the edit content window
             addcharacter_screen.destroy()
+
         # Destroy the generate window
         generate_window.destroy()
 # ________________________________________________________________________________
@@ -286,16 +428,25 @@ def generate_cover_image():   # Function to generate the cover image from the te
 
         # Catch error if no text input is given
         if cover_input == '' or len(cover_input) == 0 or cover_input.isspace() == True:
+
             image_cover = blank
             # Disable the button if no input is given
             okay_label.config(state="disabled")
+
         else:
-            # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY!
-            # image_cover = blank
-            cartoon_input = "cartoonish " + cover_input
-            # Variable that contains the image result
-            image_cover = pipe(cartoon_input, guidance_scale=10)[
-                "images"][0]
+
+            # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
+            image_cover = blank
+
+            if enable_realistic == 0:
+                cartoon_input = "cartoonish " + cover_input
+            else:
+                cartoon_input = cover_input
+
+            # Variable that contains the image cover result // COMMENT THIS FOR CPU MODE
+            # image_cover = pipe(cartoon_input, guidance_scale=10)[
+            #     "images"][0]
+
             # Enable the button if the image is generated successfully
             okay_label.config(state="normal")
 
@@ -381,11 +532,11 @@ def generate_pdf():                # Generate PicTale Story book
     if cover.mode == 'RGBA':
         cover = cover.convert('RGB')
 
-    # Add the title page to page 2 of storybook
+    # Add the title page with the AI generated image to page 1 of storybook
     pdf_list.append(Image.open(
         './GeneratedImages/TitlePage_{}.png'.format(pdf_name)))
 
-    # Add the PicTales cover page (Page 2) to page 1 of storybook
+    # Add the PicTales cover page page 2 of storybook
     pdf_list.append(cover)
 
     # Pointer/Flag for content for content list access later and start at 1 so index 0 can store title page / IMPORTANT DO NOT REPLACE FOR FILE IN LOOP
@@ -455,6 +606,9 @@ def generate_pdf():                # Generate PicTale Story book
     # Show prompt that PDF was generated
     messagebox.showinfo("Pictales", "Your PDF has been generated!")
 
+    # Open the storybook upon the app's exit
+    os.system('start %s' % pdf_path)
+
     # Close the app when storybook is made
     app.destroy()
 
@@ -465,24 +619,26 @@ isExist = os.path.exists('./results/model-1.pt')
 if (isExist == False):
     sys.exit(0)
 
-# loads the model used to a pre-defined library online
-modelid = "CompVis/stable-diffusion-v1-4"
+# loads the model used to a pre-defined library online // COMMENT THIS FOR CPU MODE
+# modelid = "CompVis/stable-diffusion-v1-4"
 
-# Specifies the graphics driver to be used
-device = "cuda"
-# device = "cpu"
+# Specifies the graphics driver to be used // COMMENT THIS FOR CPU MODE
+# device = "cuda"
 
-# Loads the model into torch
-torch.load('./results/model-1.pt')
+# // UNCOMMENT THIS FOR CPU MODE
+device = "cpu"
+
+# Loads the model into torch // COMMENT THIS FOR CPU MODE
+# torch.load('./results/model-1.pt')
 
 auth_token = "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"
 
-# Uses the pipe from the online library for model translation to produce the image.
-pipe = StableDiffusionPipeline.from_pretrained(
-    modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
+# Uses the pipe from the online library for model translation to produce the image. // COMMENT THIS FOR CPU MODE
+# pipe = StableDiffusionPipeline.from_pretrained(
+#     modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
 
-# Uses the graphics driver (Must atleast be 4GB ram)
-pipe.to(device)
+# Uses the graphics driver (Must atleast be 4GB ram) // COMMENT THIS FOR CPU MODE
+# pipe.to(device)
 
 # Create template page for the title page image
 blank = Image.new('RGB', (512, 512))
@@ -538,13 +694,13 @@ def funct_about_window():     # The question mark button shows the about pictale
     # Set the font of the label to Supersonic Rocketship with a size of 20
     modal_label.config(font=("Supersonic Rocketship", 64))
 
-    # This code is for printing the copyright
+    # This code is for displaying the copyright
     ver_label = tk.Label(about_window, text='Copyright © 2023, PICTALES',
                          font=custom_font, fg='white', bg='#F8BC3B')
     ver_label.place(relx=0.25, rely=0.75)
     ver_label.config(font=("Supersonic Rocketship", 24))
 
-    # This code is for printing the version of the app
+    # This code is for displaying the version of the app
     copy_label = tk.Label(about_window, text='VER. 1.0',
                           font=custom_font, fg='white', bg='#F8BC3B')
     copy_label.pack(pady=190)
@@ -611,7 +767,7 @@ def funct_generate_window():    # This window is for getting the text prompt and
     ))
     generate_window.configure(bg='#F8BC3B')  # set background color
 
-    # Back button to main_operation_window
+    # Back button to generate_window
     back_photo = ImageTk.PhotoImage(
         Image.open('./Assets/inverted_backbutton.png'))
     photo_list.append(back_photo)  # add photo object to the photo list
@@ -663,6 +819,7 @@ def funct_generate_window():    # This window is for getting the text prompt and
 
     # Globalize this so it can be disabled when no image is generated in generate image function
     global save_label
+
     # Save content button (SAVES THE IMAGE WITH NO CHARACTER AND NO CONTENT)
     save_photo = ImageTk.PhotoImage(Image.open('./Assets/frame0/save.png'))
     photo_list.append(save_photo)  # add photo object to the photo list
@@ -761,7 +918,7 @@ def title_window():  # Window to get author and title data // Window 2
         "Arial", 20), text_color="#AB7A11", fg_color=None)
     ltext_cover.place(x=1182, y=650)
 
-    # Back button in window 2
+    # Back button in window 2 // start Window
     back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
     photo_list.append(back_photo)  # add photo object to the list
     back_label = Button(start_window, borderwidth=0, highlightthickness=0,
@@ -782,6 +939,21 @@ def title_window():  # Window to get author and title data // Window 2
     music_button = Button(start_window, image=musicOn_icon, borderwidth=0,
                           highlightthickness=0, command=funct_play_music)
     music_button.place(x=50, y=310)
+
+    # Toggle realistic button to ON in Window 2 / start Window
+    realisticOn_icon = ImageTk.PhotoImage(Image.open('./Assets/cartoonOn.png'))
+    photo_list.append(realisticOn_icon)  # add photo object to the list
+    realisticOn_button = Button(start_window, image=realisticOn_icon, borderwidth=0,
+                                highlightthickness=0, command=funct_realistic_on)
+    realisticOn_button.place(x=50, y=440)
+
+    # Toggle realistic button to OFF in Window 2 / start Window
+    realisticOff_icon = ImageTk.PhotoImage(
+        Image.open('./Assets/cartoonOff.png'))
+    photo_list.append(realisticOff_icon)  # add photo object to the list
+    realisticOff_button = Button(start_window, image=realisticOff_icon, borderwidth=0,
+                                 highlightthickness=0, command=funct_realistic_off)
+    realisticOff_button.place(x=50, y=570)
 
     global okay_label  # global to be called in generate_cover image function
     # Ok button to accepts the data and goes to window 3
@@ -811,6 +983,12 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
     main_screen.grab_set()
     main_screen.geometry("1832x932")
     main_screen.configure(bg='#F9F4F1')
+
+    # First declaration of global update value
+    global update_value
+
+    # First instance of update value to have the value None to define it in generate save function
+    update_value = None
 
     ################################################# SCROLL BAR CODE #####################################################
 
@@ -847,7 +1025,7 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
 
     #########################################################################################################################
 
-    # Back button to title and author
+    # Back button in Window 3 / Main Operating Screen
     back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
     photo_list.append(back_photo)  # add photo object to the list
     back_label = Button(main_screen, borderwidth=0, highlightthickness=0,
@@ -976,7 +1154,6 @@ def funct_char_select(char_value):  # Function for getting the character selecte
     global char_select  # Globalize the value of character selection
 
     char_select = char_value    # Get the value passed from addcharacter screen
-    print("current value (1-3):", char_select)
 
     # Call the character expression window to select the selected character's expressions
     character_expression_window()
@@ -987,6 +1164,12 @@ def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WI
 
     # Globalize edit content page to destroy it later in generate save function
     global addcharacter_screen
+
+    # Globalize Flag for main_char_select to detect if add story button was clicked
+    global main_char_select
+
+    # Set the flag to 9 since there is no designated character at value 9 to mimic the button being clicked
+    main_char_select = 9
 
     # Initiate edit content page window's tk GUI
     addcharacter_screen = tk.Toplevel(app)
@@ -1145,12 +1328,13 @@ def character_expression_window():  # Choosing expression window
     elif (char_select == 3):
         char_name = "dog"
 
-    # Back button on boycharacter_screen
+    # Back button on character_screen
     back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
     photo_list.append(back_photo)  # add photo object to the list
     back_label = Button(character_screen, borderwidth=0, highlightthickness=0, image=back_photo,
                         command=character_screen.destroy, bg='#F8BC3B', activebackground='#F8BC3B')
     back_label.place(x=100, y=50, anchor="n")
+
     # Mute Sound button in Expression Window
     musicOff_icon = ImageTk.PhotoImage(
         Image.open('./Assets/ButtonmusicOff.png'))
