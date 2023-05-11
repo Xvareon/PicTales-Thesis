@@ -682,6 +682,9 @@ def generate_pdf():                # Generate PicTale Story book
     # Open the storybook upon the app's exit
     os.system('start %s' % pdf_path)
 
+    # Close the app window
+    app.destroy()
+
 
 # ___________________________________________________________________________ CONFIGURATIONS ___________________________________________________________________________
 isExist = os.path.exists('./results/model-1.pt')
@@ -947,7 +950,6 @@ def title_window():  # Window to get author and title data // Window 2
     start_window.title("Title and Author")
 
     # This code will pop up the window how to in top level
-    start_window.grab_set()
     start_window.geometry("1832x932")
     start_window.configure(bg="#F9F4F1")
 
