@@ -56,7 +56,7 @@ music_switch = 1     # Globalize value to determine whether toggle background mu
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
 # Loads the model // COMMENT THIS FOR CPU MODE
-model = torch.load('./results/model-1.pt')
+# model = torch.load('./results/model-1.pt')
 
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
 
@@ -123,7 +123,7 @@ def generate_image():   # Function to generate the images from the text prompt
         else:
 
             # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
-            # image = blank
+            image = blank
 
             if enable_realistic == 1:
                 cartoon_input = "cartoonish " + text_input
@@ -131,8 +131,8 @@ def generate_image():   # Function to generate the images from the text prompt
                 cartoon_input = text_input
 
             # Variable that contains the image result // COMMENT THIS FOR CPU MODE
-            image = pipe(cartoon_input, guidance_scale=10)[
-                "images"][0]
+            # image = pipe(cartoon_input, guidance_scale=10)[
+            #     "images"][0]
 
             # Enable the add character button if the image is generated successfully
             edit_content_label.config(state="normal")
@@ -454,7 +454,7 @@ def generate_cover_image():   # Function to generate the cover image from the te
         else:
 
             # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
-            # image_cover = blank
+            image_cover = blank
 
             if enable_realistic == 1:
                 cartoon_input = "cartoonish " + cover_input
@@ -462,8 +462,8 @@ def generate_cover_image():   # Function to generate the cover image from the te
                 cartoon_input = cover_input
 
             # Variable that contains the image cover result // COMMENT THIS FOR CPU MODE
-            image_cover = pipe(cartoon_input, guidance_scale=10)[
-                "images"][0]
+            # image_cover = pipe(cartoon_input, guidance_scale=10)[
+            #     "images"][0]
 
             # Enable the button if the image is generated successfully
             okay_label.config(state="normal")
@@ -503,7 +503,10 @@ def generate_pdf():                # Generate PicTale Story book
 
     # Choose font
     font = ImageFont.truetype('arial.ttf', 16)
-    titlefont = ImageFont.truetype('comic.ttf', 30)
+    auth_font = ImageFont.truetype('calibri.ttf', 30)
+    # titlefont = ImageFont.truetype('comic.ttf', 35)
+    titlefont = ImageFont.truetype('arialbd.ttf', 40)
+    
 
     # Set the maximum width for each line
     max_width = 15
@@ -520,7 +523,7 @@ def generate_pdf():                # Generate PicTale Story book
         text_width, text_height = titlefont.getsize(line)
         # Black background for anti camo in title name / pdf name
         bbox = (150, y_coord, 150 + text_width, y_coord + text_height)
-        covertext.rectangle(bbox, fill=(0, 0, 0))
+        covertext.rectangle(bbox, fill=(61, 61, 61))
         # For writing title page / pdf name input in cover page
         covertext.text((150, y_coord), line,
                        font=titlefont, fill=(255, 255, 255))
@@ -531,7 +534,7 @@ def generate_pdf():                # Generate PicTale Story book
     covertext.rectangle(bbox, fill=(0, 0, 0))
     # For writing author input in cover page
     covertext.text((50, 380), author_name.get(),
-                   font=font, fill=(255, 255, 255))
+                   font=auth_font, fill=(255, 255, 255))
 
     # Black background for anti camo in date created
     bbox = covertext.textbbox((50, 410), now.strftime("%m-%d-%Y"), font=font)
@@ -573,7 +576,8 @@ def generate_pdf():                # Generate PicTale Story book
         phototext = ImageDraw.Draw(photo)
 
         # Choose font
-        font = ImageFont.truetype('arial.ttf', 16)
+        # font = ImageFont.truetype('arial.ttf', 16)
+        font = ImageFont.truetype('calibri.ttf', 30)
 
         # Make a rectangle background for the text
         bbox = phototext.textbbox((10, 10), content_list[i], font=font)
@@ -638,25 +642,25 @@ if (isExist == False):
     sys.exit(0)
 
 # loads the model used to a pre-defined library online // COMMENT THIS FOR CPU MODE
-modelid = "CompVis/stable-diffusion-v1-4"
+# modelid = "CompVis/stable-diffusion-v1-4"
 
 # Specifies the graphics driver to be used // COMMENT THIS FOR CPU MODE
-device = "cuda"
+device = "cpu"
 
 # // UNCOMMENT THIS FOR CPU MODE
 # device = "cpu"
 
 # Loads the model into torch // COMMENT THIS FOR CPU MODE
-torch.load('./results/model-1.pt')
+# torch.load('./results/model-1.pt')
 
 auth_token = "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"
 
 # Uses the pipe from the online library for model translation to produce the image. // COMMENT THIS FOR CPU MODE
-pipe = StableDiffusionPipeline.from_pretrained(
-    modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
+# pipe = StableDiffusionPipeline.from_pretrained(
+#     modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
 
 # Uses the graphics driver (Must atleast be 4GB ram) // COMMENT THIS FOR CPU MODE
-pipe.to(device)
+# pipe.to(device)
 
 # Create template page for the title page image
 blank = Image.new('RGB', (512, 512))
