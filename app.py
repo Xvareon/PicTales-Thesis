@@ -604,7 +604,7 @@ def generate_pdf():                # Generate PicTale Story book
         font = ImageFont.truetype('calibri.ttf', 30)
 
         # Make a rectangle background for the text
-        x, y = 10, 10
+        x, y = 10, 200
         text = content_list[i]
         lines = []
         while text:  # The loop checks if the length of the remaining text is greater than 40 characters
@@ -1052,7 +1052,7 @@ def title_window():  # Window to get author and title data // Window 2
 
     realistic_button = Button(start_window, image=realisticOn_icon, borderwidth=0,
                               highlightthickness=0, command=funct_realistic_switch)  # called the funct_realistic_switch
-    realistic_button.place(x=50, y=200)
+    realistic_button.place(x=70, y=200)
 
     global okay_label  # global to be called in generate_cover image function
     # Ok button to accepts the data and goes to window 3
