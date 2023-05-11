@@ -53,6 +53,12 @@ label_list = {}      # Globalize label list to pass to delete page function
 enable_realistic = 1  # Globalize value to determine whether images generated are realistic or not // set to 1 to disable by default
 music_switch = 1     # Globalize value to determine whether toggle background music are On or not // set to 1 to disable by default
 
+# Set default title of storybook to Pictales, make it global so its value can be changed by the functions
+glob_title = "Pictales"
+
+# Set default author name of storybook to Pictales Author, make it global so its value can be changed by the functions
+glob_author = "Pictales Author"
+
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
 # Loads the model // COMMENT THIS FOR CPU MODE
@@ -91,6 +97,19 @@ def funct_realistic_off():   # Function to toggle off realistic image generation
     # Set to 0 to disable realistic image generation to pass to generate image and generate cover image
     enable_realistic = 0
     print("Realistic Off")
+# ________________________________________________________________________________
+
+
+def funct_get_cover_data():   # Function to toggle off realistic image generation
+    global glob_title  # Recall global variable glob title
+    global glob_author  # Recall global variable glob author
+
+    glob_title = prompt_pdf.get()  # Get title name from title window before it closes
+
+    # Get author name from title window before it closes
+    glob_author = author_name.get()
+
+    main_operating_screen()
 # ________________________________________________________________________________
 
 
@@ -153,7 +172,7 @@ def generate_image():   # Function to generate the images from the text prompt
 
 
 def toggle_music():  # Function to Toggle on/off background music
-    global music_switch
+    global music_switch  # Recall global variable music_switch
     if music_switch == 1:
         funct_stop_music()
         music_switch = 0
@@ -184,8 +203,8 @@ def funct_main_char_select(main_char_value, main_char_image):
     selected_character_photo.configure(image=character)
     selected_character_photo.update()
 
-    # Destroy the character expression screen
-    character_screen.destroy()
+    # Go back to edit content page
+    addcharacter_screen_deposit()
 # ________________________________________________________________________________
 
 
@@ -348,8 +367,13 @@ def generate_save():    # Saves the image in the current directory and displays 
             # Store image in img variable if a character is selected
             img = ImageTk.PhotoImage(result)
 
-            # Get story content if user adds a story
-            content = edit_textcontent_area.get('1.0', tk.END)
+            if addcharacter_screen.winfo_exists():
+                # Get story content if user adds a story
+                content = edit_textcontent_area.get('1.0', tk.END)
+            else:  # If page was saved in the generate window
+                # Overwrite image again since character was saved but should not be displayed since the user backed out
+                img = ImageTk.PhotoImage(image)
+                content = text_input
 
         # If no character was chosen or the user did not clicked edit content page
         if main_char_select == 0 or main_char_select == 9:
@@ -425,8 +449,8 @@ def generate_save():    # Saves the image in the current directory and displays 
             # Destroy the edit content window
             addcharacter_screen.destroy()
 
-        # Destroy the generate window
-        generate_window.destroy()
+        # Go back to main screen
+        main_screen_deposit()
 # ________________________________________________________________________________
 
 
@@ -483,7 +507,8 @@ def generate_cover_image():   # Function to generate the cover image from the te
 
 def generate_pdf():                # Generate PicTale Story book
 
-    pdf_name = prompt_pdf.get()    # Store text input in a variable, from the pdf window
+    # Store the name of the cover image prompt to find the matching image path for it.
+    pdf_name = glob_title
 
     # Store current time in a variable
     now = datetime.datetime.now()
@@ -506,7 +531,6 @@ def generate_pdf():                # Generate PicTale Story book
     auth_font = ImageFont.truetype('calibri.ttf', 30)
     # titlefont = ImageFont.truetype('comic.ttf', 35)
     titlefont = ImageFont.truetype('arialbd.ttf', 40)
-    
 
     # Set the maximum width for each line
     max_width = 15
@@ -530,10 +554,10 @@ def generate_pdf():                # Generate PicTale Story book
         y_coord += titlefont.getsize(line)[1] + 10
 
     # Black background for anti camo in author name
-    bbox = covertext.textbbox((50, 380), author_name.get(), font=font)
+    bbox = covertext.textbbox((50, 380), glob_author, font=font)
     covertext.rectangle(bbox, fill=(0, 0, 0))
     # For writing author input in cover page
-    covertext.text((50, 380), author_name.get(),
+    covertext.text((50, 380), glob_author,
                    font=auth_font, fill=(255, 255, 255))
 
     # Black background for anti camo in date created
@@ -580,12 +604,33 @@ def generate_pdf():                # Generate PicTale Story book
         font = ImageFont.truetype('calibri.ttf', 30)
 
         # Make a rectangle background for the text
-        bbox = phototext.textbbox((10, 10), content_list[i], font=font)
-        phototext.rectangle(bbox, fill=(0, 0, 0))
-
-        # Write the text input based on the designated text image
-        phototext.text(
-            (10, 10), content_list[i], font=font, fill=(255, 255, 255))
+        x, y = 10, 10
+        text = content_list[i]
+        lines = []
+        while text:  # The loop checks if the length of the remaining text is greater than 40 characters
+            if len(text) <= 40:
+                lines.append(text)
+                break
+            else:
+                # it searches for the last space character in the first 40 characters of the text and splits the text at that position
+                line = text[:40]
+                # if there is no space character, it splits the text at the 40th position
+                space_pos = line.rfind(' ')
+                if space_pos == -1:
+                    space_pos = 39
+                lines.append(text[:space_pos])
+                text = text[space_pos+1:]
+        for line in lines:
+            bbox = phototext.textbbox((x, y), line, font=font)
+            # Center the line horizontally
+            x_offset = (photo.width - bbox[2]) / 2
+            bbox = (bbox[0] + x_offset, bbox[1], bbox[2] + x_offset, bbox[3])
+            bbox = (bbox[0] + photo.width - bbox[2], bbox[1], bbox[2] +
+                    photo.width - bbox[0], bbox[3])  # Right-align the text
+            phototext.rectangle(bbox, fill=(0, 0, 0))
+            phototext.text((x + x_offset, y), line,
+                           font=font, fill=(255, 255, 255))
+            y += bbox[3] - bbox[1] + 10  # 10 pixels spacing between text
 
         # Save the drawn page that contains the text input in the local directory
         photo.save('./GeneratedImages/INPUT{}.png'.format(file))
@@ -628,11 +673,14 @@ def generate_pdf():                # Generate PicTale Story book
     # Show prompt that PDF was generated
     messagebox.showinfo("Pictales", "Your PDF has been generated!")
 
+    # Close the app when storybook is made
+    clarification_window.destroy()
+
+    # Close the main operating window
+    main_screen.destroy()
+
     # Open the storybook upon the app's exit
     os.system('start %s' % pdf_path)
-
-    # Close the app when storybook is made
-    app.destroy()
 
 
 # ___________________________________________________________________________ CONFIGURATIONS ___________________________________________________________________________
@@ -681,7 +729,7 @@ custom_font = (font_path, font_size, "bold")
 def funct_about_window():     # The question mark button shows the about pictales modal
 
     # Initiate about window's tk GUI
-    about_window = tk.Toplevel(app)
+    about_window = tk.Toplevel()
     about_window.title('About Pictales')
 
     # This code will pop up the window about in top level
@@ -738,7 +786,7 @@ def funct_howTo_window():     # How to button will show this window playing the 
     global howTo_window  # Globalize to be destroyed later
 
     # Initiate how to window's tk GUI
-    howTo_window = tk.Toplevel(app)
+    howTo_window = tk.Toplevel()
     howTo_window.title('How to use Pictales')
 
     # This code will pop up the window how to in top level
@@ -761,22 +809,36 @@ def funct_howTo_window():     # How to button will show this window playing the 
     howTo_window.resizable(False, False)
 
     # Back button of the How To
-    back_photo = ImageTk.PhotoImage(
+    back_photo_howTo_window = ImageTk.PhotoImage(
         Image.open('./Assets/inverted_backbutton.png'))
-    photo_list.append(back_photo)  # add photo object to the photo list
-    back_label = Button(howTo_window, borderwidth=0, highlightthickness=0,
-                        image=back_photo, command=howTo_window.destroy, bg='#F8BC3B', activebackground='#F8BC3B')
-    back_label.place(x=85, y=20, anchor="n")
+    # add photo object to the photo list
+    photo_list.append(back_photo_howTo_window)
+    back_label_howTo_window = Button(howTo_window, borderwidth=0, highlightthickness=0,
+                                     image=back_photo_howTo_window, command=howTo_window.destroy, bg='#F8BC3B', activebackground='#F8BC3B')
+    back_label_howTo_window.place(x=85, y=20, anchor="n")
+# ________________________________________________________________________________
+
+
+def main_screen_deposit():  # Function called when pressing back button or generating a save pagge in generate window
+
+    # Show the hidden main screen again
+    main_screen.deiconify()
+
+    # Destroy the generate window
+    generate_window.destroy()
 # ________________________________________________________________________________
 
 
 def funct_generate_window():    # This window is for getting the text prompt and image generated result from that prompt
 
+    # Hide main screen when in generate window
+    main_screen.withdraw()
+
     # Globalized to be destroyed at the click of the save button in edit_content_page function
     global generate_window
 
     # Initiate generate window's tk GUI
-    generate_window = tk.Toplevel(app)
+    generate_window = tk.Toplevel()
     generate_window.title("Prompt")
 
     # This code will pop up the window how to in top level
@@ -784,18 +846,19 @@ def funct_generate_window():    # This window is for getting the text prompt and
 
     # The geometry with app winfo width and height will center the window modal in main screen
     generate_window.geometry("1228x800+{}+{}".format(
-        app.winfo_width()//2 - 614 + app.winfo_rootx(),
-        app.winfo_height()//2 - 369 + app.winfo_rooty()
+        main_screen.winfo_width()//2 - 614 + main_screen.winfo_rootx(),
+        main_screen.winfo_height()//2 - 369 + main_screen.winfo_rooty()
     ))
     generate_window.configure(bg='#F8BC3B')  # set background color
 
     # Back button to generate_window
-    back_photo = ImageTk.PhotoImage(
+    back_photo_generate_window = ImageTk.PhotoImage(
         Image.open('./Assets/inverted_backbutton.png'))
-    photo_list.append(back_photo)  # add photo object to the photo list
-    back_label = Button(generate_window, borderwidth=0, highlightthickness=0,
-                        image=back_photo, command=generate_window.destroy, bg='#F8BC3B', activebackground='#F8BC3B')
-    back_label.place(x=85, y=20, anchor="n")
+    # add photo object to the photo list
+    photo_list.append(back_photo_generate_window)
+    back_label_generate_window = Button(generate_window, borderwidth=0, highlightthickness=0,
+                                        image=back_photo_generate_window, command=main_screen_deposit, bg='#F8BC3B', activebackground='#F8BC3B')
+    back_label_generate_window.place(x=85, y=20, anchor="n")
 
     # Label for prompt in generate window
     text_title = Label(generate_window, text="Enter prompt here", bg='#F8BC3B')
@@ -864,6 +927,17 @@ def funct_generate_window():    # This window is for getting the text prompt and
 # ________________________________________________________________________________
 
 
+def funct_toggle_start_button():  # Function for toggling start button
+
+    global start_button  # Retrieve start button
+
+    # Enable start button
+    start_button.config(state="normal")
+
+    start_window.withdraw()  # Hide start window
+# ________________________________________________________________________________
+
+
 def title_window():  # Window to get author and title data // Window 2
 
     global start_window  # Globalize to be destroyed at the opening of the main operating window
@@ -876,6 +950,11 @@ def title_window():  # Window to get author and title data // Window 2
     start_window.grab_set()
     start_window.geometry("1832x932")
     start_window.configure(bg="#F9F4F1")
+
+    global start_button  # Recall start button
+    if start_window.winfo_exists():  # Check if start window is open
+        # Disable the start button
+        start_button.config(state="disabled")
 
     # The variable that stores the textbox object for naming the storybook
     global prompt_pdf
@@ -940,12 +1019,15 @@ def title_window():  # Window to get author and title data // Window 2
         "Arial", 20), text_color="#AB7A11", fg_color=None)
     ltext_cover.place(x=1182, y=650)
 
-    # Back button in window 2 //
-    back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
-    photo_list.append(back_photo)  # add photo object to the list
-    back_label = Button(start_window, borderwidth=0, highlightthickness=0,
-                        image=back_photo, command=start_window.destroy)
-    back_label.place(x=100, y=50, anchor="n")
+    # Back button in window 2 // Start Window
+    # Globalize this back button to call it to a function
+    global back_label_start_window
+    back_photo_start_window = ImageTk.PhotoImage(
+        Image.open('./Assets/backbutton.png'))
+    photo_list.append(back_photo_start_window)  # add photo object to the list
+    back_label_start_window = Button(start_window, borderwidth=0, highlightthickness=0,
+                                     image=back_photo_start_window, command=funct_toggle_start_button)
+    back_label_start_window.place(x=100, y=50, anchor="n")
 
     # called the 2 different icon which is on and off
     realisticOn_icon = ImageTk.PhotoImage(Image.open('./Assets/cartoonOn.png'))
@@ -956,7 +1038,7 @@ def title_window():  # Window to get author and title data // Window 2
 
     # switch function to check if on and off
     def funct_realistic_switch():
-        global enable_realistic
+        global enable_realistic  # Recall global variable enable_realistic
         if enable_realistic == 1:  # to check if on
             funct_realistic_off()  # if on called the off function
             enable_realistic = 0  # make the var = 0 to off
@@ -968,14 +1050,14 @@ def title_window():  # Window to get author and title data // Window 2
 
     realistic_button = Button(start_window, image=realisticOn_icon, borderwidth=0,
                               highlightthickness=0, command=funct_realistic_switch)  # called the funct_realistic_switch
-    realistic_button.place(x=50, y=500)
+    realistic_button.place(x=50, y=200)
 
     global okay_label  # global to be called in generate_cover image function
     # Ok button to accepts the data and goes to window 3
     okay_photo = ImageTk.PhotoImage(Image.open('./Assets/OkButton.png'))
     photo_list.append(okay_photo)  # add photo object to the list
     okay_label = Button(start_window, borderwidth=0, highlightthickness=0,
-                        image=okay_photo, command=main_operating_screen, state="disabled")  # disable if theres no cover image
+                        image=okay_photo, command=funct_get_cover_data, state="disabled")  # disable if theres no cover image
     okay_label.place(x=1600, y=750, anchor="n")  # y=750
 
     # Handle the window's screen updates
@@ -986,16 +1068,27 @@ def title_window():  # Window to get author and title data // Window 2
 # ________________________________________________________________________________
 
 
+def start_window_deposit():  # Function called when pressing back button in main operating window
+
+    # Show the hidden start window again
+    start_window.deiconify()
+
+    # Destroy the edit content page
+    main_screen.withdraw()
+# ________________________________________________________________________________
+
+
 def main_operating_screen():  # Main Operating Screen where the text and image pages generated by the user are displayed like a cart // Window 3
+
+    start_window.withdraw()  # Hide start window
 
     global main_screen  # Globalize the value of main_screen
 
     # Initiate main operating screen window's tk GUI
-    main_screen = tk.Toplevel(app)
+    main_screen = tk.Toplevel(start_window)
     main_screen.title("Main Operating Screen")
 
     # This code will pop up the window how to in top level
-    main_screen.grab_set()
     main_screen.geometry("1832x932")
     main_screen.configure(bg='#F9F4F1')
 
@@ -1038,18 +1131,22 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
     inner_frame.configure(bg="#F9F4F1")
     canvas.create_window((0, 0), window=inner_frame, anchor='center')
 
+    # Update the widgets
+    funct_inner_frame()
+
     #########################################################################################################################
 
     # Back button in Window 3 / Main Operating Screen
-    back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
-    photo_list.append(back_photo)  # add photo object to the list
-    back_label = Button(main_screen, borderwidth=0, highlightthickness=0,
-                        image=back_photo, command=main_screen.destroy)
-    back_label.place(x=100, y=50, anchor="n")
+    back_photo_main_screen = ImageTk.PhotoImage(
+        Image.open('./Assets/backbutton.png'))
+    photo_list.append(back_photo_main_screen)  # add photo object to the list
+    back_label_main_screen = Button(main_screen, borderwidth=0, highlightthickness=0,
+                                    image=back_photo_main_screen, command=start_window_deposit)
+    back_label_main_screen.place(x=100, y=50, anchor="n")
 
     # Block of code for adjusting its display position in main operating system // Window 3
     # Get the prompt text in title window that contains the storybook title
-    text = prompt_pdf.get()
+    text = glob_title
     if len(text) >= 40 or 25 <= len(text):
         wrapped_text = '\n'.join(text[i:i+40] for i in range(0, len(text), 40))
         pictales_title = tk.Label(main_screen, text=wrapped_text, font=custom_font,
@@ -1074,7 +1171,7 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
         Image.open('./Assets/createpictales.png'))
     photo_list.append(createpictales_photo)  # add photo object to the list
     createpictales_label = Button(main_screen, borderwidth=0,
-                                  highlightthickness=0, image=createpictales_photo, command=clarification_window)  # show the prompt creation of pdf
+                                  highlightthickness=0, image=createpictales_photo, command=funct_clarification_window)  # show the prompt creation of pdf
     createpictales_label.place(x=1300, y=750)
 
     # Disable main operating screen window resizing
@@ -1082,26 +1179,26 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
 # ________________________________________________________________________________
 
 
-def clarification_window():  # Clarification Window pops up before creating the pictales pdf window 5
+def funct_clarification_window():  # Clarification Window pops up before creating the pictales pdf window 5
 
-    global clarification  # globallize the value of clarification
+    global clarification_window  # globallize the value of clarification
 
     # Initiate clarification window's tk GUI
-    clarification = tk.Toplevel(app)
-    clarification.title('Are you sure?')
+    clarification_window = tk.Toplevel()
+    clarification_window.title('Are you sure?')
 
     # This code will pop up the window how to in top level
-    clarification.grab_set()
+    clarification_window.grab_set()
 
     # The geometry with app winfo width and height will center the window modal in main screen
-    clarification.geometry("690x603+{}+{}".format(
-        app.winfo_width()//2 - 378 + app.winfo_rootx(),
-        app.winfo_height()//2 - 372 + app.winfo_rooty()
+    clarification_window.geometry("690x603+{}+{}".format(
+        main_screen.winfo_width()//2 - 378 + main_screen.winfo_rootx(),
+        main_screen.winfo_height()//2 - 372 + main_screen.winfo_rooty()
     ))
-    clarification.configure(bg='#F8BC3B')  # set background color
+    clarification_window.configure(bg='#F8BC3B')  # set background color
 
     # Set the clarification label on the window
-    clear_label = tk.Label(clarification, text='ARE YOU SURE TO \n REDISCOVER YOUR STORY AND \n CREATE YOUR OWN PICTALES?',
+    clear_label = tk.Label(clarification_window, text='ARE YOU SURE TO \n REDISCOVER YOUR STORY AND \n CREATE YOUR OWN PICTALES?',
                            font=custom_font, fg='white', bg='#F8BC3B')
     clear_label.place(x=40, y=50)
 
@@ -1112,7 +1209,7 @@ def clarification_window():  # Clarification Window pops up before creating the 
     close_photo = ImageTk.PhotoImage(
         Image.open('./Assets/window2/x Button.png'))
     photo_list.append(close_photo)  # add photo object to the list
-    no_button = Button(clarification, image=close_photo, command=clarification.destroy,
+    no_button = Button(clarification_window, image=close_photo, command=clarification_window.destroy,
                        background='#F8BC3B', borderwidth=0, highlightthickness=0, activebackground='#F8BC3B')
     no_button.place(x=200, y=400)
 
@@ -1120,12 +1217,12 @@ def clarification_window():  # Clarification Window pops up before creating the 
     open_photo = ImageTk.PhotoImage(
         Image.open('./Assets/window2/check button.png'))
     photo_list.append(open_photo)  # add photo object to the list
-    yes_button = Button(clarification, image=open_photo, command=generate_pdf,
+    yes_button = Button(clarification_window, image=open_photo, command=generate_pdf,
                         background='#F8BC3B', borderwidth=0, highlightthickness=0, activebackground='#F8BC3B')
     yes_button.place(x=400, y=400)
 
     # Disable clarification window resizing
-    clarification.resizable(False, False)
+    clarification_window.resizable(False, False)
 # ________________________________________________________________________________
 
 
@@ -1160,7 +1257,20 @@ def funct_char_select(char_value):  # Function for getting the character selecte
 # ________________________________________________________________________________
 
 
+def generate_window_deposit():  # Function called when pressing back button or generating a save page in generate window
+
+    # Show the hidden generate window again
+    generate_window.deiconify()
+
+    # Destroy the edit content page
+    addcharacter_screen.destroy()
+# ________________________________________________________________________________
+
+
 def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WINDOW
+
+    # Hide generate window when in edit content page
+    generate_window.withdraw()
 
     # Globalize edit content page to destroy it later in generate save function
     global addcharacter_screen
@@ -1172,7 +1282,7 @@ def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WI
     main_char_select = 9
 
     # Initiate edit content page window's tk GUI
-    addcharacter_screen = tk.Toplevel(app)
+    addcharacter_screen = tk.Toplevel()
     addcharacter_screen.title("Characters and Story")
 
     # This code will pop up the window how to in top level
@@ -1181,11 +1291,12 @@ def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WI
     addcharacter_screen.configure(bg='#F8BC3B')
 
     # Back button for add character window 5.1
-    back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
-    photo_list.append(back_photo)  # add photo object to the list
-    back_label = Button(addcharacter_screen, borderwidth=0, highlightthickness=0, image=back_photo,
-                        command=addcharacter_screen.destroy, bg='#F8BC3B', activebackground='#F8BC3B')
-    back_label.place(x=100, y=50, anchor="n")
+    back_photo_edit_content = ImageTk.PhotoImage(
+        Image.open('./Assets/backbutton.png'))
+    photo_list.append(back_photo_edit_content)  # add photo object to the list
+    back_label_edit_content = Button(addcharacter_screen, borderwidth=0, highlightthickness=0, image=back_photo_edit_content,
+                                     command=generate_window_deposit, bg='#F8BC3B', activebackground='#F8BC3B')
+    back_label_edit_content.place(x=100, y=50, anchor="n")
 
     # Show the selected character from the 8 expressions:
     selected_character_label = tk.Label(
@@ -1291,13 +1402,26 @@ def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WI
 # ________________________________________________________________________________
 
 
+def addcharacter_screen_deposit():  # Function called when pressing back button or selecting a character in character expression window
+
+    # Show the hidden edit content page again
+    addcharacter_screen.deiconify()
+
+    # Destroy the character expression window
+    character_screen.destroy()
+# ________________________________________________________________________________
+
+
 def character_expression_window():  # Choosing expression window
+
+    # Hide edit content pagge when in expression window
+    addcharacter_screen.withdraw()
 
     # Globalize the screen to destroy it later on selection in funct_main_char_select
     global character_screen
 
     # Initiate character expression window's tk GUI
-    character_screen = tk.Toplevel(app)
+    character_screen = tk.Toplevel()
     character_screen.title("Character's Emotion Selection")
 
     # This code will pop up the window how to in top level
@@ -1314,11 +1438,13 @@ def character_expression_window():  # Choosing expression window
         char_name = "dog"
 
     # Back button on character_screen
-    back_photo = ImageTk.PhotoImage(Image.open('./Assets/backbutton.png'))
-    photo_list.append(back_photo)  # add photo object to the list
-    back_label = Button(character_screen, borderwidth=0, highlightthickness=0, image=back_photo,
-                        command=character_screen.destroy, bg='#F8BC3B', activebackground='#F8BC3B')
-    back_label.place(x=100, y=50, anchor="n")
+    back_photo_character_screen = ImageTk.PhotoImage(
+        Image.open('./Assets/backbutton.png'))
+    # add photo object to the list
+    photo_list.append(back_photo_character_screen)
+    back_label_character_screen = Button(character_screen, borderwidth=0, highlightthickness=0, image=back_photo_character_screen,
+                                         command=addcharacter_screen_deposit, bg='#F8BC3B', activebackground='#F8BC3B')
+    back_label_character_screen.place(x=100, y=50, anchor="n")
 
     # Label to choose which emotion to include in the generated image
     character1_label = tk.Label(
@@ -1444,7 +1570,8 @@ logo_label = Label(app, image=logo_photo, bg='#F9F4F1')
 logo_label.place(x=800, y=90)
 
 # load and display start button
-start_photo = ImageTk.PhotoImage(Image.open('./Assets/frame0/button_3.png'))
+start_photo = ImageTk.PhotoImage(
+    Image.open('./Assets/frame0/button_3.png'))
 start_button = Button(app, image=start_photo, borderwidth=0,
                       highlightthickness=0, command=title_window)
 start_button.place(x=770, y=530)
