@@ -1,10 +1,7 @@
 #########################################################
 # TO-DO LIST FOR THE BREAK:
 
-# Auto Install # !!!PRIORITY!!!
-# Checks for same image names
 # Loading window when generating image/cover image
-# Check for grabbing windows, will break the program
 #########################################################
 
 # ___________________________________________________________________________ DEPENDENCIES ___________________________________________________________________________
@@ -74,13 +71,13 @@ def funct_play_music():  # Function to play background music
     pygame.mixer.music.load("./Assets/PicTalesBGsound.mp3")
     # Loop it indefinitely
     pygame.mixer.music.play(loops=-1)
-    print('ON')
+    print('Music ON')
 # ________________________________________________________________________________
 
 
 def funct_stop_music():  # Function to stop playing background music
     pygame.mixer.music.stop()
-    print('OFF')
+    print('Music OFF')
 # ________________________________________________________________________________
 
 
@@ -339,8 +336,40 @@ def generate_save():    # Saves the image in the current directory and displays 
         # Recall the main char select value
         global main_char_select
 
+        ##################### CHECK FOR SAME IMAGE NAMES #######################
+
+        global text_input  # Recall text input value
+
+        flag = 0  # Initialize flag to 0 for counting and naming duplicates
+
+        # Store current text input in a variable
+        temp = text_input
+
+        # Loop through the text list
+        for input in text_list:
+
+            # If text input has a duplicate
+            if temp == input:
+
+                # Increment flag per input
+                flag += 1
+                print("found duplicate! counts: {}".format(flag))
+
+                # Store the next iteration in the dummy variable
+                temp = text_input + "{}".format(flag)
+
+        # If theres atleast 1 duplicate
+        if flag > 0:
+            # Add a number to the text input to make its filename have a somewhat unique name
+            text_input = text_input + "{}".format(flag)
+
         # Save image file name as PNG based on text input
         image.save('./GeneratedImages/{}.png'.format(text_input))
+
+        ########################################################################
+
+        # # Save image file name as PNG based on text input # DOES NOT CHECK FOR DUPLICATES
+        # image.save('./GeneratedImages/{}.png'.format(text_input))
 
         # If a character was chosen and the edit content page has been clicked
         if main_char_select > 0 and main_char_select < 9:
@@ -361,7 +390,7 @@ def generate_save():    # Saves the image in the current directory and displays 
             # Paste the character image onto the new image using alpha_composite
             result.alpha_composite(character_image, dest=(0, 360))
 
-            # Save the result image to disk
+            # Save the result image to disk that has the character # DOES NOT CHECK FOR DUPLICATES
             result.save('./GeneratedImages/{}.png'.format(text_input))
 
             # Store image in img variable if a character is selected
@@ -400,8 +429,6 @@ def generate_save():    # Saves the image in the current directory and displays 
         # When updating a page
         if update_value != None:
 
-            print("YOU ARE IN UPDATE: {}".format(update_value))
-
             # Update the previous content to the list using the update_value as the pointer index
             content_list[update_value] = content
 
@@ -413,8 +440,6 @@ def generate_save():    # Saves the image in the current directory and displays 
 
         # Regular adding of a page
         else:
-
-            print("YOU ARE IN ADD Page: {}".format(update_value))
 
             # Add the content to the list
             content_list.append(content)
@@ -715,6 +740,16 @@ auth_token = "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"
 
 # Create template page for the title page image
 blank = Image.new('RGB', (512, 512))
+
+# List of folders to create if they don't exist
+folders_to_create = ["GeneratedImages", "StoryBooks"]
+
+# Loop through the folders and create them if they don't exist
+for folder in folders_to_create:
+    if not os.path.exists(folder):
+        os.mkdir(folder)  # Create function of folder
+        blank.save('./GeneratedImages/BlankTemplate.png')
+        print(f"Folder '{folder}' created successfully.")
 
 # Save template in generated images folder
 blank.save('./GeneratedImages/BlankTemplate.png')
