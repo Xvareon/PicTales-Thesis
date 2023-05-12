@@ -368,7 +368,7 @@ def generate_save():    # Saves the image in the current directory and displays 
 
         ########################################################################
 
-        # # Save image file name as PNG based on text input # DOES NOT CHECK FOR DUPLICATES
+        # # Save image file name as PNG based on text input 
         # image.save('./GeneratedImages/{}.png'.format(text_input))
 
         # If a character was chosen and the edit content page has been clicked
@@ -748,7 +748,6 @@ folders_to_create = ["GeneratedImages", "StoryBooks"]
 for folder in folders_to_create:
     if not os.path.exists(folder):
         os.mkdir(folder)  # Create function of folder
-        blank.save('./GeneratedImages/BlankTemplate.png')
         print(f"Folder '{folder}' created successfully.")
 
 # Save template in generated images folder
