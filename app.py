@@ -59,7 +59,7 @@ glob_author = "Pictales Author"
 # ___________________________________________________________________________ MODEL ___________________________________________________________________________
 
 # Loads the model // COMMENT THIS FOR CPU MODE
-# model = torch.load('./results/model-1.pt')
+model = torch.load('./results/model-1.pt')
 
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
 
@@ -139,7 +139,7 @@ def generate_image():   # Function to generate the images from the text prompt
         else:
 
             # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
-            image = blank
+            # image = blank
 
             if enable_realistic == 1:
                 cartoon_input = "cartoonish " + text_input
@@ -147,8 +147,8 @@ def generate_image():   # Function to generate the images from the text prompt
                 cartoon_input = text_input
 
             # Variable that contains the image result // COMMENT THIS FOR CPU MODE
-            # image = pipe(cartoon_input, guidance_scale=10)[
-            #     "images"][0]
+            image = pipe(cartoon_input, guidance_scale=10)[
+                "images"][0]
 
             # Enable the add character button if the image is generated successfully
             edit_content_label.config(state="normal")
@@ -368,9 +368,6 @@ def generate_save():    # Saves the image in the current directory and displays 
 
         ########################################################################
 
-        # # Save image file name as PNG based on text input # DOES NOT CHECK FOR DUPLICATES
-        # image.save('./GeneratedImages/{}.png'.format(text_input))
-
         # If a character was chosen and the edit content page has been clicked
         if main_char_select > 0 and main_char_select < 9:
 
@@ -503,7 +500,7 @@ def generate_cover_image():   # Function to generate the cover image from the te
         else:
 
             # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
-            image_cover = blank
+            # image_cover = blank
 
             if enable_realistic == 1:
                 cartoon_input = "cartoonish " + cover_input
@@ -511,8 +508,8 @@ def generate_cover_image():   # Function to generate the cover image from the te
                 cartoon_input = cover_input
 
             # Variable that contains the image cover result // COMMENT THIS FOR CPU MODE
-            # image_cover = pipe(cartoon_input, guidance_scale=10)[
-            #     "images"][0]
+            image_cover = pipe(cartoon_input, guidance_scale=10)[
+                "images"][0]
 
             # Enable the button if the image is generated successfully
             okay_label.config(state="normal")
@@ -551,10 +548,9 @@ def generate_pdf():                # Generate PicTale Story book
     # Pass image cover variable for drawing/writing the page title details
     covertext = ImageDraw.Draw(image_cover)
 
-    # Choose font
-    font = ImageFont.truetype('arial.ttf', 16)
+    # Choose font for cover page details: date, author, and title respectively
+    date_font = ImageFont.truetype('arial.ttf', 16)
     auth_font = ImageFont.truetype('calibri.ttf', 30)
-    # titlefont = ImageFont.truetype('comic.ttf', 35)
     titlefont = ImageFont.truetype('arialbd.ttf', 40)
 
     # Set the maximum width for each line
@@ -579,18 +575,19 @@ def generate_pdf():                # Generate PicTale Story book
         y_coord += titlefont.getsize(line)[1] + 10
 
     # Black background for anti camo in author name
-    bbox = covertext.textbbox((50, 380), glob_author, font=font)
+    bbox = covertext.textbbox((50, 380), glob_author, font=auth_font)
     covertext.rectangle(bbox, fill=(0, 0, 0))
     # For writing author input in cover page
     covertext.text((50, 380), glob_author,
                    font=auth_font, fill=(255, 255, 255))
 
     # Black background for anti camo in date created
-    bbox = covertext.textbbox((50, 410), now.strftime("%m-%d-%Y"), font=font)
+    bbox = covertext.textbbox(
+        (50, 410), now.strftime("%m-%d-%Y"), font=date_font)
     covertext.rectangle(bbox, fill=(0, 0, 0))
     # For writing date created in cover page
     covertext.text((50, 410), now.strftime("%m-%d-%Y"),
-                   font=font, fill=(255, 255, 255))
+                   font=date_font, fill=(255, 255, 255))
 
     # Save cover image to local directory // This has the Generated Cover Image // Page 1
     image_cover.save('./GeneratedImages/TitlePage_{}.png'.format(pdf_name))
@@ -624,38 +621,33 @@ def generate_pdf():                # Generate PicTale Story book
         # Invoke draw function to the blank image
         phototext = ImageDraw.Draw(photo)
 
-        # Choose font
-        # font = ImageFont.truetype('arial.ttf', 16)
-        font = ImageFont.truetype('calibri.ttf', 30)
+        # Choose font for content page
+        content_font = ImageFont.truetype('calibri.ttf', 30)
 
-        # Make a rectangle background for the text
-        x, y = 10, 200
-        text = content_list[i]
-        lines = []
-        while text:  # The loop checks if the length of the remaining text is greater than 40 characters
-            if len(text) <= 40:
-                lines.append(text)
-                break
-            else:
-                # it searches for the last space character in the first 40 characters of the text and splits the text at that position
-                line = text[:40]
-                # if there is no space character, it splits the text at the 40th position
-                space_pos = line.rfind(' ')
-                if space_pos == -1:
-                    space_pos = 39
-                lines.append(text[:space_pos])
-                text = text[space_pos+1:]
-        for line in lines:
-            bbox = phototext.textbbox((x, y), line, font=font)
-            # Center the line horizontally
-            x_offset = (photo.width - bbox[2]) / 2
-            bbox = (bbox[0] + x_offset, bbox[1], bbox[2] + x_offset, bbox[3])
-            bbox = (bbox[0] + photo.width - bbox[2], bbox[1], bbox[2] +
-                    photo.width - bbox[0], bbox[3])  # Right-align the text
-            phototext.rectangle(bbox, fill=(0, 0, 0))
-            phototext.text((x + x_offset, y), line,
-                           font=font, fill=(255, 255, 255))
-            y += bbox[3] - bbox[1] + 10  # 10 pixels spacing between text
+    ######################### WRAPPED TEXT CONTENT BACKGROUND #########################
+
+        # Set the maximum width for each line
+        max_width = 15
+
+        # Wrap the text into multiple lines based on the maximum width
+        wrapped_text = textwrap.wrap(content_list[i], width=max_width)
+
+        # Calculate the y-coordinate for the second line of text
+        y_coord = 95
+
+        # Draw each line of text with white color and increment the y-coordinate
+        for line in wrapped_text:
+            # Get the size of the font for dynamic coverage of the background
+            text_width, text_height = content_font.getsize(line)
+            # Black background for anti camo in a content page
+            bbox = (150, y_coord, 150 + text_width, y_coord + text_height)
+            phototext.rectangle(bbox, fill=(61, 61, 61))
+            # For writing the content in a page
+            phototext.text((150, y_coord), line,
+                           font=content_font, fill=(255, 255, 255))
+            y_coord += content_font.getsize(line)[1] + 10
+
+    ###################################################################################
 
         # Save the drawn page that contains the text input in the local directory
         photo.save('./GeneratedImages/INPUT{}.png'.format(file))
@@ -704,8 +696,14 @@ def generate_pdf():                # Generate PicTale Story book
     # Close the main operating window
     main_screen.destroy()
 
+    # Attach the file extension pdf to the name
+    pdf_name = pdf_name + ".pdf"
+
+    # Search the folder StoryBooks where the pdfs are stored
+    pdf_file = os.path.join("StoryBooks", pdf_name)
+
     # Open the storybook upon the app's exit
-    os.system('start %s' % pdf_path)
+    os.startfile(pdf_file)
 
     # Close the app window
     app.destroy()
@@ -718,25 +716,25 @@ if (isExist == False):
     sys.exit(0)
 
 # loads the model used to a pre-defined library online // COMMENT THIS FOR CPU MODE
-# modelid = "CompVis/stable-diffusion-v1-4"
+modelid = "CompVis/stable-diffusion-v1-4"
 
 # Specifies the graphics driver to be used // COMMENT THIS FOR CPU MODE
-device = "cpu"
+device = "cuda"
 
 # // UNCOMMENT THIS FOR CPU MODE
 # device = "cpu"
 
 # Loads the model into torch // COMMENT THIS FOR CPU MODE
-# torch.load('./results/model-1.pt')
+torch.load('./results/model-1.pt')
 
 auth_token = "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"
 
 # Uses the pipe from the online library for model translation to produce the image. // COMMENT THIS FOR CPU MODE
-# pipe = StableDiffusionPipeline.from_pretrained(
-#     modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
+pipe = StableDiffusionPipeline.from_pretrained(
+    modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
 
 # Uses the graphics driver (Must atleast be 4GB ram) // COMMENT THIS FOR CPU MODE
-# pipe.to(device)
+pipe.to(device)
 
 # Create template page for the title page image
 blank = Image.new('RGB', (512, 512))
@@ -748,7 +746,6 @@ folders_to_create = ["GeneratedImages", "StoryBooks"]
 for folder in folders_to_create:
     if not os.path.exists(folder):
         os.mkdir(folder)  # Create function of folder
-        blank.save('./GeneratedImages/BlankTemplate.png')
         print(f"Folder '{folder}' created successfully.")
 
 # Save template in generated images folder
