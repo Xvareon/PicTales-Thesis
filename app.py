@@ -142,7 +142,7 @@ def generate_image():   # Function to generate the images from the text prompt
             # image = blank
 
             if enable_realistic == 0:
-                cartoon_input = "cartoonish " + text_input
+                cartoon_input = "Cartoonish illustration of " + text_input
             else:
                 cartoon_input = text_input
 
@@ -503,7 +503,7 @@ def generate_cover_image():   # Function to generate the cover image from the te
             # image_cover = blank
 
             if enable_realistic == 0:
-                cartoon_input = "cartoonish " + cover_input
+                cartoon_input = "Cartoonish illustration of " + cover_input
             else:
                 cartoon_input = cover_input
 
