@@ -142,7 +142,7 @@ def generate_image():   # Function to generate the images from the text prompt
             # image = blank
 
             if enable_realistic == 0:
-                cartoon_input = "cartoonish " + text_input
+                cartoon_input = "Cartoonish illustration of " + text_input
             else:
                 cartoon_input = text_input
 
@@ -503,7 +503,7 @@ def generate_cover_image():   # Function to generate the cover image from the te
             # image_cover = blank
 
             if enable_realistic == 0:
-                cartoon_input = "cartoonish " + cover_input
+                cartoon_input = "Cartoonish illustration of " + cover_input
             else:
                 cartoon_input = cover_input
 
@@ -854,10 +854,13 @@ def funct_howTo_window():     # How to button will show this window playing the 
 # ________________________________________________________________________________
 
 
-def main_screen_deposit():  # Function called when pressing back button or generating a save pagge in generate window
+def main_screen_deposit():  # Function called when pressing back button or generating a save page in generate window
 
     # Show the hidden main screen again
     main_screen.deiconify()
+
+    # Hide window 1
+    app.withdraw()
 
     # Destroy the generate window
     generate_window.destroy()
@@ -966,8 +969,11 @@ def funct_toggle_start_button():  # Function for toggling start button
 
     global start_button  # Retrieve start button
 
-    # Enable start button
-    start_button.config(state="normal")
+    # Bring back window 1
+    app.deiconify()
+
+    # Enable start button and change its command to show the hidden start window so it does not default back to the previous command which creates another start window
+    start_button.config(state="normal", command=start_window.deiconify)
 
     start_window.withdraw()  # Hide start window
 # ________________________________________________________________________________
@@ -1458,7 +1464,7 @@ def addcharacter_screen_deposit():  # Function called when pressing back button 
 
 def character_expression_window():  # Choosing expression window
 
-    # Hide edit content pagge when in expression window
+    # Hide edit content page when in expression window
     addcharacter_screen.withdraw()
 
     # Globalize the screen to destroy it later on selection in funct_main_char_select
