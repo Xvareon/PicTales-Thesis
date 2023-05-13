@@ -47,7 +47,7 @@ content_list = []    # ARRAY OF PAGE CONTENT (mostly the text)
 pdf_list = []        # ARRAY OF PDF PAGES
 photo_list = []      # create a global list to store photo objects for GUI
 label_list = {}      # Globalize label list to pass to delete page function
-enable_realistic = 1  # Globalize value to determine whether images generated are realistic or not // set to 1 to disable by default
+enable_realistic = 0  # Globalize value to determine whether images generated are realistic or not // set to 0 to disable by default
 music_switch = 1     # Globalize value to determine whether toggle background music are On or not // set to 1 to disable by default
 
 # Set default title of storybook to Pictales, make it global so its value can be changed by the functions
@@ -141,7 +141,7 @@ def generate_image():   # Function to generate the images from the text prompt
             # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
             # image = blank
 
-            if enable_realistic == 1:
+            if enable_realistic == 0:
                 cartoon_input = "cartoonish " + text_input
             else:
                 cartoon_input = text_input
@@ -502,7 +502,7 @@ def generate_cover_image():   # Function to generate the cover image from the te
             # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
             # image_cover = blank
 
-            if enable_realistic == 1:
+            if enable_realistic == 0:
                 cartoon_input = "cartoonish " + cover_input
             else:
                 cartoon_input = cover_input
@@ -1064,26 +1064,36 @@ def title_window():  # Window to get author and title data // Window 2
     back_label_start_window.place(x=100, y=50, anchor="n")
 
     # called the 2 different icon which is on and off
-    realisticOn_icon = ImageTk.PhotoImage(Image.open('./Assets/cartoonOn.png'))
+    realisticOn_icon = ImageTk.PhotoImage(
+        Image.open('./Assets/realisticOn.png'))
     realisticOff_icon = ImageTk.PhotoImage(
-        Image.open('./Assets/cartoonOff.png'))
+        Image.open('./Assets/realisticOff.png'))
+
     photo_list.extend([realisticOn_icon, realisticOff_icon]
                       )  # add photo objects to the list
 
-    # switch function to check if on and off
+    # Switch function to check if on and off
     def funct_realistic_switch():
-        global enable_realistic  # Recall global variable enable_realistic
-        if enable_realistic == 1:  # to check if on
-            funct_realistic_off()  # if on called the off function
-            enable_realistic = 0  # make the var = 0 to off
-            realistic_button['image'] = realisticOff_icon  # called the image
-        else:
-            funct_realistic_on()
-            enable_realistic = 1  # make the var = 1 to make on the switch
-            realistic_button['image'] = realisticOn_icon  # called the image
 
-    realistic_button = Button(start_window, image=realisticOn_icon, borderwidth=0,
-                              highlightthickness=0, command=funct_realistic_switch)  # called the funct_realistic_switch
+        global enable_realistic  # Recall global variable enable_realistic
+
+        if enable_realistic == 0:  # To check if button state is off
+
+            funct_realistic_on()    # Enable realistic content
+
+            # change the image to on (teddy with slash)
+            realistic_button['image'] = realisticOn_icon
+
+        else:   # Check the button state is on
+
+            funct_realistic_off()    # Dusable realistic content
+
+            # change the image to off (teddy with no slash)
+            realistic_button['image'] = realisticOff_icon
+
+    # Button for realisitc
+    realistic_button = Button(start_window, image=realisticOff_icon, borderwidth=0,
+                              highlightthickness=0, command=funct_realistic_switch)  # Called the funct_realistic_switch
     realistic_button.place(x=70, y=200)
 
     global okay_label  # global to be called in generate_cover image function
@@ -1094,9 +1104,9 @@ def title_window():  # Window to get author and title data // Window 2
                         image=okay_photo, command=funct_get_cover_data, state="disabled")  # disable if theres no cover image
     okay_label.place(x=1600, y=750, anchor="n")  # y=750
 
-    # Handle the window's screen updates
     # Disable title window resizing
     start_window.resizable(False, False)
+
     # Loop this window so its data can be passed later on for pdf generation
     start_window.mainloop()
 # ________________________________________________________________________________
