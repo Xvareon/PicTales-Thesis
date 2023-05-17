@@ -1092,7 +1092,7 @@ def title_window():  # Window to get author and title data // Window 2
 
         else:   # Check the button state is on
 
-            funct_realistic_off()    # Dusable realistic content
+            funct_realistic_off()    # Disable realistic content
 
             # change the image to off (teddy with no slash)
             realistic_button['image'] = realisticOff_icon
