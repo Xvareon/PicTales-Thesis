@@ -716,24 +716,29 @@ if (isExist == False):
     sys.exit(0)
 
 # loads the model used to a pre-defined library online // COMMENT THIS FOR CPU MODE
+# modelid = "runwayml/stable-diffusion-v1-5"
 modelid = "CompVis/stable-diffusion-v1-4"
 
-# Specifies the graphics driver to be used // COMMENT THIS FOR CPU MODE
-device = "cuda"
-
-# // UNCOMMENT THIS FOR CPU MODE
-# device = "cpu"
+if torch.cuda.is_available():
+    device = "cuda"
+else:
+    device = "cpu"
 
 # Loads the model into torch // COMMENT THIS FOR CPU MODE
 torch.load('./results/model-1.pt')
 
 auth_token = "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"
 
-# Uses the pipe from the online library for model translation to produce the image. // COMMENT THIS FOR CPU MODE
-pipe = StableDiffusionPipeline.from_pretrained(
-    modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
+if torch.cuda.is_available():
+    # Uses the pipe from the online library for model translation to produce the image.
+    pipe = StableDiffusionPipeline.from_pretrained(
+        modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
+else:
+    # Uses the pipe from the online library for model translation to produce the image.
+    pipe = StableDiffusionPipeline.from_pretrained(
+        modelid, revision="fp16", torch_dtype=torch.bfloat16, use_auth_token=auth_token)
 
-# Uses the graphics driver (Must atleast be 4GB ram) // COMMENT THIS FOR CPU MODE
+# Uses the graphics driver (Must atleast be 8GB ram) // COMMENT THIS FOR CPU MODE
 pipe.to(device)
 
 # Create template page for the title page image
