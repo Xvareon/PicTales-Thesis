@@ -56,11 +56,6 @@ glob_title = "Pictales"
 # Set default author name of storybook to Pictales Author, make it global so its value can be changed by the functions
 glob_author = "Pictales Author"
 
-# ___________________________________________________________________________ MODEL ___________________________________________________________________________
-
-# Loads the model // COMMENT THIS FOR CPU MODE
-model = torch.load('./results/model-1.pt')
-
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
 
 
