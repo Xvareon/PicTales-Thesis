@@ -714,24 +714,32 @@ if (isExist == False):
 # modelid = "runwayml/stable-diffusion-v1-5"
 modelid = "CompVis/stable-diffusion-v1-4"
 
-if torch.cuda.is_available():
-    device = "cuda"
-else:
-    device = "cpu"
-
-# Loads the model into torch // COMMENT THIS FOR CPU MODE
-torch.load('./results/model-1.pt')
-
 auth_token = "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"
 
 if torch.cuda.is_available():
+
+    # Set device to CUDA, app would run GPU
+    device = "cuda"
+
+    # Loads the model into torch with CUDA
+    torch.load('./results/model-1.pt')
+
     # Uses the pipe from the online library for model translation to produce the image.
     pipe = StableDiffusionPipeline.from_pretrained(
         modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
+
 else:
+
+    # Set device to CPU, app would run on CPU
+    device = "cpu"
+
+    # Loads the model into torch with CPU
+    torch.load('./results/model-1.pt', map_location=torch.device('cpu'))
+
     # Uses the pipe from the online library for model translation to produce the image.
     pipe = StableDiffusionPipeline.from_pretrained(
         modelid, revision="fp16", torch_dtype=torch.bfloat16, use_auth_token=auth_token)
+
 
 # Uses the graphics driver (Must atleast be 8GB ram) // COMMENT THIS FOR CPU MODE
 pipe.to(device)
