@@ -1,0 +1,5 @@
+- Must have 8gb+ GPU ram
+- In the fonts folder, install supersonic rocketship
+- Must have wifi constantly on
+- Inputs must only be in english and has a maximum of 120 characters
+- Change Display scale and layout from 125% to 100%

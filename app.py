@@ -51,10 +51,10 @@ enable_realistic = 0  # Globalize value to determine whether images generated ar
 music_switch = 1     # Globalize value to determine whether toggle background music are On or not // set to 1 to disable by default
 
 # Set default title of storybook to Pictales, make it global so its value can be changed by the functions
-glob_title = "Pictales"
+glob_title = "PicTales"
 
 # Set default author name of storybook to Pictales Author, make it global so its value can be changed by the functions
-glob_author = "Pictales Author"
+glob_author = "PicTales Author"
 
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
 
@@ -153,6 +153,9 @@ def generate_image():   # Function to generate the images from the text prompt
     # Store image in a variable
     img = ImageTk.PhotoImage(image)
 
+    # Save image file name as PNG based on text input
+    image.save('./GeneratedImages/Preview.png')
+
     # Displays the text input in the Tkinter UI after generation
     # ltext.configure(text=text_input)
     # ltext.update()
@@ -160,6 +163,9 @@ def generate_image():   # Function to generate the images from the text prompt
     # Displays the image in the Tkinter UI after generation
     lmain.configure(image=img)
     lmain.update()
+
+    # Show prompt message that shows image has been generated
+    messagebox.showinfo("PicTales", "Image Generated!")
 # ________________________________________________________________________________
 
 
@@ -242,7 +248,7 @@ def funct_inner_frame():  # Dynamically configures the widgets in the inner fram
 
         # Widget for displaying a label frame object that contains a content page of the storybook
         ltext_list = Label(inner_frame, height=10, width=40, text="\n".join(textwrap.wrap(text_item, width=50)), font=(
-            "Arial", 16), fg="#AB7A11", bg="#F9F4F1")
+            "Supersonic Rocketship", 16), fg="#AB7A11", bg="#F9F4F1")
         ltext_list.grid(row=counter, column=0, padx=20,
                         pady=10, ipadx=10, ipady=300, sticky='n')
         label_list[counter].append(ltext_list)
@@ -306,6 +312,9 @@ def delete_page(index):  # Delete a page
     # Update the scroll region of the canvas
     canvas.update_idletasks()
     canvas.config(scrollregion=canvas.bbox('all'))
+
+    # Show prompt message that shows page has been updated
+    messagebox.showinfo("PicTales", "Page Deleted!")
 # ________________________________________________________________________________
 
 
@@ -414,8 +423,6 @@ def generate_save():    # Saves the image in the current directory and displays 
         if content == '' or len(content) == 0 or content.isspace() == True:
             content = text_input
 
-        ### ADD THE SAVED PAGE TO THEIR RESPECTIVE ARRAYS ###
-
         global update_value  # Recall the update value from update page function
 
         # When updating a page
@@ -430,6 +437,9 @@ def generate_save():    # Saves the image in the current directory and displays 
             # Update the previous image in the list using the update_value as the pointer index
             image_list[update_value] = img
 
+            # Show prompt message that shows page has been updated
+            messagebox.showinfo("PicTales", "Page Updated!")
+
         # Regular adding of a page
         else:
 
@@ -442,9 +452,10 @@ def generate_save():    # Saves the image in the current directory and displays 
             # Store previous image in a list
             image_list.append(img)
 
-        update_value = None  # Reset the value of update
+            # Show prompt message that shows page has been saved
+            messagebox.showinfo("PicTales", "Page Saved!")
 
-        ########################################################
+        update_value = None  # Reset the value of update
 
         # Update the widgets
         funct_inner_frame()
@@ -519,6 +530,9 @@ def generate_cover_image():   # Function to generate the cover image from the te
     # Displays the image in the Tkinter UI after generation
     lmain_cover.configure(image=img_cover)
     lmain_cover.update()
+
+    # Show prompt message that shows image has been generated
+    messagebox.showinfo("PicTales", "Image Generated!")
 # ________________________________________________________________________________
 
 
@@ -544,9 +558,9 @@ def generate_pdf():                # Generate PicTale Story book
     covertext = ImageDraw.Draw(image_cover)
 
     # Choose font for cover page details: date, author, and title respectively
-    date_font = ImageFont.truetype('arial.ttf', 16)
-    auth_font = ImageFont.truetype('calibri.ttf', 30)
-    titlefont = ImageFont.truetype('arialbd.ttf', 40)
+    date_font = ImageFont.truetype('./fonts/Supersonic Rocketship.ttf', 16)
+    auth_font = ImageFont.truetype('./fonts/Supersonic Rocketship.ttf', 30)
+    titlefont = ImageFont.truetype('./fonts/Supersonic Rocketship.ttf', 40)
 
     # Set the maximum width for each line
     max_width = 15
@@ -563,7 +577,7 @@ def generate_pdf():                # Generate PicTale Story book
         text_width, text_height = titlefont.getsize(line)
         # Black background for anti camo in title name / pdf name
         bbox = (150, y_coord, 150 + text_width, y_coord + text_height)
-        covertext.rectangle(bbox, fill=(61, 61, 61))
+        covertext.rectangle(bbox, fill=(255, 165, 0))
         # For writing title page / pdf name input in cover page
         covertext.text((150, y_coord), line,
                        font=titlefont, fill=(255, 255, 255))
@@ -571,7 +585,7 @@ def generate_pdf():                # Generate PicTale Story book
 
     # Black background for anti camo in author name
     bbox = covertext.textbbox((50, 380), glob_author, font=auth_font)
-    covertext.rectangle(bbox, fill=(0, 0, 0))
+    covertext.rectangle(bbox, fill=(255, 165, 0))
     # For writing author input in cover page
     covertext.text((50, 380), glob_author,
                    font=auth_font, fill=(255, 255, 255))
@@ -579,7 +593,7 @@ def generate_pdf():                # Generate PicTale Story book
     # Black background for anti camo in date created
     bbox = covertext.textbbox(
         (50, 410), now.strftime("%m-%d-%Y"), font=date_font)
-    covertext.rectangle(bbox, fill=(0, 0, 0))
+    covertext.rectangle(bbox, fill=(255, 165, 0))
     # For writing date created in cover page
     covertext.text((50, 410), now.strftime("%m-%d-%Y"),
                    font=date_font, fill=(255, 255, 255))
@@ -617,9 +631,8 @@ def generate_pdf():                # Generate PicTale Story book
         phototext = ImageDraw.Draw(photo)
 
         # Choose font for content page
-        content_font = ImageFont.truetype('calibri.ttf', 30)
-
-    ######################### WRAPPED TEXT CONTENT BACKGROUND #########################
+        content_font = ImageFont.truetype(
+            './fonts/Supersonic Rocketship.ttf', 30)
 
         # Set the maximum width for each line
         max_width = 15
@@ -636,13 +649,11 @@ def generate_pdf():                # Generate PicTale Story book
             text_width, text_height = content_font.getsize(line)
             # Black background for anti camo in a content page
             bbox = (150, y_coord, 150 + text_width, y_coord + text_height)
-            phototext.rectangle(bbox, fill=(61, 61, 61))
+            phototext.rectangle(bbox, fill=(255, 165, 0))
             # For writing the content in a page
             phototext.text((150, y_coord), line,
                            font=content_font, fill=(255, 255, 255))
             y_coord += content_font.getsize(line)[1] + 10
-
-    ###################################################################################
 
         # Save the drawn page that contains the text input in the local directory
         photo.save('./GeneratedImages/INPUT{}.png'.format(file))
@@ -683,7 +694,7 @@ def generate_pdf():                # Generate PicTale Story book
         )
 
     # Show prompt that PDF was generated
-    messagebox.showinfo("Pictales", "Your PDF has been generated!")
+    messagebox.showinfo("PicTales", "Your PDF has been generated!")
 
     # Close the app when storybook is made
     clarification_window.destroy()
@@ -760,7 +771,7 @@ for folder in folders_to_create:
 blank.save('./GeneratedImages/BlankTemplate.png')
 
 # Define the font file path and size
-font_path = "./fonts/SupersonicRockets.ttf"
+font_path = "./fonts/Supersonic Rocketship.ttf"
 font_size = 24
 
 # Create a custom font for usage throughout the whole program
@@ -773,7 +784,7 @@ def funct_about_window():     # The question mark button shows the about pictale
 
     # Initiate about window's tk GUI
     about_window = tk.Toplevel()
-    about_window.title('About Pictales')
+    about_window.title('About PicTales')
 
     # This code will pop up the window about in top level
     about_window.grab_set()
@@ -797,7 +808,6 @@ def funct_about_window():     # The question mark button shows the about pictale
     resized_img = about_img.resize(
         (200, 200), resample=Image.LANCZOS)
     about_photo = ImageTk.PhotoImage(resized_img)
-
     # MAGIC APPEND
     photo_list.append(about_photo)  # add photo object to the photo list
     # Show photo in a label widget
@@ -808,7 +818,7 @@ def funct_about_window():     # The question mark button shows the about pictale
     modal_label.config(font=("Supersonic Rocketship", 64))
 
     # This code is for displaying the copyright
-    ver_label = tk.Label(about_window, text='Copyright © 2023, PICTALES',
+    ver_label = tk.Label(about_window, text='Copyright © 2023, PicTales',
                          font=custom_font, fg='white', bg='#F8BC3B')
     ver_label.place(relx=0.25, rely=0.75)
     ver_label.config(font=("Supersonic Rocketship", 24))
@@ -825,6 +835,9 @@ def funct_about_window():     # The question mark button shows the about pictale
 
 
 def funct_howTo_window():     # How to button will show this window playing the video about pictales
+
+    # Show instructions:
+    messagebox.showinfo("Instructions", "- Must have 8gb+ GPU ram\n- In the fonts folder, install supersonic rocketship\n- Must have wifi constantly on\n- Text Inputs must only be in english and has a maximum of 120 characters\n- Change Display scale and layout from 125% to 100%")
 
     global howTo_window  # Globalize to be destroyed later
 
@@ -907,15 +920,16 @@ def funct_generate_window():    # This window is for getting the text prompt and
     back_label_generate_window.place(x=85, y=20, anchor="n")
 
     # Label for prompt in generate window
-    text_title = Label(generate_window, text="Enter prompt here", bg='#F8BC3B')
+    text_title = Label(
+        generate_window, text="Enter prompt here (120 characters max)", bg='#F8BC3B')
     text_title.place(x=598, y=67)
     text_title.config(font=("Supersonic Rocketship", 18))
 
     global text_area  # Globalize the widget containing the text input from the user
 
     # Textbox widget for getting USER TEXT INPUT FOR GENERATING IMAGE
-    text_area = tk.Text(generate_window, height=16, width=38,
-                        bg='#F8BC3B',  bd=1, relief="solid", font=("Arial", 20))
+    text_area = tk.Text(generate_window, height=14, width=38,
+                        bg='#F8BC3B',  bd=1, relief="solid", font=("Supersonic Rocketship", 20))
     text_area.place(x=600, y=100)
 
     # Label for image generated
@@ -980,14 +994,24 @@ def funct_toggle_start_button():  # Function for toggling start button
     # Bring back window 1
     app.deiconify()
 
-    # Enable start button and change its command to show the hidden start window so it does not default back to the previous command which creates another start window
-    start_button.config(state="normal", command=start_window.deiconify)
+    def on_button_click():
+        # First command
+        start_window.deiconify()
+
+        # Second command
+        app.withdraw()
+
+    # Assign the new function as the button's command
+    start_button.config(state="normal", command=on_button_click)
 
     start_window.withdraw()  # Hide start window
 # ________________________________________________________________________________
 
 
 def title_window():  # Window to get author and title data // Window 2
+
+    # Hide window 1
+    app.withdraw()
 
     global start_window  # Globalize to be destroyed at the opening of the main operating window
 
@@ -1013,22 +1037,22 @@ def title_window():  # Window to get author and title data // Window 2
     # Tkinter UI for the textbox prompts for the storybook file
     # For Title Label
     ltext_title = ctk.CTkLabel(start_window, height=20, width=20, text="Title", font=(
-        "Montserrat", 48 * -1), text_color="#AB7A11")
+        "Supersonic Rocketship", 48 * -1), text_color="#AB7A11")
     ltext_title.place(x=218, y=125)
 
     # For Title Textbox
     prompt_pdf = ctk.CTkEntry(start_window, height=85, width=729, font=(
-        "Arial", 20), text_color="black", fg_color="white", border_width=10, border_color="#DDC8A0")
+        "Supersonic Rocketship", 20), text_color="black", fg_color="white", border_width=10, border_color="#DDC8A0")
     prompt_pdf.place(x=201.0, y=180.0)
 
     # For Author Label
     ltext_authname = ctk.CTkLabel(start_window, height=20, width=20, text="Author Name", font=(
-        "Montserrat", 48 * -1), text_color="#AB7A11")
+        "Supersonic Rocketship", 48 * -1), text_color="#AB7A11")
     ltext_authname.place(x=218, y=295)
 
     # For Author Textbox
     author_name = ctk.CTkEntry(start_window, width=729.0, height=85.0, bg_color="#F9F4F1", font=(
-        "Arial", 20), text_color="black", fg_color="white", border_width=10, border_color="#DDC8A0")
+        "Supersonic Rocketship", 20), text_color="black", fg_color="white", border_width=10, border_color="#DDC8A0")
     author_name.place(x=201.0, y=350.0)
 
     # Generate button for Cover img generator
@@ -1044,18 +1068,18 @@ def title_window():  # Window to get author and title data // Window 2
     global cover_prompt  # Globalize the prompt for cover text input
 
     # For prompt Title Label for cover image
-    prompt_title = ctk.CTkLabel(start_window, height=20, width=20, text="Enter prompt for Cover Image", font=(
-        "Montserrat", 48 * -1), text_color="#AB7A11")
+    prompt_title = ctk.CTkLabel(start_window, height=20, width=20, text="Enter prompt for Cover Image (120 characters max)", font=(
+        "Supersonic Rocketship", 38 * -1), text_color="#AB7A11")
     prompt_title.place(x=218, y=465)
 
     # Tkinter UI for the textbox prompt for the cover img
     cover_prompt = ctk.CTkEntry(start_window, width=729.0, height=185.0, bg_color="#F9F4F1", font=(
-        "Arial", 20), text_color="black", fg_color="white", border_width=10, border_color="#DDC8A0")
+        "Supersonic Rocketship", 20), text_color="black", fg_color="white", border_width=10, border_color="#DDC8A0")
     cover_prompt.place(x=201.0, y=520.0)
 
     # For Cover image generated Label
     coverimglab = ctk.CTkLabel(start_window, height=20, width=20, text="Cover Image", font=(
-        "Montserrat", 48 * -1), text_color="#AB7A11")
+        "Supersonic Rocketship", 48 * -1), text_color="#AB7A11")
     coverimglab.place(x=1185, y=115)
 
     # Placeholder frame for image result generated for cover image
@@ -1064,7 +1088,7 @@ def title_window():  # Window to get author and title data // Window 2
 
     # Placeholder frame for the text input for cover image
     ltext_cover = ctk.CTkLabel(start_window, height=100, width=512, text=" ", font=(
-        "Arial", 20), text_color="#AB7A11", fg_color=None)
+        "Supersonic Rocketship", 20), text_color="#AB7A11", fg_color=None)
     ltext_cover.place(x=1182, y=650)
 
     # Back button in window 2 // Start Window
@@ -1356,12 +1380,34 @@ def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WI
                                      command=generate_window_deposit, bg='#F8BC3B', activebackground='#F8BC3B')
     back_label_edit_content.place(x=100, y=50, anchor="n")
 
+    ############################## Preview Code ##############################
+    # Show the selected character from the 8 expressions:
+    preview_label = tk.Label(
+        addcharacter_screen, text='Preview:', font=custom_font, fg='white', bg='#F8BC3B')
+    preview_label.place(x=600, y=500)
+    # Set the font of the label to Supersonic Rocketship with a size of 15
+    preview_label.config(font=("Supersonic Rocketship", 15))
+
+    # This block of code show the logo PICTALES and resize it, and append the image to be seen coz of resizing
+    preview_img = Image.open('./GeneratedImages/Preview.png')
+    resized_preview_img = preview_img.resize(
+        (350, 350), resample=Image.LANCZOS)
+    preview_photo = ImageTk.PhotoImage(resized_preview_img)
+    # MAGIC APPEND
+    photo_list.append(preview_photo)  # add photo object to the photo list
+
+    # Show the image preview in a container
+    preview_label_photo = tk.Label(
+        addcharacter_screen, bg='#F8BC3B', image=preview_photo)
+    preview_label_photo.place(x=500, y=550)
+    ##############################              ##############################
+
     # Show the selected character from the 8 expressions:
     selected_character_label = tk.Label(
         addcharacter_screen, text='Selected Character:', font=custom_font, fg='white', bg='#F8BC3B')
     selected_character_label.place(x=200, y=500)
 
-    # Set the font of the label to Supersonic Rocketship with a size of 20
+    # Set the font of the label to Supersonic Rocketship with a size of 15
     selected_character_label.config(font=("Supersonic Rocketship", 15))
 
     # Globalize the container for the selected character that will appear in the edit content page
@@ -1376,20 +1422,20 @@ def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WI
         addcharacter_screen, text='CHOOSE YOUR CHARACTER: CLICK ON THE \n CHARACTER YOU WANT', font=custom_font, fg='white', bg='#F8BC3B')
     character_label.place(x=180, y=50)
 
-    # Set the font of the character label to Supersonic Rocketship with a size of 20
+    # Set the font of the character label to Supersonic Rocketship with a size of 25
     character_label.config(font=("Supersonic Rocketship", 25))
 
     # Label for edit page content
     edit_prompt = Label(addcharacter_screen,
-                        text="Enter your story here: ", bg='#F8BC3B', fg='white')
+                        text="Enter your story here (120 characters max): ", bg='#F8BC3B', fg='white')
     edit_prompt.place(x=900, y=110)
     edit_prompt.config(font=("Supersonic Rocketship", 18))
 
     global edit_textcontent_area  # Globalize to pass to generate save with get() method
 
     # Edit textbox widget for editing the content of the story page
-    edit_textcontent_area = tk.Text(addcharacter_screen, height=20, width=45,
-                                    bg='#F8BC3B',  bd=1, relief="solid", font=("Arial", 20))
+    edit_textcontent_area = tk.Text(addcharacter_screen, height=15, width=45,
+                                    bg='#F8BC3B',  bd=1, relief="solid", font=("Supersonic Rocketship", 20))
     edit_textcontent_area.place(x=900, y=150)
 
     # BOY character Screen window 5.1
@@ -1604,7 +1650,7 @@ def character_expression_window():  # Choosing expression window
 # ___________________________________________________________________________ MAIN TKINTER UI ___________________________________________________________________________
 # Create the app
 app = ctk.CTk()
-app.title("Pictales")
+app.title("PicTales")
 app.geometry("1832x932")
 ctk.set_appearance_mode("F9F4F1")
 
