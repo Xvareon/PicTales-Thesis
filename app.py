@@ -49,6 +49,7 @@ photo_list = []      # create a global list to store photo objects for GUI
 label_list = {}      # Globalize label list to pass to delete page function
 enable_realistic = 0  # Globalize value to determine whether images generated are realistic or not // set to 0 to disable by default
 music_switch = 1     # Globalize value to determine whether toggle background music are On or not // set to 1 to disable by default
+dev_mode = 1         # Testing the application without the AI for faster UI work
 
 # Set default title of storybook to Pictales, make it global so its value can be changed by the functions
 glob_title = "PicTales"
@@ -133,17 +134,20 @@ def generate_image():   # Function to generate the images from the text prompt
 
         else:
 
-            # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
-            # image = blank
+            # CPU MODE
+            if dev_mode == 1:
+                image = blank
 
-            if enable_realistic == 0:
-                cartoon_input = "Cartoonish illustration of " + text_input
             else:
-                cartoon_input = text_input
 
-            # Variable that contains the image result // COMMENT THIS FOR CPU MODE
-            image = pipe(cartoon_input, guidance_scale=10)[
-                "images"][0]
+                if enable_realistic == 0:
+                    cartoon_input = "Cartoonish illustration of " + text_input
+                else:
+                    cartoon_input = text_input
+
+                # Variable that contains the image result // COMMENT THIS FOR CPU MODE
+                image = pipe(cartoon_input, guidance_scale=10)[
+                    "images"][0]
 
             # Enable the add character button if the image is generated successfully
             edit_content_label.config(state="normal")
@@ -220,51 +224,81 @@ def funct_inner_frame():  # Dynamically configures the widgets in the inner fram
             label.grid_forget()
     label_list = {}  # Reset the stack everytime this window is called
 
+    # Create a frame to hold the content page and image page widgets
+    framecover = Frame(inner_frame, bg="#F9F4F1")
+    framecover.grid(row=1, column=0, padx=20, pady=(175, 10), sticky='n')
+
+    # Widget for displaying a label frame object that contains the cover image
+    previewcover_img = Image.open('./GeneratedImages/PreviewCover.png')
+    previewcover_photo = ImageTk.PhotoImage(previewcover_img)
+    # add photo object to the photo list
+    photo_list.append(previewcover_photo)
+    limg_list_cover = Label(
+        framecover, image=previewcover_photo, bg="#F9F4F1")
+    limg_list_cover.grid(row=0, column=0, padx=(20, 0), sticky='n')
+    # label_list[counter].append(limg_list_cover)
+
+    # # This block of code show the logo PICTALES and resize it, and append the image to be seen coz of resizing
+    # preview_img = Image.open('./GeneratedImages/Preview.png')
+    # resized_preview_img = preview_img.resize(
+    #     (350, 350), resample=Image.LANCZOS)
+    # preview_photo = ImageTk.PhotoImage(resized_preview_img)
+    # # MAGIC APPEND
+    # photo_list.append(preview_photo)  # add photo object to the photo list
+
+    # # Show the image preview in a container
+    # preview_label_photo = tk.Label(
+    #     addcharacter_screen, bg='#F8BC3B', image=preview_photo)
+    # preview_label_photo.place(x=500, y=550)
+
     # Loop for the text items and image items added by the user to the story to display them in the main operating window
     for text_item, pic in zip(content_list, image_list):
 
         # Reset the elements inside the label list
         label_list[counter] = []
 
+        # Create a frame to hold the content page and image page widgets
+        frame = Frame(inner_frame, bg="#F9F4F1")
+        frame.grid(row=1, column=counter+1, padx=20,
+                   pady=(175, 10), sticky='n')
+
         # Widget for displaying a update button pointing to the current page
         lupdate_photo = ImageTk.PhotoImage(
             Image.open('./Assets/editbutton.png'))
         photo_list.append(lupdate_photo)
-        lupdate_list = Button(inner_frame, image=lupdate_photo,
+        lupdate_list = Button(frame, image=lupdate_photo,
                               text="UPDATE", command=lambda index=counter: update_page(index),
                               bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0)
-        lupdate_list.grid(row=counter, column=2)
+        lupdate_list.grid(row=1, column=1, pady=(10, 0), padx=(0, 100))
         label_list[counter].append(lupdate_list)
 
         # Widget for displaying a delete button pointing to the current page
         ldelete_photo = ImageTk.PhotoImage(
             Image.open('./Assets/trashbutton.png'))
         photo_list.append(ldelete_photo)
-        ldelete_list = Button(inner_frame, image=ldelete_photo,
+        ldelete_list = Button(frame, image=ldelete_photo,
                               text="DELETE", command=lambda index=counter: delete_page(index),
                               bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0)
-        ldelete_list.grid(row=counter, column=3)
+        ldelete_list.grid(row=1, column=1, pady=(10, 0), padx=(100, 0))
         label_list[counter].append(ldelete_list)
 
-        # Widget for displaying a label frame object that contains a content page of the storybook
-        ltext_list = Label(inner_frame, height=10, width=40, text="\n".join(textwrap.wrap(text_item, width=50)), font=(
-            "Supersonic Rocketship", 16), fg="#AB7A11", bg="#F9F4F1")
-        ltext_list.grid(row=counter, column=0, padx=20,
-                        pady=10, ipadx=10, ipady=300, sticky='n')
-        label_list[counter].append(ltext_list)
+        # # Widget for displaying a label frame object that contains a content page of the storybook
+        # ltext_list = Label(frame, height=10, width=40, text="\n".join(textwrap.wrap(text_item, width=50)), font=(
+        #     "Supersonic Rocketship", 16), fg="#AB7A11", bg="#F9F4F1")
+        # ltext_list.grid(row=0, column=2, sticky='n')
+        # label_list[counter].append(ltext_list)
 
         # Widget for displaying a label frame object that contains an image page of the storybook
-        limg_list = Label(inner_frame, image=pic, bg="#F9F4F1")
-        limg_list.grid(row=counter, column=1, padx=20,
-                       pady=10, ipadx=10, ipady=150, sticky='n')
+        limg_list = Label(frame, image=pic, bg="#F9F4F1")
+        limg_list.grid(row=0, column=1, padx=(20, 0), sticky='n')
         label_list[counter].append(limg_list)
+
+        # Move the counter to 1 already to skip the cover text and cover image
+        counter += 1
 
         # Update the scroll region of the canvas
         canvas.update_idletasks()
         canvas.config(scrollregion=canvas.bbox('all'))
-
-        # Move the counter to 1 already to skip the cover text and cover image
-        counter += 1
 # ________________________________________________________________________________
 
 
@@ -505,23 +539,29 @@ def generate_cover_image():   # Function to generate the cover image from the te
 
         else:
 
-            # (COMMENT OUT THIS LINE) FOR USING GUI WITHOUT AI TESTING ONLY! // UNCOMMENT THIS FOR CPU MODE
-            # image_cover = blank
+            # CPU MODE
+            if dev_mode == 1:
+                image_cover = blank
 
-            if enable_realistic == 0:
-                cartoon_input = "Cartoonish illustration of " + cover_input
             else:
-                cartoon_input = cover_input
 
-            # Variable that contains the image cover result // COMMENT THIS FOR CPU MODE
-            image_cover = pipe(cartoon_input, guidance_scale=10)[
-                "images"][0]
+                if enable_realistic == 0:
+                    cartoon_input = "Cartoonish illustration of " + cover_input
+                else:
+                    cartoon_input = cover_input
+
+                # Variable that contains the image cover result // COMMENT THIS FOR CPU MODE
+                image_cover = pipe(cartoon_input, guidance_scale=10)[
+                    "images"][0]
 
             # Enable the button if the image is generated successfully
             okay_label.config(state="normal")
 
     # Store image in a variable
     img_cover = ImageTk.PhotoImage(image_cover)
+
+    # Save image file name as PNG based on text input
+    image_cover.save('./GeneratedImages/PreviewCover.png')
 
     # Displays the text input in the Tkinter UI after generation
     ltext_cover.configure(text=cover_input)
@@ -837,7 +877,7 @@ def funct_about_window():     # The question mark button shows the about pictale
 def funct_howTo_window():     # How to button will show this window playing the video about pictales
 
     # Show instructions:
-    messagebox.showinfo("Instructions", "- Must have 8gb+ GPU ram\n- In the fonts folder, install supersonic rocketship\n- Must have wifi constantly on\n- Text Inputs must only be in english and has a maximum of 120 characters\n- Change Display scale and layout from 125% to 100%")
+    messagebox.showinfo("Instructions", "- Must have 8gb+ GPU ram\n- In the fonts folder, install supersonic rocketship\n- Must have wifi constantly on\n- Text Inputs must only be in english and has a maximum of 120 characters\n- Change Display scale and layout from 125% to 100%\n- Close buttons are disabled, the only exit is from the main menu")
 
     global howTo_window  # Globalize to be destroyed later
 
@@ -909,6 +949,9 @@ def funct_generate_window():    # This window is for getting the text prompt and
         main_screen.winfo_height()//2 - 369 + main_screen.winfo_rooty()
     ))
     generate_window.configure(bg='#F8BC3B')  # set background color
+
+    # Disable the Close Window Control Icon in generate window
+    generate_window.protocol("WM_DELETE_WINDOW", disable_event)
 
     # Back button to generate_window
     back_photo_generate_window = ImageTk.PhotoImage(
@@ -1023,6 +1066,9 @@ def title_window():  # Window to get author and title data // Window 2
     start_window.geometry("1832x932")
     start_window.configure(bg="#F9F4F1")
 
+    # Disable the Close Window Control Icon in start window
+    start_window.protocol("WM_DELETE_WINDOW", disable_event)
+
     global start_button  # Recall start button
     if start_window.winfo_exists():  # Check if start window is open
         # Disable the start button
@@ -1037,7 +1083,7 @@ def title_window():  # Window to get author and title data // Window 2
     # Tkinter UI for the textbox prompts for the storybook file
     # For Title Label
     ltext_title = ctk.CTkLabel(start_window, height=20, width=20, text="Title", font=(
-        "Supersonic Rocketship", 48 * -1), text_color="#AB7A11")
+        "Supersonic Rocketship", 38 * -1), text_color="#AB7A11")
     ltext_title.place(x=218, y=125)
 
     # For Title Textbox
@@ -1047,7 +1093,7 @@ def title_window():  # Window to get author and title data // Window 2
 
     # For Author Label
     ltext_authname = ctk.CTkLabel(start_window, height=20, width=20, text="Author Name", font=(
-        "Supersonic Rocketship", 48 * -1), text_color="#AB7A11")
+        "Supersonic Rocketship", 38 * -1), text_color="#AB7A11")
     ltext_authname.place(x=218, y=295)
 
     # For Author Textbox
@@ -1068,9 +1114,14 @@ def title_window():  # Window to get author and title data // Window 2
     global cover_prompt  # Globalize the prompt for cover text input
 
     # For prompt Title Label for cover image
-    prompt_title = ctk.CTkLabel(start_window, height=20, width=20, text="Enter prompt for Cover Image (120 characters max)", font=(
+    prompt_title = ctk.CTkLabel(start_window, height=20, width=20, text="Enter prompt for Cover Image", font=(
         "Supersonic Rocketship", 38 * -1), text_color="#AB7A11")
     prompt_title.place(x=218, y=465)
+
+    # For prompt Title Label for cover image
+    prompt_title_max = ctk.CTkLabel(start_window, height=20, width=20, text="(120 characters max)", font=(
+        "Supersonic Rocketship", 18 * -1), text_color="#AB7A11")
+    prompt_title_max.place(x=765, y=490)
 
     # Tkinter UI for the textbox prompt for the cover img
     cover_prompt = ctk.CTkEntry(start_window, width=729.0, height=185.0, bg_color="#F9F4F1", font=(
@@ -1174,6 +1225,9 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
     main_screen.geometry("1832x932")
     main_screen.configure(bg='#F9F4F1')
 
+    # Disable the Close Window Control Icon in main operating screen
+    main_screen.protocol("WM_DELETE_WINDOW", disable_event)
+
     # First declaration of global update value
     global update_value
 
@@ -1194,15 +1248,15 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
     # set the background color of the canvas
     canvas.configure(bg="#F9F4F1")
     # make the canvas fill the entire main_frame
-    canvas.pack(side='left', fill='both', expand=1)
+    canvas.pack(side='top', fill='both', expand=1)
 
     scrollbar = ttk.Scrollbar(     # create a new vertical scrollbar widget
-        main_frame, orient='vertical', command=canvas.yview)
+        main_frame, orient='horizontal', command=canvas.xview)
     # place the scrollbar on the right side of the main_frame
-    scrollbar.pack(side='right', fill='y')
+    scrollbar.pack(side='bottom', fill='x')
 
     # configure the canvas to scroll using the scrollbar
-    canvas.configure(yscrollcommand=scrollbar.set)
+    canvas.configure(xscrollcommand=scrollbar.set)
     canvas.bind('<Configure>', lambda e: canvas.configure(  # bind the <Configure> event to the canvas and update the scroll region when the canvas is resized
         scrollregion=canvas.bbox('all')))
 
@@ -1229,24 +1283,24 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
     # Block of code for adjusting its display position in main operating system // Window 3
     # Get the prompt text in title window that contains the storybook title
     text = glob_title
-    if len(text) >= 40 or 25 <= len(text):
-        wrapped_text = '\n'.join(text[i:i+40] for i in range(0, len(text), 40))
-        pictales_title = tk.Label(main_screen, text=wrapped_text, font=custom_font,
-                                  fg='#F8BC3B', bg='#F9F4F1', wraplength=500, justify='right')
-        pictales_title.place(x=1325, y=78)
-        pictales_title.config(font=("Supersonic Rocketship", 28))
-    else:
-        pictales_title = tk.Label(main_screen, text=text, font=custom_font,
-                                  fg='#F8BC3B', bg='#F9F4F1', justify='right')
-        pictales_title.place(x=1275, y=78)
-        pictales_title.config(font=("Supersonic Rocketship", 28))
+    # if len(text) >= 40 or 25 <= len(text):
+    #     wrapped_text = '\n'.join(text[i:i+40] for i in range(0, len(text), 40))
+    #     pictales_title = tk.Label(main_screen, text=wrapped_text, font=custom_font,
+    #                               fg='#F8BC3B', bg='#F9F4F1', wraplength=500, justify='right')
+    #     pictales_title.place(x=1325, y=78)
+    #     pictales_title.config(font=("Supersonic Rocketship", 28))
+    # else:
+    pictales_title = tk.Label(main_screen, text=text, font=custom_font,
+                              fg='#F8BC3B', bg='#F9F4F1', justify='right')
+    pictales_title.place(x=200, y=78)
+    pictales_title.config(font=("Supersonic Rocketship", 28))
 
     # Add page button
     addpage_photo = ImageTk.PhotoImage(Image.open('./Assets/addpage.png'))
     photo_list.append(addpage_photo)  # add photo object to the list
     addpage_label = Button(main_screen, borderwidth=0,
                            highlightthickness=0, image=addpage_photo, command=funct_generate_window, bg='#F9F4F1', activebackground='#F9F4F1')
-    addpage_label.place(x=1450, y=625)
+    addpage_label.place(x=100, y=790)
 
     # Redirecting to modal window for Generating image // Create Pictales button in window 3
     createpictales_photo = ImageTk.PhotoImage(
@@ -1254,7 +1308,7 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
     photo_list.append(createpictales_photo)  # add photo object to the list
     createpictales_label = Button(main_screen, borderwidth=0,
                                   highlightthickness=0, image=createpictales_photo, command=funct_clarification_window)  # show the prompt creation of pdf
-    createpictales_label.place(x=1300, y=750)
+    createpictales_label.place(x=400, y=780)
 
     # Disable main operating screen window resizing
     main_screen.resizable(False, False)
@@ -1372,6 +1426,9 @@ def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WI
     addcharacter_screen.geometry("1832x932")
     addcharacter_screen.configure(bg='#F8BC3B')
 
+    # Disable the Close Window Control Icon in edit content page
+    addcharacter_screen.protocol("WM_DELETE_WINDOW", disable_event)
+
     # Back button for add character window 5.1
     back_photo_edit_content = ImageTk.PhotoImage(
         Image.open('./Assets/backbutton.png'))
@@ -1434,7 +1491,7 @@ def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WI
     global edit_textcontent_area  # Globalize to pass to generate save with get() method
 
     # Edit textbox widget for editing the content of the story page
-    edit_textcontent_area = tk.Text(addcharacter_screen, height=15, width=45,
+    edit_textcontent_area = tk.Text(addcharacter_screen, height=16, width=62,
                                     bg='#F8BC3B',  bd=1, relief="solid", font=("Supersonic Rocketship", 20))
     edit_textcontent_area.place(x=900, y=150)
 
@@ -1532,6 +1589,9 @@ def character_expression_window():  # Choosing expression window
     character_screen.grab_set()
     character_screen.geometry("1228x600")
     character_screen.configure(bg='#F8BC3B')
+
+    # Disable the Close Window Control Icon in edit character expression window
+    character_screen.protocol("WM_DELETE_WINDOW", disable_event)
 
     # Get the character data from the global variable and function
     if (char_select == 1):
@@ -1653,6 +1713,12 @@ app = ctk.CTk()
 app.title("PicTales")
 app.geometry("1832x932")
 ctk.set_appearance_mode("F9F4F1")
+
+
+def disable_event():  # Functionn for disabling the command close window for specific tk windows
+    pass
+# ________________________________________________________________________________
+
 
 # Play background music
 funct_play_music()
