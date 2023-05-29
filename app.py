@@ -60,6 +60,20 @@ glob_author = "PicTales Author"
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
 
 
+def center_window(window, width, height):
+    # Get the screen dimensions
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+
+    # Calculate the window position to center it
+    x = (screen_width - width) // 2
+    y = (screen_height - height) // 2
+
+    # Set the window coordinates
+    window.geometry(f"{width}x{height}+{x}+{y}")
+# ________________________________________________________________________________
+
+
 def funct_play_music():  # Function to play background music
     # Initialize sound player
     pygame.mixer.init()
@@ -226,33 +240,21 @@ def funct_inner_frame():  # Dynamically configures the widgets in the inner fram
 
     # Create a frame to hold the content page and image page widgets
     framecover = Frame(inner_frame, bg="#F9F4F1")
-    framecover.grid(row=1, column=0, padx=20, pady=(175, 10), sticky='n')
+    framecover.grid(row=1, column=0, padx=20, pady=(200, 10), sticky='n')
 
     # Widget for displaying a label frame object that contains the cover image
     previewcover_img = Image.open('./GeneratedImages/PreviewCover.png')
+    previewcover_img = previewcover_img.resize(
+        (250, 250), resample=Image.LANCZOS)
     previewcover_photo = ImageTk.PhotoImage(previewcover_img)
     # add photo object to the photo list
     photo_list.append(previewcover_photo)
     limg_list_cover = Label(
         framecover, image=previewcover_photo, bg="#F9F4F1")
     limg_list_cover.grid(row=0, column=0, padx=(20, 0), sticky='n')
-    # label_list[counter].append(limg_list_cover)
-
-    # # This block of code show the logo PICTALES and resize it, and append the image to be seen coz of resizing
-    # preview_img = Image.open('./GeneratedImages/Preview.png')
-    # resized_preview_img = preview_img.resize(
-    #     (350, 350), resample=Image.LANCZOS)
-    # preview_photo = ImageTk.PhotoImage(resized_preview_img)
-    # # MAGIC APPEND
-    # photo_list.append(preview_photo)  # add photo object to the photo list
-
-    # # Show the image preview in a container
-    # preview_label_photo = tk.Label(
-    #     addcharacter_screen, bg='#F8BC3B', image=preview_photo)
-    # preview_label_photo.place(x=500, y=550)
 
     # Loop for the text items and image items added by the user to the story to display them in the main operating window
-    for text_item, pic in zip(content_list, image_list):
+    for text_item, pic, content_item in zip(text_list, image_list, content_list):
 
         # Reset the elements inside the label list
         label_list[counter] = []
@@ -260,7 +262,7 @@ def funct_inner_frame():  # Dynamically configures the widgets in the inner fram
         # Create a frame to hold the content page and image page widgets
         frame = Frame(inner_frame, bg="#F9F4F1")
         frame.grid(row=1, column=counter+1, padx=20,
-                   pady=(175, 10), sticky='n')
+                   pady=(200, 10), sticky='n')
 
         # Widget for displaying a update button pointing to the current page
         lupdate_photo = ImageTk.PhotoImage(
@@ -269,7 +271,7 @@ def funct_inner_frame():  # Dynamically configures the widgets in the inner fram
         lupdate_list = Button(frame, image=lupdate_photo,
                               text="UPDATE", command=lambda index=counter: update_page(index),
                               bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0)
-        lupdate_list.grid(row=1, column=1, pady=(10, 0), padx=(0, 100))
+        lupdate_list.grid(row=2, column=1, pady=(10, 0), padx=(0, 100))
         label_list[counter].append(lupdate_list)
 
         # Widget for displaying a delete button pointing to the current page
@@ -279,17 +281,25 @@ def funct_inner_frame():  # Dynamically configures the widgets in the inner fram
         ldelete_list = Button(frame, image=ldelete_photo,
                               text="DELETE", command=lambda index=counter: delete_page(index),
                               bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0)
-        ldelete_list.grid(row=1, column=1, pady=(10, 0), padx=(100, 0))
+        ldelete_list.grid(row=2, column=1, pady=(10, 0), padx=(100, 0))
         label_list[counter].append(ldelete_list)
 
-        # # Widget for displaying a label frame object that contains a content page of the storybook
-        # ltext_list = Label(frame, height=10, width=40, text="\n".join(textwrap.wrap(text_item, width=50)), font=(
-        #     "Supersonic Rocketship", 16), fg="#AB7A11", bg="#F9F4F1")
-        # ltext_list.grid(row=0, column=2, sticky='n')
-        # label_list[counter].append(ltext_list)
+        # Widget for displaying a label frame object that contains a content page of the storybook
+        ltext_list = Label(frame, height=5, width=10, text="Page {}".format(counter+1), font=(
+            "Supersonic Rocketship", 20), fg="#AB7A11", bg="#F9F4F1")
+        ltext_list.grid(row=1, column=1, padx=(20, 0), sticky='n')
+        label_list[counter].append(ltext_list)
 
         # Widget for displaying a label frame object that contains an image page of the storybook
-        limg_list = Label(frame, image=pic, bg="#F9F4F1")
+        limg_img = Image.open('./GeneratedImages/{}.png'.format(text_item))
+        limg_img = limg_img.resize(
+            (250, 250), resample=Image.LANCZOS)
+        limg_photo = ImageTk.PhotoImage(limg_img)
+        # add photo object to the photo list
+        photo_list.append(limg_photo)
+        # limg_list = Label(frame, image=limg_photo, bg="#F9F4F1")
+        limg_list = Button(frame, image=limg_photo, bg="#F9F4F1",
+                           text="VIEW", command=lambda index=counter: view_page(index))
         limg_list.grid(row=0, column=1, padx=(20, 0), sticky='n')
         label_list[counter].append(limg_list)
 
@@ -299,6 +309,104 @@ def funct_inner_frame():  # Dynamically configures the widgets in the inner fram
         # Update the scroll region of the canvas
         canvas.update_idletasks()
         canvas.config(scrollregion=canvas.bbox('all'))
+# ________________________________________________________________________________
+
+
+def view_page(index):  # View a page
+    # Hide main screen when in view page window
+    main_screen.withdraw()
+
+    # Globalized to be destroyed
+    global view_page_window
+
+    # Initiate generate window's tk GUI
+    view_page_window = tk.Toplevel()
+    view_page_window.title("View Page")
+
+    # This code will pop up the window how to in top level
+    view_page_window.grab_set()
+
+    # The geometry with app winfo width and height will center the window modal in main screen
+    center_window(view_page_window, 1228, 750)
+    view_page_window.configure(bg='#F8BC3B')  # set background color
+
+    # Disable the Close Window Control Icon in generate window
+    view_page_window.protocol("WM_DELETE_WINDOW", disable_event)
+
+    # Title for page window
+    ltitle = Label(view_page_window, height=2, width=70, text="\n".join(textwrap.wrap(
+        glob_title, width=70)), font=("Supersonic Rocketship", 16), fg="#AB7A11")
+    ltitle.place(x=200, y=15)
+
+    # Page Number for view page window
+    lpage_number = Label(view_page_window, height=2, width=40, text="Page {}".format(
+        index+1), font=("Supersonic Rocketship", 16), fg="#AB7A11")
+    lpage_number.place(x=380, y=670)
+
+    # Container Label for view page image
+    global lview_image  # Globalize for next/back page function
+    # Show the image in a container
+    lview_image = tk.Label(view_page_window, bg='#F8BC3B',
+                           image=image_list[index])
+    lview_image .place(x=50, y=100)
+
+    # Container Label for view page content
+    global lview_content  # Globalize to pass on generate image function
+    lview_content = Label(view_page_window, height=16, width=40, text="\n".join(textwrap.wrap(content_list[index], width=40)), font=(
+        "Supersonic Rocketship", 16), fg="#AB7A11")
+    lview_content.place(x=690, y=100)
+
+    def on_click_back():  # Function for going back to main screen on back button click
+        # Destroy view_page_window
+        view_page_window.destroy()
+        # Show the hidden main screen again
+        main_screen.deiconify()
+
+    def on_click_next(index):  # Function to go to the next consecutive page of the story
+        # Destroy view_page_window
+        view_page_window.destroy()
+        # Show the hidden main screen again
+        view_page(index+1)
+
+    def on_click_prev(index):  # Function to go to the previous page of the story
+        # Destroy view_page_window
+        view_page_window.destroy()
+        # Show the hidden main screen again
+        view_page(index-1)
+
+    # if there are two pages or more
+    if len(image_list) > 1 and (index < (len(image_list) - 1 or index == 1)):
+        # Next button for view page window
+        next_photo_view_page_window = ImageTk.PhotoImage(
+            Image.open('./Assets/next.png'))
+        # add photo object to the photo list
+        photo_list.append(next_photo_view_page_window)
+        next_label_view_page_window = Button(view_page_window, borderwidth=0, highlightthickness=0,
+                                             image=next_photo_view_page_window, command=lambda index=index: on_click_next(index), bg='#F8BC3B', activebackground='#F8BC3B')
+        next_label_view_page_window.place(x=1150, y=630, anchor="n")
+
+    # Check if it is the last page
+    if len(image_list) > 1 and index != 0:
+        # Prev button for view page window
+        prev_photo_view_page_window = ImageTk.PhotoImage(
+            Image.open('./Assets/prev.png'))
+        # add photo object to the photo list
+        photo_list.append(prev_photo_view_page_window)
+        prev_label_view_page_window = Button(view_page_window, borderwidth=0, highlightthickness=0,
+                                             image=prev_photo_view_page_window, command=lambda index=index: on_click_prev(index), bg='#F8BC3B', activebackground='#F8BC3B')
+        prev_label_view_page_window.place(x=70, y=630, anchor="n")
+
+    # Back button to generate_window in view page window
+    back_photo_view_page_window = ImageTk.PhotoImage(
+        Image.open('./Assets/inverted_backbutton.png'))
+    # add photo object to the photo list
+    photo_list.append(back_photo_view_page_window)
+    back_label_view_page_window = Button(view_page_window, borderwidth=0, highlightthickness=0,
+                                         image=back_photo_view_page_window, command=on_click_back, bg='#F8BC3B', activebackground='#F8BC3B')
+    back_label_view_page_window.place(x=85, y=20, anchor="n")
+
+    # Disable clarification window resizing
+    view_page_window.resizable(False, False)
 # ________________________________________________________________________________
 
 
@@ -672,7 +780,7 @@ def generate_pdf():                # Generate PicTale Story book
 
         # Choose font for content page
         content_font = ImageFont.truetype(
-            './fonts/Supersonic Rocketship.ttf', 30)
+            'comic.ttf', 30)
 
         # Set the maximum width for each line
         max_width = 15
@@ -829,12 +937,7 @@ def funct_about_window():     # The question mark button shows the about pictale
     # This code will pop up the window about in top level
     about_window.grab_set()
 
-    # The geometry with app winfo width and height will center the window modal in main screen
-    about_window.geometry("756x653+{}+{}".format(
-        app.winfo_width()//2 - 378 + app.winfo_rootx(),
-        app.winfo_height()//2 - 372 + app.winfo_rooty()
-    ))
-
+    center_window(about_window, 756, 653)
     # Set background color for about window
     about_window.configure(bg='#F8BC3B')
 
@@ -938,16 +1041,12 @@ def funct_generate_window():    # This window is for getting the text prompt and
 
     # Initiate generate window's tk GUI
     generate_window = tk.Toplevel()
-    generate_window.title("Prompt")
+    generate_window.title("Generate Page")
 
     # This code will pop up the window how to in top level
     generate_window.grab_set()
 
-    # The geometry with app winfo width and height will center the window modal in main screen
-    generate_window.geometry("1228x800+{}+{}".format(
-        main_screen.winfo_width()//2 - 614 + main_screen.winfo_rootx(),
-        main_screen.winfo_height()//2 - 369 + main_screen.winfo_rooty()
-    ))
+    center_window(generate_window, 1228, 800)
     generate_window.configure(bg='#F8BC3B')  # set background color
 
     # Disable the Close Window Control Icon in generate window
@@ -1060,10 +1159,11 @@ def title_window():  # Window to get author and title data // Window 2
 
     # Window 2 config start / ctk window / Initiate generate window's tk GUI
     start_window = tk.Toplevel(app)
-    start_window.title("Title and Author")
+    start_window.title("Generate Cover Page")
 
     # This code will pop up the window how to in top level
     start_window.geometry("1832x932")
+    center_window(start_window, 1832, 932)
     start_window.configure(bg="#F9F4F1")
 
     # Disable the Close Window Control Icon in start window
@@ -1223,6 +1323,7 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
 
     # This code will pop up the window how to in top level
     main_screen.geometry("1832x932")
+    center_window(main_screen, 1832, 932)
     main_screen.configure(bg='#F9F4F1')
 
     # Disable the Close Window Control Icon in main operating screen
@@ -1280,18 +1381,9 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
                                     image=back_photo_main_screen, command=start_window_deposit)
     back_label_main_screen.place(x=100, y=50, anchor="n")
 
-    # Block of code for adjusting its display position in main operating system // Window 3
     # Get the prompt text in title window that contains the storybook title
-    text = glob_title
-    # if len(text) >= 40 or 25 <= len(text):
-    #     wrapped_text = '\n'.join(text[i:i+40] for i in range(0, len(text), 40))
-    #     pictales_title = tk.Label(main_screen, text=wrapped_text, font=custom_font,
-    #                               fg='#F8BC3B', bg='#F9F4F1', wraplength=500, justify='right')
-    #     pictales_title.place(x=1325, y=78)
-    #     pictales_title.config(font=("Supersonic Rocketship", 28))
-    # else:
-    pictales_title = tk.Label(main_screen, text=text, font=custom_font,
-                              fg='#F8BC3B', bg='#F9F4F1', justify='right')
+    pictales_title = tk.Label(main_screen, text="\n".join(textwrap.wrap(
+        glob_title, width=700)), font=custom_font, fg='#F8BC3B', bg='#F9F4F1', justify='right')
     pictales_title.place(x=200, y=78)
     pictales_title.config(font=("Supersonic Rocketship", 28))
 
@@ -1326,11 +1418,7 @@ def funct_clarification_window():  # Clarification Window pops up before creatin
     # This code will pop up the window how to in top level
     clarification_window.grab_set()
 
-    # The geometry with app winfo width and height will center the window modal in main screen
-    clarification_window.geometry("690x603+{}+{}".format(
-        main_screen.winfo_width()//2 - 378 + main_screen.winfo_rootx(),
-        main_screen.winfo_height()//2 - 372 + main_screen.winfo_rooty()
-    ))
+    center_window(clarification_window, 690, 603)
     clarification_window.configure(bg='#F8BC3B')  # set background color
 
     # Set the clarification label on the window
@@ -1419,11 +1507,12 @@ def edit_content_page():  # Add edit the page content window 5.1 // ADD STORY WI
 
     # Initiate edit content page window's tk GUI
     addcharacter_screen = tk.Toplevel()
-    addcharacter_screen.title("Characters and Story")
+    addcharacter_screen.title("Edit Content Page")
 
     # This code will pop up the window how to in top level
     addcharacter_screen.grab_set()
     addcharacter_screen.geometry("1832x932")
+    center_window(addcharacter_screen, 1832, 932)
     addcharacter_screen.configure(bg='#F8BC3B')
 
     # Disable the Close Window Control Icon in edit content page
@@ -1583,11 +1672,12 @@ def character_expression_window():  # Choosing expression window
 
     # Initiate character expression window's tk GUI
     character_screen = tk.Toplevel()
-    character_screen.title("Character's Emotion Selection")
+    character_screen.title("Character Expressions")
 
     # This code will pop up the window how to in top level
     character_screen.grab_set()
     character_screen.geometry("1228x600")
+    center_window(character_screen, 1228, 600)
     character_screen.configure(bg='#F8BC3B')
 
     # Disable the Close Window Control Icon in edit character expression window
@@ -1712,6 +1802,7 @@ def character_expression_window():  # Choosing expression window
 app = ctk.CTk()
 app.title("PicTales")
 app.geometry("1832x932")
+center_window(app, 1832, 932)
 ctk.set_appearance_mode("F9F4F1")
 
 
