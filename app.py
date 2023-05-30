@@ -107,14 +107,23 @@ def funct_realistic_off():   # Function to toggle off realistic image generation
 # ________________________________________________________________________________
 
 
+# Function for limiting the filename characters to avoid errors
+def funct_truncate_text(text, trunc_val):
+    if len(text) > trunc_val:  # Check the length of the text if its greater than the trunct (set character limit)
+        text = text[:trunc_val]  # Truncate the string
+# ________________________________________________________________________________
+
+
 def funct_get_cover_data():   # Function to toggle off realistic image generation
     global glob_title  # Recall global variable glob title
     global glob_author  # Recall global variable glob author
 
     glob_title = prompt_pdf.get()  # Get title name from title window before it closes
+    funct_truncate_text(glob_title, 60)
 
     # Get author name from title window before it closes
     glob_author = author_name.get()
+    funct_truncate_text(glob_author, 60)
 
     main_operating_screen()
 # ________________________________________________________________________________
@@ -133,6 +142,7 @@ def generate_image():   # Function to generate the images from the text prompt
 
         # Store text input in a variable
         text_input = text_area.get('1.0', tk.END)
+        funct_truncate_text(text_input, 120)
 
         # Clean the input of spaces and newlines
         text_input = text_input.strip()
@@ -335,13 +345,13 @@ def view_page(index):  # View a page
 
     # Title for page window
     ltitle = Label(view_page_window, height=2, width=70, text="\n".join(textwrap.wrap(
-        glob_title, width=70)), font=("Supersonic Rocketship", 16), fg="#AB7A11")
+        glob_title, width=70)), font=("Supersonic Rocketship", 16), fg="#AB7A11", bg='#F8BC3B')
     ltitle.place(x=200, y=15)
 
     # Page Number for view page window
     lpage_number = Label(view_page_window, height=2, width=40, text="Page {}".format(
-        index+1), font=("Supersonic Rocketship", 16), fg="#AB7A11")
-    lpage_number.place(x=380, y=670)
+        index+1), font=("Supersonic Rocketship", 16), fg="#AB7A11", bg='#F8BC3B')
+    lpage_number.place(x=380, y=650)
 
     # Container Label for view page image
     global lview_image  # Globalize for next/back page function
@@ -374,6 +384,102 @@ def view_page(index):  # View a page
         # Show the hidden main screen again
         view_page(index-1)
 
+    def on_click_edit_content_window(index):
+        # Hide main screen when in view page window
+        view_page_window.withdraw()
+
+        # Globalized to be destroyed
+        global edit_storyline_window
+
+        # Initiate generate window's tk GUI
+        edit_storyline_window = tk.Toplevel()
+        edit_storyline_window.title("View Page")
+
+        # This code will pop up the window how to in top level
+        edit_storyline_window.grab_set()
+
+        # The geometry with app winfo width and height will center the window modal in main screen
+        center_window(edit_storyline_window, 1228, 750)
+        edit_storyline_window.configure(bg='#F8BC3B')  # set background color
+
+        def update_storyline(index):  # Update the content of the page
+
+            global lview_content  # Globalize the label
+
+            # Store the edited content in a temporary variable
+            temp_content = text_area_content_update.get('1.0', tk.END)
+
+            # if input was not edited (blank)
+            if temp_content == '' or len(temp_content) == 0 or temp_content.isspace() == True:
+                # Retrieve previous content
+                content_list[index] = content_list[index]
+            else:
+                content_list[index] = temp_content  # Update to new content
+            funct_truncate_text(content_list[index], 120)
+
+            # Update the text of the lview_content label
+            lview_content.config(text="\n".join(
+                textwrap.wrap(temp_content, width=40)))
+
+            edit_storyline_window.destroy()  # Close edit storyline window
+            view_page_window.deiconify()
+        # ________________________________________________________________________________
+
+        def view_page_window_deposit():  # Show view page window again
+
+            edit_storyline_window.destroy()  # Close edit storyline window
+            view_page_window.deiconify()
+        # ________________________________________________________________________________
+
+        # Textbox widget for getting USER TEXT INPUT FOR GENERATING IMAGE
+        text_area_content_update = tk.Text(edit_storyline_window, height=14, width=38,
+                                           bg='#F8BC3B',  bd=1, relief="solid", font=("Supersonic Rocketship", 20))
+        text_area_content_update.place(x=600, y=100)
+
+        # Label for image generated
+        text_area_content_update_label = Label(
+            edit_storyline_window, text="Update Content", bg='#F8BC3B')
+        text_area_content_update_label.place(x=55, y=67)
+        text_area_content_update_label.config(
+            font=("Supersonic Rocketship", 18))
+
+        # Save content button (SAVES THE IMAGE WITH THE CHARACTER AND THE CONTENT)
+        save_photo_edit_storyline_window = ImageTk.PhotoImage(
+            Image.open('./Assets/frame0/save.png'))
+        # add photo object to the list
+        photo_list.append(save_photo_edit_storyline_window)
+        save_save_photo_edit_storyline_window_label = Button(edit_storyline_window, image=save_photo_edit_storyline_window, borderwidth=0, highlightthickness=0,
+                                                             bg='#F8BC3B', activebackground='#F8BC3B', command=lambda index=index: update_storyline(index))
+        save_save_photo_edit_storyline_window_label.place(x=100, y=600)
+
+        # Back button to view page window in edit_storyline_window
+        back_photo_edit_storyline_window = ImageTk.PhotoImage(
+            Image.open('./Assets/inverted_backbutton.png'))
+        # add photo object to the photo list
+        photo_list.append(back_photo_edit_storyline_window)
+        back_label_edit_storyline_window = Button(edit_storyline_window, borderwidth=0, highlightthickness=0,
+                                                  image=back_photo_edit_storyline_window, command=view_page_window_deposit, bg='#F8BC3B', activebackground='#F8BC3B')
+        back_label_edit_storyline_window.place(x=85, y=20, anchor="n")
+
+        # Disable clarification window resizing
+        view_page_window.resizable(False, False)
+
+        # Disable the Close Window Control Icon in generate window
+        edit_storyline_window.protocol("WM_DELETE_WINDOW", disable_event)
+
+        # Disable clarification window resizing
+        edit_storyline_window.resizable(False, False)
+        # ________________________________________________________________________________
+
+    # Widget for displaying a update button pointing to the current page
+    update_photo_view_page_window = ImageTk.PhotoImage(
+        Image.open('./Assets/editbutton.png'))
+    # add photo object to the photo list
+    photo_list.append(update_photo_view_page_window)
+    update_label_view_page_window = Button(view_page_window, borderwidth=0, highlightthickness=0,
+                                           image=update_photo_view_page_window, command=lambda index=index: on_click_edit_content_window(index), bg='#F8BC3B', activebackground='#F8BC3B')
+    update_label_view_page_window.place(x=750, y=640, anchor="n")
+
     # if there are two pages or more
     if len(image_list) > 1 and (index < (len(image_list) - 1 or index == 1)):
         # Next button for view page window
@@ -396,7 +502,7 @@ def view_page(index):  # View a page
                                              image=prev_photo_view_page_window, command=lambda index=index: on_click_prev(index), bg='#F8BC3B', activebackground='#F8BC3B')
         prev_label_view_page_window.place(x=70, y=630, anchor="n")
 
-    # Back button to generate_window in view page window
+    # Back button to main screen in view page window
     back_photo_view_page_window = ImageTk.PhotoImage(
         Image.open('./Assets/inverted_backbutton.png'))
     # add photo object to the photo list
@@ -542,6 +648,7 @@ def generate_save():    # Saves the image in the current directory and displays 
             if addcharacter_screen.winfo_exists():
                 # Get story content if user adds a story
                 content = edit_textcontent_area.get('1.0', tk.END)
+                funct_truncate_text(content, 120)
             else:  # If page was saved in the generate window
                 # Overwrite image again since character was saved but should not be displayed since the user backed out
                 img = ImageTk.PhotoImage(image)
@@ -558,6 +665,7 @@ def generate_save():    # Saves the image in the current directory and displays 
             if main_char_select == 9:
                 if addcharacter_screen.winfo_exists():  # Check if addcharacter_screen is still open
                     content = edit_textcontent_area.get('1.0', tk.END)
+                    funct_truncate_text(content, 120)
                 else:  # If page was saved in the generate window
                     content = text_input
 
@@ -636,7 +744,8 @@ def generate_cover_image():   # Function to generate the cover image from the te
     with autocast(device):
 
         # Store text input in a variable
-        cover_input = cover_prompt.get()
+        cover_input = prompt_area.get('1.0', tk.END)
+        funct_truncate_text(cover_input, 120)
 
         # Catch error if no text input is given
         if cover_input == '' or len(cover_input) == 0 or cover_input.isspace() == True:
@@ -717,17 +826,17 @@ def generate_pdf():                # Generate PicTale Story book
     wrapped_text = textwrap.wrap(pdf_name, width=max_width)
 
     # Calculate the y-coordinate for the second line of text
-    y_coord = 95
+    y_coord = 90
 
     # Draw each line of text with white color and increment the y-coordinate
     for line in wrapped_text:
         # Get the size of the font for dynamic coverage of the background
         text_width, text_height = titlefont.getsize(line)
         # Black background for anti camo in title name / pdf name
-        bbox = (150, y_coord, 150 + text_width, y_coord + text_height)
+        bbox = (90, y_coord, 100 + text_width, y_coord + text_height)
         covertext.rectangle(bbox, fill=(255, 165, 0))
         # For writing title page / pdf name input in cover page
-        covertext.text((150, y_coord), line,
+        covertext.text((90, y_coord), line,
                        font=titlefont, fill=(255, 255, 255))
         y_coord += titlefont.getsize(line)[1] + 10
 
@@ -1074,7 +1183,7 @@ def funct_generate_window():    # This window is for getting the text prompt and
     global text_area  # Globalize the widget containing the text input from the user
 
     # Textbox widget for getting USER TEXT INPUT FOR GENERATING IMAGE
-    text_area = tk.Text(generate_window, height=14, width=38,
+    text_area = tk.Text(generate_window, height=13, width=38,
                         bg='#F8BC3B',  bd=1, relief="solid", font=("Supersonic Rocketship", 20))
     text_area.place(x=600, y=100)
 
@@ -1215,7 +1324,6 @@ def title_window():  # Window to get author and title data // Window 2
 
     global lmain_cover  # Globalize cover label frame holder
     global ltext_cover  # Globalize text label frame holder
-    global cover_prompt  # Globalize the prompt for cover text input
 
     # For prompt Title Label for cover image
     prompt_title = ctk.CTkLabel(start_window, height=20, width=20, text="Enter prompt for Cover Image", font=(
@@ -1228,9 +1336,21 @@ def title_window():  # Window to get author and title data // Window 2
     prompt_title_max.place(x=765, y=490)
 
     # Tkinter UI for the textbox prompt for the cover img
-    cover_prompt = ctk.CTkEntry(start_window, width=729.0, height=185.0, bg_color="#F9F4F1", font=(
-        "Supersonic Rocketship", 20), text_color="black", fg_color="white", border_width=10, border_color="#DDC8A0")
-    cover_prompt.place(x=201.0, y=520.0)
+    # cover_prompt = ctk.CTkEntry(start_window, width=729.0, height=185.0, bg_color="#F9F4F1", font=(
+    #     "Supersonic Rocketship", 20), text_color="black", fg_color="white", border_width=10, border_color="#DDC8A0")
+    # cover_prompt.place(x=201.0, y=520.0)
+
+    global prompt_area  # Globalize the widget containing the text input from the user
+
+    # Create a Frame widget with the desired border color
+    border_frame = tk.Frame(start_window, bg="#DDC8A0", bd=10)
+    border_frame.place(x=201, y=520)
+
+    # Tkinter UI for the textbox prompt for the cover img
+    prompt_area = tk.Text(border_frame, height=5, width=52,
+                          bg='white', font=("Supersonic Rocketship", 20))
+    # Use pack() to fill the available space within the Frame
+    prompt_area.pack(fill='both', expand=True)
 
     # For Cover image generated Label
     coverimglab = ctk.CTkLabel(start_window, height=20, width=20, text="Cover Image", font=(
@@ -1242,8 +1362,9 @@ def title_window():  # Window to get author and title data // Window 2
     lmain_cover.place(x=1180, y=183)
 
     # Placeholder frame for the text input for cover image
-    ltext_cover = ctk.CTkLabel(start_window, height=100, width=512, text=" ", font=(
-        "Supersonic Rocketship", 20), text_color="#AB7A11", fg_color=None)
+    ltext_cover = ctk.CTkLabel(start_window, height=100, width=512, text=" \n".join(textwrap.wrap(
+        glob_title, width=10)), font=(
+        "Supersonic Rocketship", 20), text_color="#AB7A11", fg_color=None, wraplength=500)
     ltext_cover.place(x=1182, y=650)
 
     # Back button in window 2 // Start Window
@@ -1387,8 +1508,8 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
 
     # Get the prompt text in title window that contains the storybook title
     pictales_title = tk.Label(main_screen, text="\n".join(textwrap.wrap(
-        glob_title, width=700)), font=custom_font, fg='#F8BC3B', bg='#F9F4F1', justify='right')
-    pictales_title.place(x=200, y=78)
+        glob_title, width=70)), font=custom_font, fg='#F8BC3B', bg='#F9F4F1', justify='right')
+    pictales_title.place(x=200, y=60)
     pictales_title.config(font=("Supersonic Rocketship", 28))
 
     # Add page button
@@ -1396,7 +1517,7 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
     photo_list.append(addpage_photo)  # add photo object to the list
     addpage_label = Button(main_screen, borderwidth=0,
                            highlightthickness=0, image=addpage_photo, command=funct_generate_window, bg='#F9F4F1', activebackground='#F9F4F1')
-    addpage_label.place(x=100, y=790)
+    addpage_label.place(x=100, y=780)
 
     # Redirecting to modal window for Generating image // Create Pictales button in window 3
     createpictales_photo = ImageTk.PhotoImage(
@@ -1404,7 +1525,7 @@ def main_operating_screen():  # Main Operating Screen where the text and image p
     photo_list.append(createpictales_photo)  # add photo object to the list
     createpictales_label = Button(main_screen, borderwidth=0,
                                   highlightthickness=0, image=createpictales_photo, command=funct_clarification_window)  # show the prompt creation of pdf
-    createpictales_label.place(x=400, y=780)
+    createpictales_label.place(x=375, y=780)
 
     # Disable main operating screen window resizing
     main_screen.resizable(False, False)
