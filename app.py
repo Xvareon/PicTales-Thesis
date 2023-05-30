@@ -159,7 +159,7 @@ def generate_image():   # Function to generate the images from the text prompt
                 else:
                     cartoon_input = text_input
 
-                # Variable that contains the image result // COMMENT THIS FOR CPU MODE
+                # Variable that contains the image result
                 image = pipe(cartoon_input, guidance_scale=10)[
                     "images"][0]
 
@@ -658,7 +658,7 @@ def generate_cover_image():   # Function to generate the cover image from the te
                 else:
                     cartoon_input = cover_input
 
-                # Variable that contains the image cover result // COMMENT THIS FOR CPU MODE
+                # Variable that contains the image cover result
                 image_cover = pipe(cartoon_input, guidance_scale=10)[
                     "images"][0]
 
@@ -869,39 +869,43 @@ isExist = os.path.exists('./results/model-1.pt')
 if (isExist == False):
     sys.exit(0)
 
-# loads the model used to a pre-defined library online // COMMENT THIS FOR CPU MODE
+# loads the model used to a pre-defined library online
 # modelid = "runwayml/stable-diffusion-v1-5"
 modelid = "CompVis/stable-diffusion-v1-4"
 
 auth_token = "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"
 
-if torch.cuda.is_available():
+if dev_mode == 0:
+    if torch.cuda.is_available():
 
-    # Set device to CUDA, app would run GPU
-    device = "cuda"
+        # Set device to CUDA, app would run GPU
+        device = "cuda"
 
-    # Loads the model into torch with CUDA
-    torch.load('./results/model-1.pt')
+        # Loads the model into torch with CUDA
+        torch.load('./results/model-1.pt')
 
-    # Uses the pipe from the online library for model translation to produce the image.
-    pipe = StableDiffusionPipeline.from_pretrained(
-        modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
+        # Uses the pipe from the online library for model translation to produce the image.
+        pipe = StableDiffusionPipeline.from_pretrained(
+            modelid, revision="fp16", torch_dtype=torch.float16, use_auth_token=auth_token)
 
+    else:
+
+        # Set device to CPU, app would run on CPU
+        device = "cpu"
+
+        # Loads the model into torch with CPU
+        torch.load('./results/model-1.pt', map_location=torch.device('cpu'))
+
+        # Uses the pipe from the online library for model translation to produce the image.
+        pipe = StableDiffusionPipeline.from_pretrained(
+            modelid, revision="fp16", torch_dtype=torch.bfloat16, use_auth_token=auth_token)
 else:
-
     # Set device to CPU, app would run on CPU
     device = "cpu"
 
-    # Loads the model into torch with CPU
-    torch.load('./results/model-1.pt', map_location=torch.device('cpu'))
-
-    # Uses the pipe from the online library for model translation to produce the image.
-    pipe = StableDiffusionPipeline.from_pretrained(
-        modelid, revision="fp16", torch_dtype=torch.bfloat16, use_auth_token=auth_token)
-
-
-# Uses the graphics driver (Must atleast be 8GB ram) // COMMENT THIS FOR CPU MODE
-pipe.to(device)
+if dev_mode == 0:
+    # Uses the graphics driver (Must atleast be 8GB ram)
+    pipe.to(device)
 
 # Create template page for the title page image
 blank = Image.new('RGB', (512, 512))
