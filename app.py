@@ -50,7 +50,7 @@ label_list = {}      # Globalize label list to pass to delete page function
 enable_realistic = 0  # Globalize value to determine whether images generated are realistic or not // set to 0 to disable by default
 music_switch = 1     # Globalize value to determine whether toggle background music are On or not // set to 1 to disable by default
 # Testing the application without the AI for faster UI work; 1 for testing, 0 for actual run
-dev_mode = 1
+dev_mode = 0
 
 # Set default title of storybook to Pictales, make it global so its value can be changed by the functions
 glob_title = "PicTales"
@@ -87,15 +87,10 @@ def show_message(title, message, root):
     top.grab_set()
     top.withdraw()
 
-    # def on_dialog_close():
-    #     # Enable the main window when the dialog is closed
-    #     root.attributes('-disabled', False)
-    #     top.destroy()
-
     # Show the messagebox in the custom dialog
     messagebox.showinfo(title, message, parent=top)
 
-    # top.protocol("WM_DELETE_WINDOW", on_dialog_close)
+    # Enable the main window
     root.attributes('-disabled', False)
     top.destroy()
 # ________________________________________________________________________________
@@ -645,14 +640,6 @@ def generate_save():    # Saves the image in the current directory and displays 
 
         ########################################################################
 
-        # Check if addcharacter_screen is defined # TRIED THIS WITH winfo_exists(), it does not work
-        try:
-            addcharacter_screen
-        except NameError:   # If variable is empty or not defined, return false
-            is_window_open = False
-        else:               # If variable is not empty or defined, return true
-            is_window_open = True
-
         # If a character was chosen and the edit content page has been clicked
         if main_char_select > 0 and main_char_select < 9:
 
@@ -721,7 +708,7 @@ def generate_save():    # Saves the image in the current directory and displays 
             image_list[update_value] = img
 
             # If addcharacter screen window is opened
-            if is_window_open:
+            if main_char_select > 0 and main_char_select < 9:
                 # Show prompt message that shows page has been updated
                 show_message("PicTales", "Page Updated!", addcharacter_screen)
             else:
@@ -741,9 +728,9 @@ def generate_save():    # Saves the image in the current directory and displays 
             image_list.append(img)
 
             # If addcharacter screen window is opened
-            if is_window_open:
+            if main_char_select > 0 and main_char_select < 9:
                 # Show prompt message that shows page has been updated
-                show_message("PicTales", "Page Updated!", addcharacter_screen)
+                show_message("PicTales", "Page Saved!", addcharacter_screen)
             else:
                 # Show prompt message that shows page has been saved
                 show_message("PicTales", "Page Saved!", generate_window)
@@ -753,14 +740,13 @@ def generate_save():    # Saves the image in the current directory and displays 
         # Update the widgets
         funct_inner_frame()
 
-        # Reset the main_char_select value
-        main_char_select = 0
-
         # If addcharacter screen window is opened
-        if is_window_open:
-
+        if main_char_select > 0 and main_char_select < 9:
             # Destroy the edit content window
             addcharacter_screen.destroy()
+
+        # Reset the main_char_select value
+        main_char_select = 0
 
         # Go back to main screen
         main_screen_deposit()
@@ -927,23 +913,23 @@ def generate_pdf():                # Generate PicTale Story book
             'comic.ttf', 30)
 
         # Set the maximum width for each line
-        max_width = 25
+        max_width = 20
 
         # Wrap the text into multiple lines based on the maximum width
         wrapped_text = textwrap.wrap(content_list[i], width=max_width)
 
         # Calculate the y-coordinate for the second line of text
-        y_coord = 90
+        y_coord = 70
 
         # Draw each line of text with white color and increment the y-coordinate
         for line in wrapped_text:
             # Get the size of the font for dynamic coverage of the background
             text_width, text_height = content_font.getsize(line)
             # Black background for anti camo in a content page
-            bbox = (80, y_coord, 100 + text_width, y_coord + text_height)
+            bbox = (70, y_coord, 80 + text_width, y_coord + text_height)
             phototext.rectangle(bbox, fill=(255, 165, 0))
             # For writing the content in a page
-            phototext.text((80, y_coord), line,
+            phototext.text((70, y_coord), line,
                            font=content_font, fill=(255, 255, 255))
             y_coord += content_font.getsize(line)[1] + 10
 
