@@ -49,7 +49,8 @@ photo_list = []      # create a global list to store photo objects for GUI
 label_list = {}      # Globalize label list to pass to delete page function
 enable_realistic = 0  # Globalize value to determine whether images generated are realistic or not // set to 0 to disable by default
 music_switch = 1     # Globalize value to determine whether toggle background music are On or not // set to 1 to disable by default
-dev_mode = 1         # Testing the application without the AI for faster UI work
+# Testing the application without the AI for faster UI work; 1 for testing, 0 for actual run
+dev_mode = 1
 
 # Set default title of storybook to Pictales, make it global so its value can be changed by the functions
 glob_title = "PicTales"
@@ -60,6 +61,7 @@ glob_author = "PicTales Author"
 # ___________________________________________________________________________ FUNCTIONS ___________________________________________________________________________
 
 
+# Function to center all windows opened and set their sizes accordingly
 def center_window(window, width, height):
     # Get the screen dimensions
     screen_width = window.winfo_screenwidth()
@@ -71,6 +73,31 @@ def center_window(window, width, height):
 
     # Set the window coordinates
     window.geometry(f"{width}x{height}+{x}+{y}")
+# ________________________________________________________________________________
+
+
+# Function to make the prompts required to be interacted with
+def show_message(title, message, root):
+    # Disable the main window
+    root.attributes('-disabled', True)
+
+    # Create a top-level window for the dialog
+    top = tk.Toplevel(root)
+    top.transient(root)
+    top.grab_set()
+    top.withdraw()
+
+    # def on_dialog_close():
+    #     # Enable the main window when the dialog is closed
+    #     root.attributes('-disabled', False)
+    #     top.destroy()
+
+    # Show the messagebox in the custom dialog
+    messagebox.showinfo(title, message, parent=top)
+
+    # top.protocol("WM_DELETE_WINDOW", on_dialog_close)
+    root.attributes('-disabled', False)
+    top.destroy()
 # ________________________________________________________________________________
 
 
@@ -193,7 +220,7 @@ def generate_image():   # Function to generate the images from the text prompt
     lmain.update()
 
     # Show prompt message that shows image has been generated
-    messagebox.showinfo("PicTales", "Image Generated!")
+    show_message("PicTales", "Image Generated!", generate_window)
 # ________________________________________________________________________________
 
 
@@ -279,8 +306,7 @@ def funct_inner_frame():  # Dynamically configures the widgets in the inner fram
             Image.open('./Assets/editbutton.png'))
         photo_list.append(lupdate_photo)
         lupdate_list = Button(frame, image=lupdate_photo,
-                              text="UPDATE", command=lambda index=counter: update_page(index),
-                              bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0)
+                              text="UPDATE", command=lambda index=counter: update_page(index), bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0)
         lupdate_list.grid(row=2, column=1, pady=(10, 0), padx=(0, 100))
         label_list[counter].append(lupdate_list)
 
@@ -289,8 +315,7 @@ def funct_inner_frame():  # Dynamically configures the widgets in the inner fram
             Image.open('./Assets/trashbutton.png'))
         photo_list.append(ldelete_photo)
         ldelete_list = Button(frame, image=ldelete_photo,
-                              text="DELETE", command=lambda index=counter: delete_page(index),
-                              bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0)
+                              text="DELETE", command=lambda index=counter: delete_page(index), bg='#F9F4F1', activebackground='#F9F4F1', borderwidth=0, highlightthickness=0)
         ldelete_list.grid(row=2, column=1, pady=(10, 0), padx=(100, 0))
         label_list[counter].append(ldelete_list)
 
@@ -309,7 +334,7 @@ def funct_inner_frame():  # Dynamically configures the widgets in the inner fram
         photo_list.append(limg_photo)
         # limg_list = Label(frame, image=limg_photo, bg="#F9F4F1")
         limg_list = Button(frame, image=limg_photo, bg="#F9F4F1",
-                           text="VIEW", command=lambda index=counter: view_page(index))
+                           text="VIEW", command=lambda index=counter: view_page(index), activebackground='#F9F4F1', borderwidth=0, highlightthickness=0)
         limg_list.grid(row=0, column=1, padx=(20, 0), sticky='n')
         label_list[counter].append(limg_list)
 
@@ -393,13 +418,13 @@ def view_page(index):  # View a page
 
         # Initiate generate window's tk GUI
         edit_storyline_window = tk.Toplevel()
-        edit_storyline_window.title("View Page")
+        edit_storyline_window.title("Edit Text Content Page")
 
         # This code will pop up the window how to in top level
         edit_storyline_window.grab_set()
 
         # The geometry with app winfo width and height will center the window modal in main screen
-        center_window(edit_storyline_window, 1228, 750)
+        center_window(edit_storyline_window, 735, 800)
         edit_storyline_window.configure(bg='#F8BC3B')  # set background color
 
         def update_storyline(index):  # Update the content of the page
@@ -419,7 +444,7 @@ def view_page(index):  # View a page
 
             # Update the text of the lview_content label
             lview_content.config(text="\n".join(
-                textwrap.wrap(temp_content, width=40)))
+                textwrap.wrap(content_list[index], width=40)))
 
             edit_storyline_window.destroy()  # Close edit storyline window
             view_page_window.deiconify()
@@ -434,7 +459,7 @@ def view_page(index):  # View a page
         # Textbox widget for getting USER TEXT INPUT FOR GENERATING IMAGE
         text_area_content_update = tk.Text(edit_storyline_window, height=14, width=38,
                                            bg='#F8BC3B',  bd=1, relief="solid", font=("Supersonic Rocketship", 20))
-        text_area_content_update.place(x=600, y=100)
+        text_area_content_update.place(x=100, y=125)
 
         # Label for image generated
         text_area_content_update_label = Label(
@@ -450,7 +475,7 @@ def view_page(index):  # View a page
         photo_list.append(save_photo_edit_storyline_window)
         save_save_photo_edit_storyline_window_label = Button(edit_storyline_window, image=save_photo_edit_storyline_window, borderwidth=0, highlightthickness=0,
                                                              bg='#F8BC3B', activebackground='#F8BC3B', command=lambda index=index: update_storyline(index))
-        save_save_photo_edit_storyline_window_label.place(x=100, y=600)
+        save_save_photo_edit_storyline_window_label.place(x=100, y=700)
 
         # Back button to view page window in edit_storyline_window
         back_photo_edit_storyline_window = ImageTk.PhotoImage(
@@ -562,7 +587,7 @@ def delete_page(index):  # Delete a page
     canvas.config(scrollregion=canvas.bbox('all'))
 
     # Show prompt message that shows page has been updated
-    messagebox.showinfo("PicTales", "Page Deleted!")
+    show_message("PicTales", "Page Deleted!", main_screen)
 # ________________________________________________________________________________
 
 
@@ -619,6 +644,14 @@ def generate_save():    # Saves the image in the current directory and displays 
         image.save('./GeneratedImages/{}.png'.format(text_input))
 
         ########################################################################
+
+        # Check if addcharacter_screen is defined # TRIED THIS WITH winfo_exists(), it does not work
+        try:
+            addcharacter_screen
+        except NameError:   # If variable is empty or not defined, return false
+            is_window_open = False
+        else:               # If variable is not empty or defined, return true
+            is_window_open = True
 
         # If a character was chosen and the edit content page has been clicked
         if main_char_select > 0 and main_char_select < 9:
@@ -687,8 +720,13 @@ def generate_save():    # Saves the image in the current directory and displays 
             # Update the previous image in the list using the update_value as the pointer index
             image_list[update_value] = img
 
-            # Show prompt message that shows page has been updated
-            messagebox.showinfo("PicTales", "Page Updated!")
+            # If addcharacter screen window is opened
+            if is_window_open:
+                # Show prompt message that shows page has been updated
+                show_message("PicTales", "Page Updated!", addcharacter_screen)
+            else:
+                # Show prompt message that shows page has been updated
+                show_message("PicTales", "Page Updated!", generate_window)
 
         # Regular adding of a page
         else:
@@ -702,8 +740,13 @@ def generate_save():    # Saves the image in the current directory and displays 
             # Store previous image in a list
             image_list.append(img)
 
-            # Show prompt message that shows page has been saved
-            messagebox.showinfo("PicTales", "Page Saved!")
+            # If addcharacter screen window is opened
+            if is_window_open:
+                # Show prompt message that shows page has been updated
+                show_message("PicTales", "Page Updated!", addcharacter_screen)
+            else:
+                # Show prompt message that shows page has been saved
+                show_message("PicTales", "Page Saved!", generate_window)
 
         update_value = None  # Reset the value of update
 
@@ -713,15 +756,7 @@ def generate_save():    # Saves the image in the current directory and displays 
         # Reset the main_char_select value
         main_char_select = 0
 
-        # Check if addcharacter_screen is defined
-        try:
-            addcharacter_screen
-        except NameError:   # If variable is empty or not defined, return false
-            is_window_open = False
-        else:               # If variable is not empty or defined, return true
-            is_window_open = True
-
-        # If window is opened
+        # If addcharacter screen window is opened
         if is_window_open:
 
             # Destroy the edit content window
@@ -789,7 +824,7 @@ def generate_cover_image():   # Function to generate the cover image from the te
     lmain_cover.update()
 
     # Show prompt message that shows image has been generated
-    messagebox.showinfo("PicTales", "Image Generated!")
+    show_message("PicTales", "Image Generated!", start_window)
 # ________________________________________________________________________________
 
 
@@ -892,23 +927,23 @@ def generate_pdf():                # Generate PicTale Story book
             'comic.ttf', 30)
 
         # Set the maximum width for each line
-        max_width = 15
+        max_width = 25
 
         # Wrap the text into multiple lines based on the maximum width
         wrapped_text = textwrap.wrap(content_list[i], width=max_width)
 
         # Calculate the y-coordinate for the second line of text
-        y_coord = 95
+        y_coord = 90
 
         # Draw each line of text with white color and increment the y-coordinate
         for line in wrapped_text:
             # Get the size of the font for dynamic coverage of the background
             text_width, text_height = content_font.getsize(line)
             # Black background for anti camo in a content page
-            bbox = (150, y_coord, 150 + text_width, y_coord + text_height)
+            bbox = (80, y_coord, 100 + text_width, y_coord + text_height)
             phototext.rectangle(bbox, fill=(255, 165, 0))
             # For writing the content in a page
-            phototext.text((150, y_coord), line,
+            phototext.text((80, y_coord), line,
                            font=content_font, fill=(255, 255, 255))
             y_coord += content_font.getsize(line)[1] + 10
 
@@ -951,7 +986,8 @@ def generate_pdf():                # Generate PicTale Story book
         )
 
     # Show prompt that PDF was generated
-    messagebox.showinfo("PicTales", "Your PDF has been generated!")
+    show_message("PicTales", "Your PDF has been generated!",
+                 clarification_window)
 
     # Close the app when storybook is made
     clarification_window.destroy()
@@ -1007,7 +1043,7 @@ if dev_mode == 0:
 
         # Uses the pipe from the online library for model translation to produce the image.
         pipe = StableDiffusionPipeline.from_pretrained(
-            modelid, revision="fp16", torch_dtype=torch.bfloat16, use_auth_token=auth_token)
+            modelid, revision="fp16", torch_dtype=torch.bfloat16, use_auth_token=auth_token)  # FIX THIS FLOAT VALUE
 else:
     # Set device to CPU, app would run on CPU
     device = "cpu"
@@ -1093,7 +1129,7 @@ def funct_about_window():     # The question mark button shows the about pictale
 def funct_howTo_window():     # How to button will show this window playing the video about pictales
 
     # Show instructions:
-    messagebox.showinfo("Instructions", "- Must have 8gb+ GPU ram\n- In the fonts folder, install supersonic rocketship\n- Must have wifi constantly on\n- Text Inputs must only be in english and has a maximum of 120 characters\n- Change Display scale and layout from 125% to 100%\n- Close buttons are disabled, the only exit is from the main menu")
+    show_message("Instructions", "- Must have 8gb+ GPU ram\n- In the fonts folder, install supersonic rocketship\n- Must have wifi constantly on\n- Text Inputs must only be in english and has a maximum of 120 characters\n- Change Display scale and layout from 125% to 100%\n- Close buttons are disabled, the only exit is from the main menu", app)
 
     global howTo_window  # Globalize to be destroyed later
 
@@ -1132,6 +1168,10 @@ def funct_howTo_window():     # How to button will show this window playing the 
 
 
 def main_screen_deposit():  # Function called when pressing back button or generating a save page in generate window
+
+    global update_value  # Recall the update value from generate window
+    # Reset update value
+    update_value = None
 
     # Show the hidden main screen again
     main_screen.deiconify()
